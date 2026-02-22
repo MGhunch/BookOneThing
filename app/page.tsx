@@ -1,116 +1,47 @@
-const SYS = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
-const ORANGE = "#e8722a";
+import Calendar from "@/components/calendar/Calendar";
 
-export default function Home() {
+const DEMO_THING = {
+  id: "demo",
+  owner_id: "demo",
+  name: "Meeting Room A",
+  slug: "meeting-room-a",
+  icon: "users",
+  avail_start: "09:00",
+  avail_end: "17:00",
+  avail_weekends: false,
+  max_length_mins: 120,
+  book_ahead_days: 14,
+  max_concurrent: 2,
+  buffer_mins: 0,
+  instructions: "Level 3, turn left out of the lift. Seats 8.",
+  is_active: true,
+  created_at: new Date().toISOString(),
+};
+
+const DEMO_BOOKINGS = [
+  {
+    id: "1",
+    thing_id: "demo",
+    booker_name: "Peter",
+    booker_email: null,
+    starts_at: new Date().toISOString(),
+    ends_at: new Date().toISOString(),
+    cancelled_at: null,
+    created_at: new Date().toISOString(),
+  },
+];
+
+export default async function BookerPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
+  const { slug } = await params;
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: "#e8e5e0",
-        fontFamily: SYS,
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "48px 24px",
-      }}
-    >
-      {/* Logo */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          marginBottom: "48px",
-        }}
-      >
-        <div
-          style={{
-            width: "32px",
-            height: "32px",
-            borderRadius: "10px",
-            background: "#1a1a1a",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              width: "11px",
-              height: "11px",
-              borderRadius: "50%",
-              border: "2.5px solid #fff",
-            }}
-          />
-        </div>
-        <span
-          style={{
-            fontSize: "20px",
-            fontWeight: 800,
-            color: "#1a1a1a",
-            letterSpacing: "-0.5px",
-          }}
-        >
-          book<span style={{ fontWeight: 300 }}>one</span>thing
-        </span>
-      </div>
-
-      {/* Hero */}
-      <div
-        style={{
-          maxWidth: "480px",
-          textAlign: "center",
-          marginBottom: "48px",
-        }}
-      >
-        <h1
-          style={{
-            fontSize: "42px",
-            fontWeight: 800,
-            color: "#1a1a1a",
-            letterSpacing: "-1.5px",
-            lineHeight: 1.1,
-            marginBottom: "20px",
-          }}
-        >
-          The world's simplest way to share a resource.
-        </h1>
-        <p
-          style={{
-            fontSize: "16px",
-            color: "#888",
-            lineHeight: 1.7,
-            marginBottom: "32px",
-          }}
-        >
-          Sign up. Name your thing. Share the link. Done.
-          <br />
-          Anyone can book it. No app. No login. No training required.
-        </p>
-
-        <a
-          href="/setup"
-          style={{
-            display: "inline-block",
-            background: ORANGE,
-            color: "#fff",
-            fontSize: "16px",
-            fontWeight: 700,
-            padding: "16px 36px",
-            borderRadius: "16px",
-            textDecoration: "none",
-            letterSpacing: "-0.3px",
-          }}
-        >
-          Set up your first thing — free
-        </a>
-      </div>
-
-      {/* Pricing note */}
-      <p style={{ fontSize: "13px", color: "#aaa", fontFamily: SYS }}>
-        First thing free, forever. Additional things $10/month each.
-      </p>
-    </div>
+    <Calendar
+      thing={DEMO_THING}
+      bookings={DEMO_BOOKINGS}
+      slug={slug}
+    />
   );
 }
