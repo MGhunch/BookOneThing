@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 const SYS = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
 const ORANGE = "#e8722a";
 
@@ -16,44 +18,15 @@ export default function Home() {
       }}
     >
       {/* Logo */}
-      <div
-        style={{
-          display: "flex",
-          alignItems: "center",
-          gap: "10px",
-          marginBottom: "48px",
-        }}
-      >
-        <div
-          style={{
-            width: "32px",
-            height: "32px",
-            borderRadius: "10px",
-            background: "#1a1a1a",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-          }}
-        >
-          <div
-            style={{
-              width: "11px",
-              height: "11px",
-              borderRadius: "50%",
-              border: "2.5px solid #fff",
-            }}
-          />
-        </div>
-        <span
-          style={{
-            fontSize: "20px",
-            fontWeight: 800,
-            color: "#1a1a1a",
-            letterSpacing: "-0.5px",
-          }}
-        >
-          book<span style={{ fontWeight: 300 }}>one</span>thing
-        </span>
+      <div style={{ marginBottom: "48px" }}>
+        <Image
+          src="/logo.png"
+          alt="bookonething"
+          width={240}
+          height={48}
+          style={{ height: "40px", width: "auto" }}
+          priority
+        />
       </div>
 
       {/* Hero */}
@@ -74,7 +47,7 @@ export default function Home() {
             marginBottom: "20px",
           }}
         >
-          The world's simplest way to share a resource.
+          The easy way to share anything, with anyone.
         </h1>
         <p
           style={{
