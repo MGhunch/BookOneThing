@@ -5,15 +5,17 @@ import Calendar from "@/components/calendar/Calendar";
 export default async function BookerPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const { slug } = await params;
+
   const supabase = createServerClient();
 
   // Fetch the thing by slug
   const { data: thing, error: thingError } = await supabase
     .from("things")
     .select("*")
-    .eq("slug", params.slug)
+    .eq("slug", slug)
     .eq("is_active", true)
     .single();
 
