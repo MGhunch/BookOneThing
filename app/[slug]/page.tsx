@@ -1,6 +1,5 @@
 import Calendar from "@/components/calendar/Calendar";
 
-// Temporary demo data until Supabase is wired up
 const DEMO_THING = {
   id: "demo",
   owner_id: "demo",
@@ -32,16 +31,17 @@ const DEMO_BOOKINGS = [
   },
 ];
 
-export default function BookerPage({
+export default async function BookerPage({
   params,
 }: {
-  params: { slug: string };
+  params: Promise<{ slug: string }>;
 }) {
+  const { slug } = await params;
   return (
     <Calendar
       thing={DEMO_THING}
       bookings={DEMO_BOOKINGS}
-      slug={params.slug}
+      slug={slug}
     />
   );
 }
