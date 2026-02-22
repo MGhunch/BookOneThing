@@ -1,8 +1,8 @@
-# bookonething
+# BookOneThing
 
-The world's simplest way to share a resource.
+The easy way to share anything with anyone. 
 
-Sign up. Name your thing. Share the link. Done.
+Set up your thing. Share the link. Done.
 
 ---
 
