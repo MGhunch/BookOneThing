@@ -1,3 +1,7 @@
 [deploy]
 startCommand = "node .next/standalone/server.js"
 restartPolicyType = "on_failure"
+
+[deploy.envs]
+HOSTNAME = "0.0.0.0"
+PORT = "8080"
