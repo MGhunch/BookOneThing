@@ -17,17 +17,9 @@ function SiteHeader() {
       padding: "24px 32px",
       fontFamily: SYS,
     }}>
-      <a href="/" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "9px" }}>
-        <div style={{
-          width: "28px", height: "28px", borderRadius: "9px",
-          background: "#1a1a1a",
-          display: "flex", alignItems: "center", justifyContent: "center",
-        }}>
-          <div style={{ width: "10px", height: "10px", borderRadius: "50%", border: "2.5px solid #fff" }} />
-        </div>
-        <span style={{ fontSize: "15px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px", fontFamily: SYS }}>
-          book<span style={{ fontWeight: 300 }}>one</span>thing
-        </span>
+      <a href="/" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="bookonething" style={{ height: "28px", width: "auto" }} />
       </a>
     </header>
   );
@@ -51,7 +43,7 @@ function SiteFooter() {
       {links.map((link, i) => (
         <div key={link} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <a href={`/${link.toLowerCase().replace(/ /g, "-")}`} style={{
-            fontSize: "10px", fontWeight: 700, letterSpacing: "0.8px",
+            fontSize: "10px", fontWeight: 600, letterSpacing: "0.8px",
             textTransform: "uppercase", color: "#bbb", textDecoration: "none",
           }}>
             {link}
@@ -64,7 +56,7 @@ function SiteFooter() {
       <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
         <div style={{ width: "3px", height: "3px", borderRadius: "50%", background: "#ddd", flexShrink: 0 }} />
         <a href="/manage" style={{
-          fontSize: "10px", fontWeight: 700, letterSpacing: "0.8px",
+          fontSize: "10px", fontWeight: 600, letterSpacing: "0.8px",
           textTransform: "uppercase", color: ORANGE, textDecoration: "none",
         }}>
           Manage your things ›
