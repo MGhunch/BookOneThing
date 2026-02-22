@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import Image from "next/image";
 import {
   ChevronLeft,
   ChevronRight,
@@ -286,6 +287,9 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
       <style>{`
         @keyframes fadeUp { from { opacity:0; transform:translateY(4px); } to { opacity:1; transform:translateY(0); } }
         *::-webkit-scrollbar { display:none; }
+        button { outline: none; }
+        button:focus { outline: none; }
+        button:focus-visible { outline: none; }
       `}</style>
 
       {/* Phone frame */}
@@ -296,12 +300,7 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
           <div style={{ flexShrink: 0, padding: "52px 22px 0" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
-                <div style={{ width: "26px", height: "26px", borderRadius: "8px", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <div style={{ width: "9px", height: "9px", borderRadius: "50%", border: "2px solid #fff" }} />
-                </div>
-                <span style={{ fontSize: "14px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px", fontFamily: SYS }}>
-                  book<span style={{ fontWeight: 300 }}>one</span>thing
-                </span>
+                <Image src="/logo.png" alt="bookonething" width={120} height={24} style={{ height: "22px", width: "auto" }} priority />
               </div>
               <span style={{ fontSize: "12px", color: "#bbb", fontWeight: 500, fontFamily: SYS }}>Harbour Works</span>
             </div>
