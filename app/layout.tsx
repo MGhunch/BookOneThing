@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Book One Thing",
-  description: "The world's simplest way to share a resource.",
+  description: "The easy way to share anything, with anyone.",
 };
 
 export default function RootLayout({

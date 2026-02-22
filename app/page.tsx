@@ -1,9 +1,14 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 
 const SYS = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
 const ORANGE = "#e8722a";
 
 export default function Home() {
+  const [email, setEmail] = useState("");
+
   return (
     <div
       style={{
@@ -18,7 +23,7 @@ export default function Home() {
       }}
     >
       {/* Logo */}
-      <div style={{ marginBottom: "48px" }}>
+      <div style={{ marginBottom: "56px" }}>
         <Image
           src="/logo.png"
           alt="bookonething"
@@ -32,18 +37,18 @@ export default function Home() {
       {/* Hero */}
       <div
         style={{
-          maxWidth: "480px",
+          maxWidth: "440px",
           textAlign: "center",
           marginBottom: "48px",
         }}
       >
         <h1
           style={{
-            fontSize: "42px",
+            fontSize: "48px",
             fontWeight: 800,
             color: "#1a1a1a",
-            letterSpacing: "-1.5px",
-            lineHeight: 1.1,
+            letterSpacing: "-2px",
+            lineHeight: 1.05,
             marginBottom: "20px",
           }}
         >
@@ -54,36 +59,90 @@ export default function Home() {
             fontSize: "16px",
             color: "#888",
             lineHeight: 1.7,
-            marginBottom: "32px",
+            marginBottom: "0",
           }}
         >
-          Sign up. Name your thing. Share the link. Done.
+          Set up your thing. Share a link. Done.
           <br />
-          Anyone can book it. No app. No login. No training required.
+          Anyone can book it. No sign ups. No fuss.
         </p>
-
-        <a
-          href="/setup"
-          style={{
-            display: "inline-block",
-            background: ORANGE,
-            color: "#fff",
-            fontSize: "16px",
-            fontWeight: 700,
-            padding: "16px 36px",
-            borderRadius: "16px",
-            textDecoration: "none",
-            letterSpacing: "-0.3px",
-          }}
-        >
-          Set up your first thing — free
-        </a>
       </div>
 
-      {/* Pricing note */}
-      <p style={{ fontSize: "13px", color: "#aaa", fontFamily: SYS }}>
-        First thing free, forever. Additional things $10/month each.
-      </p>
+      {/* Login card */}
+      <div
+        style={{
+          width: "100%",
+          maxWidth: "380px",
+          background: "#fff",
+          borderRadius: "20px",
+          padding: "28px 24px",
+          boxShadow: "0 4px 24px rgba(0,0,0,0.07)",
+        }}
+      >
+        <div
+          style={{
+            fontSize: "13px",
+            fontWeight: 700,
+            color: "#bbb",
+            letterSpacing: "0.8px",
+            textTransform: "uppercase",
+            marginBottom: "12px",
+            fontFamily: SYS,
+          }}
+        >
+          Book your thing
+        </div>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="Your email address"
+            style={{
+              flex: 1,
+              padding: "13px 15px",
+              borderRadius: "12px",
+              border: "1.5px solid #ede9e3",
+              fontSize: "14px",
+              fontFamily: SYS,
+              color: "#1a1a1a",
+              background: "#fafaf9",
+              outline: "none",
+            }}
+          />
+          <button
+            style={{
+              padding: "13px 20px",
+              borderRadius: "12px",
+              border: "none",
+              background: "#1a1a1a",
+              color: "#fff",
+              fontSize: "14px",
+              fontWeight: 700,
+              fontFamily: SYS,
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
+          >
+            Go
+          </button>
+        </div>
+
+        <div style={{ textAlign: "center", marginTop: "18px" }}>
+          <a
+            href="/setup"
+            style={{
+              fontSize: "13px",
+              fontWeight: 600,
+              color: ORANGE,
+              textDecoration: "none",
+              fontFamily: SYS,
+            }}
+          >
+            Set up a new thing ›
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
