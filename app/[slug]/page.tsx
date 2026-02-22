@@ -2,8 +2,6 @@ import { notFound } from "next/navigation";
 import { createServerClient } from "@/lib/supabase";
 import Calendar from "@/components/calendar/Calendar";
 
-const SYS = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
-
 export default async function BookerPage({
   params,
 }: {
@@ -12,14 +10,17 @@ export default async function BookerPage({
   const { slug } = await params;
   const supabase = createServerClient();
 
+  // Fetch thing + owner profile (for org_name) in one go
   const { data: thing, error: thingError } = await supabase
     .from("things")
-    .select("*")
+    .select("*, profiles(org_name)")
     .eq("slug", slug)
     .eq("is_active", true)
     .single();
 
   if (thingError || !thing) notFound();
+
+  const orgName: string = (thing.profiles as { org_name: string | null })?.org_name ?? "";
 
   const from = new Date();
   from.setHours(0, 0, 0, 0);
@@ -37,86 +38,62 @@ export default async function BookerPage({
   return (
     <>
       <style>{`
-        .calendar-layout {
+        .page-wrap {
           display: flex;
           align-items: center;
           justify-content: center;
           min-height: 100dvh;
-          padding: 80px 0;
-          gap: 0;
+          padding: 90px 24px 70px;
         }
-
         .cal-arrow {
           display: none;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          gap: 16px;
-          width: 180px;
+          width: 140px;
           flex-shrink: 0;
           cursor: pointer;
-          opacity: 0.35;
-          transition: opacity 0.2s ease;
+          opacity: 0.18;
+          transition: opacity 0.25s ease;
           text-decoration: none;
-          padding: 24px;
+          padding: 32px 16px;
+          border: none;
+          background: none;
         }
-
-        .cal-arrow:hover {
-          opacity: 0.65;
-        }
-
-        .cal-arrow-glyph {
-          font-size: 64px;
-          font-weight: 800;
-          color: #1a1a1a;
-          line-height: 1;
-          font-family: ${SYS};
-          letter-spacing: -4px;
-        }
-
-        .cal-arrow-label {
-          font-size: 10px;
-          font-weight: 700;
-          letter-spacing: 1px;
-          text-transform: uppercase;
-          color: #1a1a1a;
-          font-family: ${SYS};
-          text-align: center;
-        }
-
+        .cal-arrow:hover { opacity: 0.55; }
+        .cal-arrow svg { display: block; }
         .cal-hero {
           width: 100%;
-          max-width: 430px;
+          max-width: 420px;
           flex-shrink: 0;
         }
-
-        @media (min-width: 800px) {
+        @media (min-width: 780px) {
           .cal-arrow { display: flex; }
-          .cal-hero { width: 430px; }
         }
-
-        @media (min-width: 1100px) {
-          .cal-arrow { width: 220px; }
+        @media (min-width: 1080px) {
+          .cal-arrow { width: 180px; }
         }
       `}</style>
 
-      <div className="calendar-layout">
+      <div className="page-wrap">
 
         {/* Left arrow */}
-        <a href="#" className="cal-arrow" style={{ alignItems: "flex-end" }}>
-          <div className="cal-arrow-glyph">‹</div>
-          <div className="cal-arrow-label">Add more<br />things</div>
+        <a href="#" className="cal-arrow">
+          <svg width="32" height="56" viewBox="0 0 32 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M28 4L4 28L28 52" stroke="#1a1a1a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </a>
 
         {/* Calendar hero */}
         <div className="cal-hero">
-          <Calendar thing={thing} bookings={bookings ?? []} />
+          <Calendar thing={thing} orgName={orgName} bookings={bookings ?? []} />
         </div>
 
         {/* Right arrow */}
-        <a href="#" className="cal-arrow" style={{ alignItems: "flex-start" }}>
-          <div className="cal-arrow-glyph">›</div>
-          <div className="cal-arrow-label">Add more<br />things</div>
+        <a href="#" className="cal-arrow">
+          <svg width="32" height="56" viewBox="0 0 32 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 4L28 28L4 52" stroke="#1a1a1a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
         </a>
 
       </div>
