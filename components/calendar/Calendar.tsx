@@ -123,20 +123,21 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
 
 interface CalendarProps {
   thing: Thing;
+  orgName: string;
   bookings: Booking[];
 }
 
-export default function Calendar({ thing, bookings }: CalendarProps) {
+export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
   const [weekOffset, setWeekOffset]   = useState(0);
   const [selectedDay, setSelectedDay] = useState(
     new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
   );
-  const [phase, setPhase]         = useState(S_IDLE);
-  const [start, setStart]         = useState<string | null>(null);
-  const [end, setEnd]             = useState<string | null>(null);
-  const [confirmed, setConfirmed] = useState(false);
+  const [phase, setPhase]           = useState(S_IDLE);
+  const [start, setStart]           = useState<string | null>(null);
+  const [end, setEnd]               = useState<string | null>(null);
+  const [confirmed, setConfirmed]   = useState(false);
   const [bookerName, setBookerName] = useState<string>("");
-  const [toast, setToast]         = useState({ visible: false, message: "" });
+  const [toast, setToast]           = useState({ visible: false, message: "" });
 
   const scrollRef  = useRef<HTMLDivElement>(null);
   const calRef     = useRef<HTMLDivElement>(null);
@@ -312,40 +313,52 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes readyPop { 0% { filter: brightness(1); } 50% { filter: brightness(1.06); } 100% { filter: brightness(1); } }
         .ready-pop { animation: readyPop 0.3s ease; }
-        .cal-scroll::-webkit-scrollbar { width: 6px; display: block; }
+        .cal-scroll::-webkit-scrollbar { width: 5px; display: block; }
         .cal-scroll::-webkit-scrollbar-track { background: transparent; }
-        .cal-scroll::-webkit-scrollbar-thumb { background: rgba(232,114,42,0.25); border-radius: 99px; }
-        .cal-scroll::-webkit-scrollbar-thumb:hover { background: rgba(232,114,42,0.5); }
-        .cal-scroll { scrollbar-width: thin; scrollbar-color: rgba(232,114,42,0.25) transparent; }
-        @media (max-width: 799px) {
+        .cal-scroll::-webkit-scrollbar-thumb { background: rgba(232,114,42,0.2); border-radius: 99px; }
+        .cal-scroll::-webkit-scrollbar-thumb:hover { background: rgba(232,114,42,0.45); }
+        .cal-scroll { scrollbar-width: thin; scrollbar-color: rgba(232,114,42,0.2) transparent; }
+        @media (max-width: 779px) {
           .cal-scroll::-webkit-scrollbar { display: none; }
           .cal-scroll { scrollbar-width: none; }
         }
       `}</style>
 
-      {/* The card — fits inside the hero wrapper from the page */}
+      {/* Card */}
       <div style={{
         height: "calc(100dvh - 160px)",
-        minHeight: "500px",
-        background: "#f5f4f0",
+        minHeight: "520px",
+        background: "#fff",
         borderRadius: "24px",
-        boxShadow: "0 8px 48px rgba(0,0,0,0.10)",
+        boxShadow: "0 8px 48px rgba(0,0,0,0.09)",
         display: "flex",
         flexDirection: "column",
         overflow: "hidden",
         fontFamily: SYS,
       }}>
 
-        {/* Header */}
-        <div style={{ flexShrink: 0, padding: "20px 20px 0" }}>
+        {/* Card header */}
+        <div style={{ flexShrink: 0, padding: "22px 20px 0" }}>
 
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <ThingIcon size={16} strokeWidth={1.75} color="#fff" />
+          {/* Thing identity */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "4px" }}>
+            <div style={{
+              width: "38px", height: "38px", borderRadius: "50%",
+              background: ORANGE,
+              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+            }}>
+              <ThingIcon size={17} strokeWidth={1.75} color="#fff" />
             </div>
-            <span style={{ fontSize: "19px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-              {thing.name}
-            </span>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ fontSize: "19px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                {thing.name}
+              </div>
+              {orgName && (
+                <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", color: "#bbb", marginTop: "2px" }}>
+                  {orgName}
+                </div>
+              )}
+            </div>
             {thing.instructions && (
               <button style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "2px", flexShrink: 0 }}>
                 <Info size={14} strokeWidth={1.75} />
@@ -354,21 +367,25 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
           </div>
 
           {/* Day strip */}
-          <div style={{ display: "grid", gridTemplateColumns: "16px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 16px", gap: "1px", alignItems: "center", marginBottom: "12px" }}>
-            <button onClick={() => changeWeek(-1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ccc", padding: 0 }}>‹</button>
+          <div style={{ display: "grid", gridTemplateColumns: "16px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 16px", gap: "1px", alignItems: "center", marginBottom: "12px", marginTop: "16px" }}>
+            <button onClick={() => changeWeek(-1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ddd", padding: 0 }}>‹</button>
             {DAYS.map((day, i) => {
               const d = dates[i];
               const sel = i === selectedDay;
               const isToday = d.toDateString() === new Date().toDateString();
               return (
-                <button key={day} onClick={() => changeDay(i)} style={{ background: sel ? "#1a1a1a" : "transparent", border: "none", borderRadius: "8px", padding: "6px 1px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "3px" }}>
+                <button key={day} onClick={() => changeDay(i)} style={{
+                  background: sel ? "#1a1a1a" : "transparent",
+                  border: "none", borderRadius: "8px", padding: "6px 1px",
+                  cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "3px",
+                }}>
                   <span style={{ fontSize: "8px", fontWeight: 600, letterSpacing: "0.4px", textTransform: "uppercase", color: sel ? "#888" : "#ccc" }}>{day}</span>
-                  <span style={{ fontSize: "14px", fontWeight: isToday ? 800 : sel ? 700 : 400, color: sel ? "#fff" : isToday ? "#1a1a1a" : "#aaa" }}>{d.getDate()}</span>
+                  <span style={{ fontSize: "14px", fontWeight: isToday ? 800 : sel ? 700 : 400, color: sel ? "#fff" : isToday ? "#1a1a1a" : "#bbb" }}>{d.getDate()}</span>
                   {isToday && !sel && <div style={{ width: "3px", height: "3px", borderRadius: "50%", background: ORANGE }} />}
                 </button>
               );
             })}
-            <button onClick={() => changeWeek(1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ccc", padding: 0 }}>›</button>
+            <button onClick={() => changeWeek(1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ddd", padding: 0 }}>›</button>
           </div>
 
           {/* Date row */}
@@ -384,12 +401,12 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
           </div>
         </div>
 
-        {/* Calendar scroll */}
+        {/* Calendar scroll area */}
         <div ref={calRef} style={{ flex: 1, minHeight: 0, position: "relative", overflow: "hidden" }}>
           <div
             ref={scrollRef}
             className="cal-scroll"
-            style={{ position: "absolute", inset: 0, overflowY: "scroll", padding: "10px 14px 10px 16px" }}
+            style={{ position: "absolute", inset: 0, overflowY: "scroll", padding: "10px 16px 10px 16px" }}
           >
             <div style={{ position: "relative", height: `${totalH}px`, paddingLeft: "40px" }}>
 
@@ -436,8 +453,7 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
                           style={{ display: "flex", alignItems: "center", paddingLeft: "11px", width: "100%", height: `${SLOT_H}px`,
                             background: slotBg(group.s1!), border: "none",
                             borderBottom: `${HAIRLINE}px solid rgba(232,114,42,0.1)`,
-                            outline: a1 && !a2 ? `2px solid ${ORANGE}` : "none",
-                            outlineOffset: "-2px",
+                            outline: a1 && !a2 ? `2px solid ${ORANGE}` : "none", outlineOffset: "-2px",
                             borderRadius: a1 && !a2 ? "8px 8px 0 0" : "0",
                             cursor: "pointer", boxSizing: "border-box", textAlign: "left", transition: "background 0.3s" }}>
                           {startLabel(group.s1!)}
@@ -446,8 +462,7 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
                           onClick={ready ? handleSelectionTap : () => handleSlot(group.s2!)}
                           style={{ display: "flex", alignItems: "center", paddingLeft: "11px", width: "100%", height: `${SLOT_H}px`,
                             background: slotBg(group.s2!), border: "none",
-                            outline: a2 && !a1 ? `2px solid ${ORANGE}` : "none",
-                            outlineOffset: "-2px",
+                            outline: a2 && !a1 ? `2px solid ${ORANGE}` : "none", outlineOffset: "-2px",
                             borderRadius: a2 && !a1 ? "0 0 8px 8px" : "0",
                             cursor: "pointer", boxSizing: "border-box", textAlign: "left", transition: "background 0.3s" }}>
                           {endLabel(group.s2!)}
@@ -479,14 +494,8 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
               </div>
             </div>
           </div>
-          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "28px", background: "linear-gradient(to bottom,transparent,rgba(245,244,240,0.95))", pointerEvents: "none" }} />
-        </div>
-
-        {/* Bottom nav — mobile only icon strip */}
-        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", padding: "10px 0 20px", gap: "8px" }}>
-          <div style={{ width: "44px", height: "44px", borderRadius: "14px", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ThingIcon size={20} strokeWidth={1.75} color="#fff" />
-          </div>
+          {/* Fade at bottom of scroll */}
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "32px", background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.98))", pointerEvents: "none" }} />
         </div>
 
       </div>
@@ -497,7 +506,6 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
       {phase === S_MODAL && (
         <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", justifyContent: "flex-end", zIndex: 100 }}>
           <div style={{ background: "#fff", borderRadius: "22px 22px 0 0", padding: "28px 24px 48px", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)", maxWidth: "430px", width: "100%", margin: "0 auto" }}>
-
             {!confirmed ? (
               <>
                 <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "20px" }}>
