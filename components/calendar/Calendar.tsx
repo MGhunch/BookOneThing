@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Check, Info, ChevronLeft, ChevronRight, Car, Users, Coffee, Sun, X } from "lucide-react";
+import { Check, Info, Car, Users, Coffee, Sun, X } from "lucide-react";
 import type { Thing, Booking } from "@/types";
 
 const ORANGE        = "#e8722a";
@@ -108,7 +108,7 @@ function TickRow({ label }: { label: string }) {
 function Toast({ message, visible }: { message: string; visible: boolean }) {
   return (
     <div style={{
-      position: "fixed", bottom: "120px", left: "50%",
+      position: "fixed", bottom: "80px", left: "50%",
       transform: `translateX(-50%) translateY(${visible ? 0 : 8}px)`,
       opacity: visible ? 1 : 0, transition: "all 0.2s ease",
       background: "rgba(26,26,26,0.88)", color: "#fff",
@@ -305,195 +305,190 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
   const groupH = (si: number, ei: number) => slotY(ei) + SLOT_H - slotY(si);
 
   return (
-    <div style={{ minHeight: "100dvh", background: "#e8e5e0", fontFamily: SYS, display: "flex", flexDirection: "column", alignItems: "center" }}>
+    <>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap');
-        *, *::before, *::after { box-sizing: border-box; }
-        *::-webkit-scrollbar { display: none; }
         button { font-family: 'Poppins', sans-serif; outline: none; }
         button:focus, button:focus-visible { outline: none; }
         @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
         @keyframes readyPop { 0% { filter: brightness(1); } 50% { filter: brightness(1.06); } 100% { filter: brightness(1); } }
         .ready-pop { animation: readyPop 0.3s ease; }
+        .cal-scroll::-webkit-scrollbar { width: 6px; display: block; }
+        .cal-scroll::-webkit-scrollbar-track { background: transparent; }
+        .cal-scroll::-webkit-scrollbar-thumb { background: rgba(232,114,42,0.25); border-radius: 99px; }
+        .cal-scroll::-webkit-scrollbar-thumb:hover { background: rgba(232,114,42,0.5); }
+        .cal-scroll { scrollbar-width: thin; scrollbar-color: rgba(232,114,42,0.25) transparent; }
+        @media (max-width: 799px) {
+          .cal-scroll::-webkit-scrollbar { display: none; }
+          .cal-scroll { scrollbar-width: none; }
+        }
       `}</style>
 
-      <div style={{ width: "100%", maxWidth: "430px", height: "100dvh", background: "#f5f4f0", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+      {/* The card — fits inside the hero wrapper from the page */}
+      <div style={{
+        height: "calc(100dvh - 160px)",
+        minHeight: "500px",
+        background: "#f5f4f0",
+        borderRadius: "24px",
+        boxShadow: "0 8px 48px rgba(0,0,0,0.10)",
+        display: "flex",
+        flexDirection: "column",
+        overflow: "hidden",
+        fontFamily: SYS,
+      }}>
 
-        {/* Logo bar */}
-        <div style={{ flexShrink: 0, padding: "52px 22px 0" }}>
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "9px" }}>
-              <div style={{ width: "26px", height: "26px", borderRadius: "8px", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <div style={{ width: "9px", height: "9px", borderRadius: "50%", border: "2px solid #fff" }} />
-              </div>
-              <span style={{ fontSize: "14px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.5px" }}>
-                book<span style={{ fontWeight: 300 }}>one</span>thing
-              </span>
+        {/* Header */}
+        <div style={{ flexShrink: 0, padding: "20px 20px 0" }}>
+
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+            <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+              <ThingIcon size={16} strokeWidth={1.75} color="#fff" />
             </div>
+            <span style={{ fontSize: "19px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              {thing.name}
+            </span>
+            {thing.instructions && (
+              <button style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "2px", flexShrink: 0 }}>
+                <Info size={14} strokeWidth={1.75} />
+              </button>
+            )}
+          </div>
+
+          {/* Day strip */}
+          <div style={{ display: "grid", gridTemplateColumns: "16px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 16px", gap: "1px", alignItems: "center", marginBottom: "12px" }}>
+            <button onClick={() => changeWeek(-1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ccc", padding: 0 }}>‹</button>
+            {DAYS.map((day, i) => {
+              const d = dates[i];
+              const sel = i === selectedDay;
+              const isToday = d.toDateString() === new Date().toDateString();
+              return (
+                <button key={day} onClick={() => changeDay(i)} style={{ background: sel ? "#1a1a1a" : "transparent", border: "none", borderRadius: "8px", padding: "6px 1px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "3px" }}>
+                  <span style={{ fontSize: "8px", fontWeight: 600, letterSpacing: "0.4px", textTransform: "uppercase", color: sel ? "#888" : "#ccc" }}>{day}</span>
+                  <span style={{ fontSize: "14px", fontWeight: isToday ? 800 : sel ? 700 : 400, color: sel ? "#fff" : isToday ? "#1a1a1a" : "#aaa" }}>{d.getDate()}</span>
+                  {isToday && !sel && <div style={{ width: "3px", height: "3px", borderRadius: "50%", background: ORANGE }} />}
+                </button>
+              );
+            })}
+            <button onClick={() => changeWeek(1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ccc", padding: 0 }}>›</button>
+          </div>
+
+          {/* Date row */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "12px", paddingBottom: "14px", borderTop: "1px solid #f4f0eb" }}>
+            <span style={{ fontSize: "15px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.3px" }}>
+              {dateLabel}
+            </span>
+            {phase !== S_IDLE && (
+              <button onClick={reset} style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "4px" }}>
+                <X size={15} strokeWidth={2} />
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Card */}
-        <div style={{ flex: 1, margin: "0 14px", minHeight: 0, display: "flex", flexDirection: "column" }}>
-          <div style={{ flex: 1, minHeight: 0, background: "#fff", borderRadius: "22px", boxShadow: "0 4px 28px rgba(0,0,0,0.07)", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+        {/* Calendar scroll */}
+        <div ref={calRef} style={{ flex: 1, minHeight: 0, position: "relative", overflow: "hidden" }}>
+          <div
+            ref={scrollRef}
+            className="cal-scroll"
+            style={{ position: "absolute", inset: 0, overflowY: "scroll", padding: "10px 14px 10px 16px" }}
+          >
+            <div style={{ position: "relative", height: `${totalH}px`, paddingLeft: "40px" }}>
 
-            {/* Header */}
-            <div style={{ flexShrink: 0, padding: "18px 20px 0" }}>
-
-              <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
-                <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "#1a1a1a", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                  <ThingIcon size={16} strokeWidth={1.75} color="#fff" />
+              {ALL_HOURS.map((h) => (
+                <div key={h} style={{ position: "absolute", left: 0, top: `${slotY(h * 2)}px`, width: "36px", height: `${SLOT_H}px`, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+                  <span style={{ fontSize: "10px", color: "#ccc", fontWeight: 500 }}>{fmtHour(h)}</span>
                 </div>
-                <span style={{ fontSize: "19px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                  {thing.name}
-                </span>
-                {thing.instructions && (
-                  <button style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "2px", flexShrink: 0 }}>
-                    <Info size={14} strokeWidth={1.75} />
-                  </button>
-                )}
-              </div>
+              ))}
 
-              {/* Day strip */}
-              <div style={{ display: "grid", gridTemplateColumns: "16px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 16px", gap: "1px", alignItems: "center", marginBottom: "12px" }}>
-                <button onClick={() => changeWeek(-1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ccc", padding: 0 }}>‹</button>
-                {DAYS.map((day, i) => {
-                  const d = dates[i];
-                  const sel = i === selectedDay;
-                  const isToday = d.toDateString() === new Date().toDateString();
+              <div style={{ position: "absolute", left: "40px", right: 0, top: 0 }}>
+                {groups.map((group, gi) => {
+                  const top    = slotY(group.startIdx);
+                  const height = groupH(group.startIdx, group.endIdx);
+
+                  if (group.type === "booking") return (
+                    <div key={gi} onClick={() => showToast("Sorry, not available.")}
+                      style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE_BOOKED, borderRadius: "8px", display: "flex", alignItems: "center", paddingLeft: "11px", cursor: "pointer" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 600, color: "#c45a10" }}>{group.name}</span>
+                    </div>
+                  );
+
+                  if (group.type === "yours") return (
+                    <div key={gi} style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE, borderRadius: "8px", display: "flex", alignItems: "center", paddingLeft: "11px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#fff" }}>You — tap to cancel</span>
+                    </div>
+                  );
+
+                  if (group.type === "pill") {
+                    const a1 = inRange(group.s1!);
+                    const a2 = inRange(group.s2!);
+                    const anyA = a1 || a2;
+                    const bothActive = a1 && a2;
+                    const ready = anyA && phase === S_READY;
+
+                    return (
+                      <div key={gi}
+                        className={ready ? "ready-pop" : ""}
+                        onClick={ready ? handleSelectionTap : undefined}
+                        style={{ position: "absolute", top, left: 0, right: 0, height, borderRadius: "8px", overflow: "hidden",
+                          border: bothActive ? `2px solid ${ORANGE}` : "2px solid transparent",
+                          boxSizing: "border-box", cursor: ready ? "pointer" : "default", transition: "border 0.15s" }}>
+                        <button
+                          onClick={ready ? handleSelectionTap : () => handleSlot(group.s1!)}
+                          style={{ display: "flex", alignItems: "center", paddingLeft: "11px", width: "100%", height: `${SLOT_H}px`,
+                            background: slotBg(group.s1!), border: "none",
+                            borderBottom: `${HAIRLINE}px solid rgba(232,114,42,0.1)`,
+                            outline: a1 && !a2 ? `2px solid ${ORANGE}` : "none",
+                            outlineOffset: "-2px",
+                            borderRadius: a1 && !a2 ? "8px 8px 0 0" : "0",
+                            cursor: "pointer", boxSizing: "border-box", textAlign: "left", transition: "background 0.3s" }}>
+                          {startLabel(group.s1!)}
+                        </button>
+                        <button
+                          onClick={ready ? handleSelectionTap : () => handleSlot(group.s2!)}
+                          style={{ display: "flex", alignItems: "center", paddingLeft: "11px", width: "100%", height: `${SLOT_H}px`,
+                            background: slotBg(group.s2!), border: "none",
+                            outline: a2 && !a1 ? `2px solid ${ORANGE}` : "none",
+                            outlineOffset: "-2px",
+                            borderRadius: a2 && !a1 ? "0 0 8px 8px" : "0",
+                            cursor: "pointer", boxSizing: "border-box", textAlign: "left", transition: "background 0.3s" }}>
+                          {endLabel(group.s2!)}
+                          {startLabel(group.s2!)}
+                        </button>
+                      </div>
+                    );
+                  }
+
+                  const slot = group.slot!;
+                  const active = inRange(slot);
+                  const ready = active && phase === S_READY;
+
                   return (
-                    <button key={day} onClick={() => changeDay(i)} style={{ background: sel ? "#1a1a1a" : "transparent", border: "none", borderRadius: "8px", padding: "6px 1px", cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "3px" }}>
-                      <span style={{ fontSize: "8px", fontWeight: 600, letterSpacing: "0.4px", textTransform: "uppercase", color: sel ? "#888" : "#ccc" }}>{day}</span>
-                      <span style={{ fontSize: "14px", fontWeight: isToday ? 800 : sel ? 700 : 400, color: sel ? "#fff" : isToday ? "#1a1a1a" : "#aaa" }}>{d.getDate()}</span>
-                      {isToday && !sel && <div style={{ width: "3px", height: "3px", borderRadius: "50%", background: ORANGE }} />}
+                    <button key={gi}
+                      className={ready ? "ready-pop" : ""}
+                      onClick={ready ? handleSelectionTap : () => handleSlot(slot)}
+                      style={{ position: "absolute", top, left: 0, right: 0, height: `${SLOT_H}px`,
+                        background: slotBg(slot),
+                        border: active ? `2px solid ${ORANGE}` : "2px solid transparent",
+                        borderRadius: "8px", cursor: "pointer",
+                        display: "flex", alignItems: "center", paddingLeft: "11px",
+                        boxSizing: "border-box", textAlign: "left", transition: "background 0.3s, border 0.15s" }}>
+                      {startLabel(slot)}
+                      {endLabel(slot)}
                     </button>
                   );
                 })}
-                <button onClick={() => changeWeek(1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ccc", padding: 0 }}>›</button>
-              </div>
-
-              {/* Date row */}
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "12px", paddingBottom: "14px", borderTop: "1px solid #f4f0eb" }}>
-                <span style={{ fontSize: "15px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.3px" }}>
-                  {dateLabel}
-                </span>
-                {phase !== S_IDLE && (
-                  <button onClick={reset} style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "4px" }}>
-                    <X size={15} strokeWidth={2} />
-                  </button>
-                )}
               </div>
             </div>
+          </div>
+          <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "28px", background: "linear-gradient(to bottom,transparent,rgba(245,244,240,0.95))", pointerEvents: "none" }} />
+        </div>
 
-            {/* Calendar */}
-            <div ref={calRef} style={{ flex: 1, minHeight: 0, position: "relative", overflow: "hidden" }}>
-              <div ref={scrollRef} style={{ position: "absolute", inset: 0, overflowY: "scroll", padding: "10px 14px 10px 16px", scrollbarWidth: "none" }}>
-                <div style={{ position: "relative", height: `${totalH}px`, paddingLeft: "40px" }}>
-
-                  {ALL_HOURS.map((h) => (
-                    <div key={h} style={{ position: "absolute", left: 0, top: `${slotY(h * 2)}px`, width: "36px", height: `${SLOT_H}px`, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-                      <span style={{ fontSize: "10px", color: "#ccc", fontWeight: 500 }}>{fmtHour(h)}</span>
-                    </div>
-                  ))}
-
-                  <div style={{ position: "absolute", left: "40px", right: 0, top: 0 }}>
-                    {groups.map((group, gi) => {
-                      const top    = slotY(group.startIdx);
-                      const height = groupH(group.startIdx, group.endIdx);
-
-                      if (group.type === "booking") return (
-                        <div key={gi} onClick={() => showToast("Sorry, not available.")}
-                          style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE_BOOKED, borderRadius: "8px", display: "flex", alignItems: "center", paddingLeft: "11px", cursor: "pointer" }}>
-                          <span style={{ fontSize: "11px", fontWeight: 600, color: "#c45a10" }}>{group.name}</span>
-                        </div>
-                      );
-
-                      if (group.type === "yours") return (
-                        <div key={gi} style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE, borderRadius: "8px", display: "flex", alignItems: "center", paddingLeft: "11px" }}>
-                          <span style={{ fontSize: "11px", fontWeight: 700, color: "#fff" }}>You — tap to cancel</span>
-                        </div>
-                      );
-
-                      if (group.type === "pill") {
-                        const a1 = inRange(group.s1!);
-                        const a2 = inRange(group.s2!);
-                        const anyA = a1 || a2;
-                        const bothActive = a1 && a2;
-                        const ready = anyA && phase === S_READY;
-
-                        return (
-                          <div key={gi}
-                            className={ready ? "ready-pop" : ""}
-                            onClick={ready ? handleSelectionTap : undefined}
-                            style={{ position: "absolute", top, left: 0, right: 0, height, borderRadius: "8px", overflow: "hidden",
-                              border: bothActive ? `2px solid ${ORANGE}` : "2px solid transparent",
-                              boxSizing: "border-box", cursor: ready ? "pointer" : "default", transition: "border 0.15s" }}>
-                            <button
-                              onClick={ready ? handleSelectionTap : () => handleSlot(group.s1!)}
-                              style={{ display: "flex", alignItems: "center", paddingLeft: "11px", width: "100%", height: `${SLOT_H}px`,
-                                background: slotBg(group.s1!), border: "none",
-                                borderBottom: `${HAIRLINE}px solid rgba(232,114,42,0.1)`,
-                                outline: a1 && !a2 ? `2px solid ${ORANGE}` : "none",
-                                outlineOffset: "-2px",
-                                borderRadius: a1 && !a2 ? "8px 8px 0 0" : "0",
-                                cursor: "pointer", boxSizing: "border-box", textAlign: "left", transition: "background 0.3s" }}>
-                              {startLabel(group.s1!)}
-                            </button>
-                            <button
-                              onClick={ready ? handleSelectionTap : () => handleSlot(group.s2!)}
-                              style={{ display: "flex", alignItems: "center", paddingLeft: "11px", width: "100%", height: `${SLOT_H}px`,
-                                background: slotBg(group.s2!), border: "none",
-                                outline: a2 && !a1 ? `2px solid ${ORANGE}` : "none",
-                                outlineOffset: "-2px",
-                                borderRadius: a2 && !a1 ? "0 0 8px 8px" : "0",
-                                cursor: "pointer", boxSizing: "border-box", textAlign: "left", transition: "background 0.3s" }}>
-                              {endLabel(group.s2!)}
-                              {startLabel(group.s2!)}
-                            </button>
-                          </div>
-                        );
-                      }
-
-                      const slot = group.slot!;
-                      const active = inRange(slot);
-                      const ready = active && phase === S_READY;
-
-                      return (
-                        <button key={gi}
-                          className={ready ? "ready-pop" : ""}
-                          onClick={ready ? handleSelectionTap : () => handleSlot(slot)}
-                          style={{ position: "absolute", top, left: 0, right: 0, height: `${SLOT_H}px`,
-                            background: slotBg(slot),
-                            border: active ? `2px solid ${ORANGE}` : "2px solid transparent",
-                            borderRadius: "8px", cursor: "pointer",
-                            display: "flex", alignItems: "center", paddingLeft: "11px",
-                            boxSizing: "border-box", textAlign: "left", transition: "background 0.3s, border 0.15s" }}>
-                          {startLabel(slot)}
-                          {endLabel(slot)}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-              <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "28px", background: "linear-gradient(to bottom,transparent,rgba(255,255,255,0.95))", pointerEvents: "none" }} />
-            </div>
+        {/* Bottom nav — mobile only icon strip */}
+        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", padding: "10px 0 20px", gap: "8px" }}>
+          <div style={{ width: "44px", height: "44px", borderRadius: "14px", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <ThingIcon size={20} strokeWidth={1.75} color="#fff" />
           </div>
         </div>
 
-        {/* Bottom nav */}
-        <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "center", padding: "12px 0 32px", gap: "10px" }}>
-          <span style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "1.2px", textTransform: "uppercase", color: ORANGE }}>
-            Add more things ›
-          </span>
-          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <div style={{ padding: "6px 8px", color: "rgba(0,0,0,0.12)" }}><ChevronLeft size={20} strokeWidth={2} /></div>
-            <div style={{ width: "44px", height: "44px", borderRadius: "14px", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <ThingIcon size={20} strokeWidth={1.75} color="#fff" />
-            </div>
-            <div style={{ padding: "6px 8px", color: "rgba(0,0,0,0.12)" }}><ChevronRight size={20} strokeWidth={2} /></div>
-          </div>
-        </div>
       </div>
 
       <Toast message={toast.message} visible={toast.visible} />
@@ -518,7 +513,7 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
                     Back
                   </button>
                   <button onClick={() => setConfirmed(true)}
-                    style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "none", background: ORANGE, cursor: "pointer", fontSize: "14px", fontWeight: 700, color: "#fff" }}>
+                    style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "none", background: "#1a1a1a", cursor: "pointer", fontSize: "14px", fontWeight: 700, color: "#fff" }}>
                     Confirm
                   </button>
                 </div>
@@ -542,6 +537,6 @@ export default function Calendar({ thing, bookings }: CalendarProps) {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
