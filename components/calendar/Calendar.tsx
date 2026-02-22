@@ -375,12 +375,12 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
               const isToday = d.toDateString() === new Date().toDateString();
               return (
                 <button key={day} onClick={() => changeDay(i)} style={{
-                  background: sel ? "#1a1a1a" : "transparent",
+                  background: sel ? ORANGE_AVAIL : "transparent",
                   border: "none", borderRadius: "8px", padding: "6px 1px",
                   cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "3px",
                 }}>
-                  <span style={{ fontSize: "8px", fontWeight: 600, letterSpacing: "0.4px", textTransform: "uppercase", color: sel ? "#888" : "#ccc" }}>{day}</span>
-                  <span style={{ fontSize: "14px", fontWeight: isToday ? 800 : sel ? 700 : 400, color: sel ? "#fff" : isToday ? "#1a1a1a" : "#bbb" }}>{d.getDate()}</span>
+                  <span style={{ fontSize: "8px", fontWeight: 600, letterSpacing: "0.4px", textTransform: "uppercase", color: sel ? ORANGE : "#ccc" }}>{day}</span>
+                  <span style={{ fontSize: "14px", fontWeight: isToday ? 800 : sel ? 700 : 400, color: sel ? ORANGE : isToday ? "#1a1a1a" : "#bbb" }}>{d.getDate()}</span>
                   {isToday && !sel && <div style={{ width: "3px", height: "3px", borderRadius: "50%", background: ORANGE }} />}
                 </button>
               );
@@ -457,6 +457,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                             borderRadius: a1 && !a2 ? "8px 8px 0 0" : "0",
                             cursor: "pointer", boxSizing: "border-box", textAlign: "left", transition: "background 0.3s" }}>
                           {startLabel(group.s1!)}
+                          {endLabel(group.s1!)}
                         </button>
                         <button
                           onClick={ready ? handleSelectionTap : () => handleSlot(group.s2!)}
