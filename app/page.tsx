@@ -43,7 +43,7 @@ export default function Home() {
         background: ORANGE,
         color: "#fff",
         fontSize: "16px",
-        fontWeight: 700,
+        fontWeight: 600,
         padding: "16px 36px",
         borderRadius: "16px",
         textDecoration: "none",
