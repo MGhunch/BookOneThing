@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Info, Car, Users, Coffee, Sun, X } from "lucide-react";
+import { Check, Info, Car, Users, Coffee, Sun, X, Trash2 } from "lucide-react";
 import type { Thing, Booking } from "@/types";
 import { createBooking } from "@/app/[slug]/actions";
 
@@ -447,8 +447,9 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                   );
 
                   if (group.type === "yours") return (
-                    <div key={gi} style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE, borderRadius: "8px", display: "flex", alignItems: "center", paddingLeft: "11px" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#fff" }}>You — tap to cancel</span>
+                    <div style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE, borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: "11px", paddingRight: "11px" }}>
+                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#fff" }}>Your booking</span>
+                      <Trash2 size={13} strokeWidth={2} color="rgba(255,255,255,0.6)" />
                     </div>
                   );
 
