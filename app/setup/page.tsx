@@ -131,10 +131,10 @@ function DetailsModal({ name, onSubmit, loading, error }: {
     <ModalShell>
       <div style={{ marginBottom: "28px" }}>
         <div style={{ fontSize: "22px", fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, marginBottom: "8px" }}>
-          One more thing.
+          One more thing...
         </div>
         <div style={{ fontSize: "14px", color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
-          We know your thing, but we don't know you. Yet.
+          We know all about your thing, but we don't know you yet.
         </div>
       </div>
 
@@ -187,7 +187,7 @@ function DetailsModal({ name, onSubmit, loading, error }: {
           width: "100%", padding: "16px", borderRadius: "13px", border: "none",
           background: canSubmit ? ORANGE : "#dedad4",
           color: canSubmit ? "#fff" : "#bbb",
-          fontSize: "15px", fontWeight: 600, fontFamily: SYS,
+          fontSize: "15px", fontWeight: 700, fontFamily: SYS,
           cursor: canSubmit ? "pointer" : "default",
           letterSpacing: "-0.3px", transition: "all 0.2s",
         }}
@@ -509,12 +509,12 @@ export default function SetupPage() {
                     borderRadius: "14px", border: "none",
                     background: canFlip ? ORANGE : "#dedad4",
                     color: canFlip ? "#fff" : "#bbb",
-                    fontSize: "16px", fontWeight: 600, fontFamily: SYS,
+                    fontSize: "16px", fontWeight: 700, fontFamily: SYS,
                     cursor: canFlip ? "pointer" : "default",
                     letterSpacing: "-0.3px", transition: "all 0.2s",
                   }}
                 >
-                  Next up: Make some rules.
+                  Next up. Make some rules.
                 </button>
               </>
             )}
@@ -572,7 +572,7 @@ export default function SetupPage() {
                     width: "100%", marginTop: "40px", padding: "18px",
                     borderRadius: "14px", border: "none",
                     background: ORANGE, color: "#fff",
-                    fontSize: "16px", fontWeight: 600, fontFamily: SYS,
+                    fontSize: "16px", fontWeight: 700, fontFamily: SYS,
                     cursor: "pointer", letterSpacing: "-0.3px",
                   }}
                 >
