@@ -355,66 +355,61 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
         fontFamily: SYS,
       }}>
 
-        {/* Card header */}
-        <div style={{ flexShrink: 0, padding: "22px 20px 0" }}>
+        {/* Card header — tight */}
+        <div style={{ flexShrink: 0, padding: "18px 20px 0" }}>
 
-          {/* Thing identity */}
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "4px" }}>
+          {/* Thing identity — single line, vertically centred */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{
-              width: "38px", height: "38px", borderRadius: "50%",
-              background: ORANGE,
-              display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
+              width: "32px", height: "32px", borderRadius: "50%",
+              background: ORANGE, flexShrink: 0,
+              display: "flex", alignItems: "center", justifyContent: "center",
             }}>
-              <ThingIcon size={17} strokeWidth={1.75} color="#fff" />
+              <ThingIcon size={15} strokeWidth={1.75} color="#fff" />
             </div>
+
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: "19px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+              <div style={{ fontSize: "17px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                 {thing.name}
               </div>
               {orgName && (
-                <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", color: "#bbb", marginTop: "2px" }}>
+                <div style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", color: "#bbb", marginTop: "1px" }}>
                   {orgName}
                 </div>
               )}
             </div>
-            {thing.instructions && (
-              <button style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "2px", flexShrink: 0 }}>
-                <Info size={14} strokeWidth={1.75} />
-              </button>
-            )}
+
+            {/* Info icon — always visible, consistent size */}
+            <button style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "4px", flexShrink: 0, display: "flex", alignItems: "center" }}>
+              <Info size={15} strokeWidth={1.75} />
+            </button>
           </div>
 
-          {/* Day strip */}
-          <div style={{ display: "grid", gridTemplateColumns: "16px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 16px", gap: "1px", alignItems: "center", marginBottom: "12px", marginTop: "16px" }}>
-            <button onClick={() => changeWeek(-1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ddd", padding: 0 }}>‹</button>
-            {DAYS.map((day, i) => {
-              const d = dates[i];
-              const sel = i === selectedDay;
-              const isToday = d.toDateString() === new Date().toDateString();
-              return (
-                <button key={day} onClick={() => changeDay(i)} style={{
-                  background: sel ? ORANGE_AVAIL : "transparent",
-                  border: "none", borderRadius: "8px", padding: "6px 1px",
-                  cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "3px",
-                }}>
-                  <span style={{ fontSize: "8px", fontWeight: 600, letterSpacing: "0.4px", textTransform: "uppercase", color: sel ? ORANGE : "#ccc" }}>{day}</span>
-                  <span style={{ fontSize: "14px", fontWeight: isToday ? 800 : sel ? 700 : 400, color: sel ? ORANGE : isToday ? "#1a1a1a" : "#bbb" }}>{d.getDate()}</span>
-                  {isToday && !sel && <div style={{ width: "3px", height: "3px", borderRadius: "50%", background: ORANGE }} />}
-                </button>
-              );
-            })}
-            <button onClick={() => changeWeek(1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ddd", padding: 0 }}>›</button>
-          </div>
+          {/* Day nav — ‹ date › */}
+          <div style={{
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            paddingTop: "14px", paddingBottom: "14px",
+            marginTop: "14px",
+            borderTop: "1px solid #f4f0eb",
+          }}>
+            <button
+              onClick={() => { changeDay(selectedDay > 0 ? selectedDay - 1 : 6); if (selectedDay === 0) changeWeek(-1); }}
+              style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", color: "rgba(26,26,26,0.3)", fontSize: "22px", lineHeight: 1, fontFamily: SYS }}
+            >‹</button>
 
-          {/* Date row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "12px", paddingBottom: "14px", borderTop: "1px solid #f4f0eb" }}>
-            <span style={{ fontSize: "15px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.3px" }}>
+            <span style={{ fontSize: "14px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.3px" }}>
               {dateLabel}
             </span>
-            {phase !== S_IDLE && (
-              <button onClick={reset} style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "4px" }}>
+
+            {phase !== S_IDLE ? (
+              <button onClick={reset} style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "4px 8px", display: "flex", alignItems: "center" }}>
                 <X size={15} strokeWidth={2} />
               </button>
+            ) : (
+              <button
+                onClick={() => { changeDay(selectedDay < 6 ? selectedDay + 1 : 0); if (selectedDay === 6) changeWeek(1); }}
+                style={{ background: "none", border: "none", cursor: "pointer", padding: "4px 8px", color: "rgba(26,26,26,0.3)", fontSize: "22px", lineHeight: 1, fontFamily: SYS }}
+              >›</button>
             )}
           </div>
         </div>
