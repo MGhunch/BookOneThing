@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 import { Check, Info, Car, Users, Coffee, Sun, X } from "lucide-react";
 import type { Thing, Booking } from "@/types";
+import { createBooking } from "@/app/[slug]/actions";
 
 const ORANGE        = "#e8722a";
 const ORANGE_BOOKED = "#f2c9a8";
@@ -135,9 +136,11 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
   const [phase, setPhase]           = useState(S_IDLE);
   const [start, setStart]           = useState<string | null>(null);
   const [end, setEnd]               = useState<string | null>(null);
-  const [confirmed, setConfirmed]   = useState(false);
-  const [bookerName, setBookerName] = useState<string>("");
-  const [toast, setToast]           = useState({ visible: false, message: "" });
+  const [confirmed, setConfirmed]     = useState(false);
+  const [bookerName, setBookerName]   = useState<string>("");
+  const [bookerEmail, setBookerEmail] = useState<string>("");
+  const [submitting, setSubmitting]   = useState(false);
+  const [toast, setToast]             = useState({ visible: false, message: "" });
 
   const scrollRef  = useRef<HTMLDivElement>(null);
   const calRef     = useRef<HTMLDivElement>(null);
@@ -149,6 +152,17 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
   const dates     = getWeekDates(weekOffset);
   const selDate   = dates[selectedDay];
   const dateStr   = selDate.toLocaleDateString("en-CA");
+
+  // Is this a returning booker on this device?
+  const isKnownBooker = bookerName !== "" && bookerEmail !== "";
+
+  // Convert a slot string ("10:00") + the selected date into an ISO timestamp
+  function slotToISO(slot: string, plusMins = 0): string {
+    const [h, m] = slot.split(":").map(Number);
+    const d = new Date(selDate);
+    d.setHours(h, m + plusMins, 0, 0);
+    return d.toISOString();
+  }
 
   const bookingMap: Record<string, string> = {};
   bookings.forEach((b) => {
@@ -164,8 +178,10 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
   const dateLabel = `${FULL_DAYS[selectedDay]} ${selDate.getDate()} ${MONTHS[selDate.getMonth()]}`;
 
   useEffect(() => {
-    const stored = localStorage.getItem("bookerName");
-    if (stored) setBookerName(stored);
+    const storedName  = localStorage.getItem("bookerName");
+    const storedEmail = localStorage.getItem("bookerEmail");
+    if (storedName)  setBookerName(storedName);
+    if (storedEmail) setBookerEmail(storedEmail);
   }, []);
 
   useEffect(() => {
@@ -512,18 +528,91 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                 <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "20px" }}>
                   Book {thing.name}
                 </div>
-                <div style={{ background: ORANGE_AVAIL, borderRadius: "14px", padding: "16px 18px", display: "flex", flexDirection: "column", gap: "10px", marginBottom: "24px" }}>
+
+                {/* Time + date summary */}
+                <div style={{ background: ORANGE_AVAIL, borderRadius: "14px", padding: "16px 18px", display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
                   <TickRow label={timeStr} />
                   <TickRow label={dateLabel} />
                 </div>
+
+                {/* Name + email — only shown to first-time bookers */}
+                {!isKnownBooker && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
+                    <input
+                      type="text"
+                      placeholder="Your name"
+                      value={bookerName}
+                      onChange={(e) => setBookerName(e.target.value)}
+                      style={{
+                        width: "100%", padding: "13px 16px", borderRadius: "12px",
+                        border: "1.5px solid #ede9e3", fontSize: "14px", fontWeight: 500,
+                        fontFamily: SYS, color: "#1a1a1a", outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                    <input
+                      type="email"
+                      placeholder="Email — for your calendar invite"
+                      value={bookerEmail}
+                      onChange={(e) => setBookerEmail(e.target.value)}
+                      style={{
+                        width: "100%", padding: "13px 16px", borderRadius: "12px",
+                        border: "1.5px solid #ede9e3", fontSize: "14px", fontWeight: 500,
+                        fontFamily: SYS, color: "#1a1a1a", outline: "none",
+                        boxSizing: "border-box",
+                      }}
+                    />
+                    <div style={{ fontSize: "11px", color: "#bbb", fontFamily: SYS, paddingLeft: "2px" }}>
+                      We'll remember you on this device so you don't have to type your name again.
+                    </div>
+                  </div>
+                )}
+
+                {/* Known booker — show name as context */}
+                {isKnownBooker && (
+                  <div style={{ fontSize: "13px", color: "#bbb", marginBottom: "20px", fontFamily: SYS }}>
+                    Booking as <span style={{ color: "#1a1a1a", fontWeight: 600 }}>{bookerName}</span>
+                  </div>
+                )}
+
                 <div style={{ display: "flex", gap: "10px" }}>
                   <button onClick={reset}
-                    style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "1.5px solid #ede9e3", background: "#fff", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#aaa" }}>
+                    style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "1.5px solid #ede9e3", background: "#fff", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#aaa", fontFamily: SYS }}>
                     Back
                   </button>
-                  <button onClick={() => setConfirmed(true)}
-                    style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "none", background: ORANGE, cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#fff" }}>
-                    Confirm
+                  <button
+                    disabled={!bookerName.trim() || !bookerEmail.trim() || submitting}
+                    onClick={async () => {
+                      if (!start) return;
+                      setSubmitting(true);
+                      const endSlot = end ?? start;
+                      const result = await createBooking({
+                        thingId:     thing.id,
+                        bookerName:  bookerName.trim(),
+                        bookerEmail: bookerEmail.trim(),
+                        startsAt:    slotToISO(start),
+                        endsAt:      slotToISO(endSlot, 30),
+                      });
+                      setSubmitting(false);
+                      if ("error" in result) {
+                        showToast(result.error);
+                        reset();
+                        return;
+                      }
+                      // Success — persist to localStorage
+                      localStorage.setItem("bookerName",  bookerName.trim());
+                      localStorage.setItem("bookerEmail", bookerEmail.trim().toLowerCase());
+                      setConfirmed(true);
+                    }}
+                    style={{
+                      flex: 1, padding: "14px", borderRadius: "12px", border: "none",
+                      background: (!bookerName.trim() || !bookerEmail.trim() || submitting) ? "#f0ece6" : ORANGE,
+                      cursor: (!bookerName.trim() || !bookerEmail.trim() || submitting) ? "default" : "pointer",
+                      fontSize: "14px", fontWeight: 600,
+                      color: (!bookerName.trim() || !bookerEmail.trim() || submitting) ? "#bbb" : "#fff",
+                      fontFamily: SYS, transition: "all 0.15s",
+                    }}>
+                    {submitting ? "Booking…" : "Confirm"}
                   </button>
                 </div>
               </>
@@ -536,7 +625,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                   <Check size={26} strokeWidth={2.5} color="#fff" />
                 </div>
                 <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", marginBottom: "12px", letterSpacing: "-0.4px" }}>
-                  All booked.
+                  All booked, {bookerName}.
                 </div>
                 <div style={{ fontSize: "14px", color: "#bbb", lineHeight: 1.6 }}>
                   Check your email for a calendar invite.
