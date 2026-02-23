@@ -520,8 +520,6 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
       {/* Modal */}
       {phase === S_MODAL && (
         <div
-          onMouseDown={(e) => { if (e.target === e.currentTarget) reset(); }}
-          onTouchEnd={(e) => { if (e.target === e.currentTarget) reset(); }}
           style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", justifyContent: "flex-end", zIndex: 100 }}>
           <div
             onMouseDown={(e) => e.stopPropagation()}
@@ -567,7 +565,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                       }}
                     />
                     <div style={{ fontSize: "11px", color: "#bbb", fontFamily: SYS, paddingLeft: "2px" }}>
-                      We'll remember you on this device so you don't have to type your name again.
+                      We'll try and remember you next time.
                     </div>
                   </div>
                 )}
@@ -582,7 +580,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                 <div style={{ display: "flex", gap: "10px" }}>
                   <button onClick={reset}
                     style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "1.5px solid #ede9e3", background: "#fff", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#aaa", fontFamily: SYS }}>
-                    Back
+                    Not now
                   </button>
                   <button
                     disabled={!bookerName.trim() || !bookerEmail.trim() || submitting}
