@@ -168,7 +168,7 @@ export default function FAQPage() {
         <div key={section.label} style={{ marginBottom: "40px" }}>
           <div style={{
             fontSize: "10px",
-            fontWeight: 700,
+            fontWeight: 600,
             letterSpacing: "1.2px",
             textTransform: "uppercase",
             color: ORANGE,
