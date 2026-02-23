@@ -49,3 +49,19 @@ export async function createBooking({
 
   return { ok: true };
 }
+
+export async function cancelBooking(bookingId: string): Promise<BookingResult> {
+  const supabase = adminClient();
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({ cancelled_at: new Date().toISOString() })
+    .eq("id", bookingId);
+
+  if (error) {
+    console.error("Cancel failed:", error);
+    return { error: "Couldn't cancel that booking. Please try again." };
+  }
+
+  return { ok: true };
+}
