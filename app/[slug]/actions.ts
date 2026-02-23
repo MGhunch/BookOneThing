@@ -1,12 +1,23 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { sendBookingConfirmation, sendCancellationConfirmation } from "@/lib/email";
 
 function adminClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
+}
+
+// Supabase returns joined rows as object or array depending on relationship type.
+// This handles both safely.
+function extractOrgName(profiles: unknown): string {
+  if (!profiles) return "";
+  if (Array.isArray(profiles)) {
+    return (profiles[0] as { org_name?: string | null })?.org_name ?? "";
+  }
+  return (profiles as { org_name?: string | null })?.org_name ?? "";
 }
 
 export type BookingResult =
@@ -28,7 +39,7 @@ export async function createBooking({
 }): Promise<BookingResult> {
   const supabase = adminClient();
 
-  const { error } = await supabase
+  const { data: booking, error } = await supabase
     .from("bookings")
     .insert({
       thing_id:     thingId,
@@ -36,7 +47,9 @@ export async function createBooking({
       booker_email: bookerEmail.trim().toLowerCase(),
       starts_at:    startsAt,
       ends_at:      endsAt,
-    });
+    })
+    .select("id")
+    .single();
 
   if (error) {
     // Exclusion constraint violation — slot taken
@@ -47,11 +60,40 @@ export async function createBooking({
     return { error: "Something went wrong. Please try again." };
   }
 
+  // Fetch thing + org name for the email (non-blocking — don't fail the booking if email fails)
+  try {
+    const { data: thing } = await supabase
+      .from("things")
+      .select("name, profiles(org_name)")
+      .eq("id", thingId)
+      .single();
+
+    await sendBookingConfirmation({
+      bookingId:   booking.id,
+      bookerName:  bookerName.trim(),
+      bookerEmail: bookerEmail.trim().toLowerCase(),
+      thingName:   thing?.name ?? "your booking",
+      orgName:     extractOrgName(thing?.profiles),
+      startsAt,
+      endsAt,
+    });
+  } catch (emailErr) {
+    // Log but don't surface to the user — booking succeeded
+    console.error("Confirmation email failed:", emailErr);
+  }
+
   return { ok: true };
 }
 
 export async function cancelBooking(bookingId: string): Promise<BookingResult> {
   const supabase = adminClient();
+
+  // Fetch booking details before cancelling (needed for the email)
+  const { data: booking } = await supabase
+    .from("bookings")
+    .select("booker_name, booker_email, starts_at, ends_at, thing_id")
+    .eq("id", bookingId)
+    .single();
 
   const { error } = await supabase
     .from("bookings")
@@ -61,6 +103,28 @@ export async function cancelBooking(bookingId: string): Promise<BookingResult> {
   if (error) {
     console.error("Cancel failed:", error);
     return { error: "Couldn't cancel that booking. Please try again." };
+  }
+
+  // Send cancellation email if we have the data (non-blocking)
+  if (booking?.booker_email) {
+    try {
+      const { data: thing } = await supabase
+        .from("things")
+        .select("name, profiles(org_name)")
+        .eq("id", booking.thing_id)
+        .single();
+
+      await sendCancellationConfirmation({
+        bookerName:  booking.booker_name,
+        bookerEmail: booking.booker_email,
+        thingName:   thing?.name ?? "your booking",
+        orgName:     extractOrgName(thing?.profiles),
+        startsAt:    booking.starts_at,
+        endsAt:      booking.ends_at,
+      });
+    } catch (emailErr) {
+      console.error("Cancellation email failed:", emailErr);
+    }
   }
 
   return { ok: true };
