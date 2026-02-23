@@ -286,7 +286,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
     : "";
 
   type Group = {
-    type: string; name?: string;
+    type: string; name?: string; id?: string;
     startIdx: number; endIdx: number;
     s1?: string; s2?: string; slot?: string;
   };
@@ -296,17 +296,21 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
     let i = 0;
     while (i < ALL_SLOTS.length) {
       const slot = ALL_SLOTS[i];
+      const id   = bookingIdMap[slot];
       const name = bookingMap[slot];
       const yours = YOURS.includes(slot);
-      if (name && !yours) {
+
+      if (id && !yours) {
+        // Merge only slots belonging to the same booking ID
         let j = i;
-        while (j < ALL_SLOTS.length && bookingMap[ALL_SLOTS[j]] === name && !YOURS.includes(ALL_SLOTS[j])) j++;
-        groups.push({ type: "booking", name, startIdx: i, endIdx: j - 1 });
+        while (j < ALL_SLOTS.length && bookingIdMap[ALL_SLOTS[j]] === id) j++;
+        groups.push({ type: "booking", name, id, startIdx: i, endIdx: j - 1 });
         i = j;
       } else if (yours) {
+        // Merge only slots belonging to the same booking ID
         let j = i;
-        while (j < ALL_SLOTS.length && YOURS.includes(ALL_SLOTS[j])) j++;
-        groups.push({ type: "yours", startIdx: i, endIdx: j - 1 });
+        while (j < ALL_SLOTS.length && bookingIdMap[ALL_SLOTS[j]] === id) j++;
+        groups.push({ type: "yours", id, startIdx: i, endIdx: j - 1 });
         i = j;
       } else {
         const next = ALL_SLOTS[i + 1];
@@ -439,7 +443,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
 
                   if (group.type === "booking") return (
                     <div key={gi} onClick={() => showToast("Sorry, not available.")}
-                      style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE_BOOKED, borderRadius: "8px", display: "flex", alignItems: "center", paddingLeft: "11px", cursor: "pointer" }}>
+                      style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE_BOOKED, borderRadius: "8px", display: "flex", alignItems: "flex-start", padding: "8px 11px", cursor: "pointer" }}>
                       <span style={{ fontSize: "11px", fontWeight: 600, color: "#c45a10" }}>{group.name}</span>
                     </div>
                   );
@@ -448,12 +452,11 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                     <div
                     key={gi}
                     onClick={() => {
-                      const id = bookingIdMap[ALL_SLOTS[group.startIdx]];
                       const s = ALL_SLOTS[group.startIdx];
                       const e = ALL_SLOTS[group.endIdx];
-                      setCancelTarget({ id, timeStr: `${fmtSlot(s)} – ${fmtEndTime(e)}` });
+                      setCancelTarget({ id: group.id!, timeStr: `${fmtSlot(s)} – ${fmtEndTime(e)}` });
                     }}
-                    style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE, borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: "11px", paddingRight: "11px", cursor: "pointer" }}>
+                    style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE, borderRadius: "8px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "8px 11px", cursor: "pointer" }}>
                       <span style={{ fontSize: "11px", fontWeight: 700, color: "#fff" }}>Your booking</span>
                       <Trash2 size={13} strokeWidth={2} color="rgba(255,255,255,0.6)" />
                     </div>
@@ -675,7 +678,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                   setCancelTarget(null);
                   router.refresh();
                 }}
-                style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "none", background: "#c0392b", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#fff", fontFamily: SYS }}>
+                style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "none", background: ORANGE, cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#fff", fontFamily: SYS }}>
                 Cancel it
               </button>
             </div>
