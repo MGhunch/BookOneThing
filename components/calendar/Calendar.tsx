@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Info, Car, Users, Coffee, Sun, X, Trash2 } from "lucide-react";
 import type { Thing, Booking } from "@/types";
-import { createBooking } from "@/app/[slug]/actions";
+import { createBooking, cancelBooking } from "@/app/[slug]/actions";
 
 const ORANGE        = "#e8722a";
 const ORANGE_BOOKED = "#f2c9a8";
@@ -141,6 +141,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
   const [bookerName, setBookerName]   = useState<string>("");
   const [bookerEmail, setBookerEmail] = useState<string>("");
   const [submitting, setSubmitting]   = useState(false);
+  const [cancelTarget, setCancelTarget] = useState<{ id: string; timeStr: string } | null>(null);
   const [toast, setToast]             = useState({ visible: false, message: "" });
 
   const scrollRef  = useRef<HTMLDivElement>(null);
@@ -167,9 +168,11 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
   }
 
   const bookingMap: Record<string, string> = {};
+  const bookingIdMap: Record<string, string> = {};
   bookings.forEach((b) => {
     bookingToSlots(b, dateStr).forEach((slot) => {
       bookingMap[slot] = b.booker_name;
+      bookingIdMap[slot] = b.id;
     });
   });
 
@@ -442,7 +445,15 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                   );
 
                   if (group.type === "yours") return (
-                    <div style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE, borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: "11px", paddingRight: "11px" }}>
+                    <div
+                    key={gi}
+                    onClick={() => {
+                      const id = bookingIdMap[ALL_SLOTS[group.startIdx]];
+                      const s = ALL_SLOTS[group.startIdx];
+                      const e = ALL_SLOTS[group.endIdx];
+                      setCancelTarget({ id, timeStr: `${fmtSlot(s)} – ${fmtEndTime(e)}` });
+                    }}
+                    style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE, borderRadius: "8px", display: "flex", alignItems: "center", justifyContent: "space-between", paddingLeft: "11px", paddingRight: "11px", cursor: "pointer" }}>
                       <span style={{ fontSize: "11px", fontWeight: 700, color: "#fff" }}>Your booking</span>
                       <Trash2 size={13} strokeWidth={2} color="rgba(255,255,255,0.6)" />
                     </div>
@@ -635,6 +646,39 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+      {/* Cancel modal */}
+      {cancelTarget && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", justifyContent: "flex-end", zIndex: 100 }}>
+          <div
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            style={{ background: "#fff", borderRadius: "22px 22px 0 0", padding: "28px 24px 48px", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)", maxWidth: "430px", width: "100%", margin: "0 auto" }}>
+            <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "6px" }}>
+              Cancel your booking?
+            </div>
+            <div style={{ fontSize: "13px", color: "#bbb", marginBottom: "24px", fontFamily: SYS }}>
+              {thing.name} · {cancelTarget.timeStr} · {dateLabel}
+            </div>
+            <div style={{ display: "flex", gap: "10px" }}>
+              <button
+                onClick={() => setCancelTarget(null)}
+                style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "1.5px solid #ede9e3", background: "#fff", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#aaa", fontFamily: SYS }}>
+                Keep it
+              </button>
+              <button
+                onClick={async () => {
+                  const result = await cancelBooking(cancelTarget.id);
+                  if ("error" in result) { showToast(result.error); }
+                  setCancelTarget(null);
+                  router.refresh();
+                }}
+                style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "none", background: "#c0392b", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#fff", fontFamily: SYS }}>
+                Cancel it
+              </button>
+            </div>
           </div>
         </div>
       )}
