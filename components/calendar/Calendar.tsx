@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { Check, Info, Car, Users, Coffee, Sun, X } from "lucide-react";
 import type { Thing, Booking } from "@/types";
 import { createBooking } from "@/app/[slug]/actions";
@@ -147,6 +148,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
   const [calH, setCalH] = useState(300);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seenTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const router     = useRouter();
 
   const ThingIcon = ICON_MAP[thing.icon] || Car;
   const dates     = getWeekDates(weekOffset);
@@ -521,8 +523,14 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
 
       {/* Modal */}
       {phase === S_MODAL && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", justifyContent: "flex-end", zIndex: 100 }}>
-          <div style={{ background: "#fff", borderRadius: "22px 22px 0 0", padding: "28px 24px 48px", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)", maxWidth: "430px", width: "100%", margin: "0 auto" }}>
+        <div
+          onMouseDown={(e) => { if (e.target === e.currentTarget) reset(); }}
+          onTouchEnd={(e) => { if (e.target === e.currentTarget) reset(); }}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", justifyContent: "flex-end", zIndex: 100 }}>
+          <div
+            onMouseDown={(e) => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
+            style={{ background: "#fff", borderRadius: "22px 22px 0 0", padding: "28px 24px 48px", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)", maxWidth: "430px", width: "100%", margin: "0 auto" }}>
             {!confirmed ? (
               <>
                 <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "20px" }}>
@@ -603,6 +611,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                       localStorage.setItem("bookerName",  bookerName.trim());
                       localStorage.setItem("bookerEmail", bookerEmail.trim().toLowerCase());
                       setConfirmed(true);
+                      router.refresh();
                     }}
                     style={{
                       flex: 1, padding: "14px", borderRadius: "12px", border: "none",
