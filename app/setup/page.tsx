@@ -46,7 +46,6 @@ const AHEAD_PRESETS = [
   { key: "3",    label: "3 months" },
   { key: "6",    label: "6 months" },
   { key: "12",   label: "1 year"   },
-  { key: "none", label: "∞"        },
 ];
 
 const CONCURRENT_PRESETS = [
@@ -135,7 +134,7 @@ function DetailsModal({ name, onSubmit, loading, error }: {
           One more thing.
         </div>
         <div style={{ fontSize: "14px", color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
-          We know your thing, but we don't know you.
+          We know your thing, but we don't know you. Yet.
         </div>
       </div>
 
@@ -340,7 +339,7 @@ export default function SetupPage() {
   };
 
   return (
-    <div style={{ background: BG, minHeight: "100vh", fontFamily: SYS }}>
+    <div style={{ background: BG, minHeight: "100vh", fontFamily: SYS, position: "relative", zIndex: 0 }}>
       <style>{`
         @keyframes flipOut { 0% { transform: rotateY(0deg); opacity: 1; } 100% { transform: rotateY(-90deg); opacity: 0; } }
         @keyframes flipIn  { 0% { transform: rotateY(90deg); opacity: 0; } 100% { transform: rotateY(0deg); opacity: 1; } }
@@ -579,9 +578,7 @@ export default function SetupPage() {
                 >
                   Create {trimmed}
                 </button>
-                <div style={{ textAlign: "center" as const, fontSize: "13px", color: GREY_LIGHT, marginTop: "12px", fontWeight: 400 }}>
-                  Your first thing is free.
-                </div>
+
 
                 <button
                   onClick={() => flip("front")}
