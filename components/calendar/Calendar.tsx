@@ -522,7 +522,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                     Back
                   </button>
                   <button onClick={() => setConfirmed(true)}
-                    style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "none", background: "#1a1a1a", cursor: "pointer", fontSize: "14px", fontWeight: 700, color: "#fff" }}>
+                    style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "none", background: ORANGE, cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#fff" }}>
                     Confirm
                   </button>
                 </div>
