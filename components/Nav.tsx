@@ -25,7 +25,7 @@ export default function Nav() {
         {/* Logo */}
         <a href="/" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center" }}>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/Logo2.png" alt="bookonething" style={{ height: "26px", width: "auto" }} />
+          <img src="/logo2.png" alt="bookonething" style={{ height: "26px", width: "auto" }} />
         </a>
 
         {/* Hamburger */}
