@@ -5,6 +5,7 @@ import {
   Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check,
 } from "lucide-react";
 import { submitSetup } from "./actions";
+import ModalShell from "@/components/ModalShell";
 
 const ORANGE       = "#e8722a";
 const ORANGE_LIGHT = "#fdf4ee";
@@ -95,24 +96,6 @@ function OrangeBlock({ n }: { n: number }) {
 }
 
 // ─── MODALS ──────────────────────────────────────────────────────────────────
-
-function ModalShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
-      <div style={{ position: "absolute", inset: 0, background: "rgba(26,26,26,0.35)", backdropFilter: "blur(1px)" }} />
-      <div style={{
-        position: "relative", zIndex: 10, background: "#fff",
-        borderRadius: "24px 24px 0 0", padding: "36px 36px 56px",
-        maxWidth: "560px", width: "100%", margin: "0 auto",
-        boxShadow: "0 -8px 48px rgba(0,0,0,0.12)",
-        animation: "slideUp 0.4s cubic-bezier(0.32,0.72,0,1)",
-      }}>
-        <div style={{ width: "36px", height: "4px", borderRadius: "2px", background: "#e8e5e0", margin: "0 auto 32px" }} />
-        {children}
-      </div>
-    </div>
-  );
-}
 
 function DetailsModal({ name, onSubmit, loading, error }: {
   name: string;
