@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { Check, Info, Car, Users, Coffee, Sun, X, Trash2 } from "lucide-react";
 import type { Thing, Booking } from "@/types";
 import { createBooking, cancelBooking } from "@/app/[slug]/actions";
+import ModalShell from "@/components/ModalShell";
 
 const ORANGE        = "#e8722a";
 const ORANGE_BOOKED = "#f2c9a8";
@@ -113,7 +114,7 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
       position: "fixed", bottom: "80px", left: "50%",
       transform: `translateX(-50%) translateY(${visible ? 0 : 8}px)`,
       opacity: visible ? 1 : 0, transition: "all 0.2s ease",
-      background: "rgba(26,26,26,0.88)", color: "#fff",
+      background: "rgba(80,74,68,0.82)", color: "#fff",
       fontSize: "13px", fontWeight: 600, fontFamily: SYS,
       padding: "10px 20px", borderRadius: "24px",
       pointerEvents: "none", zIndex: 300, whiteSpace: "nowrap",
@@ -186,7 +187,12 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
     const storedName  = localStorage.getItem("bookerName");
     const storedEmail = localStorage.getItem("bookerEmail");
     if (storedName)  setBookerName(storedName);
-    if (storedEmail) setBookerEmail(storedEmail);
+    if (storedEmail && storedEmail.includes("@") && storedEmail.includes(".")) {
+      setBookerEmail(storedEmail);
+    } else if (storedEmail) {
+      localStorage.removeItem("bookerEmail");
+      localStorage.removeItem("bookerName");
+    }
   }, []);
 
   useEffect(() => {
@@ -541,12 +547,11 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
 
       {/* Modal */}
       {phase === S_MODAL && (
-        <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", justifyContent: "flex-end", zIndex: 100 }}>
+        <ModalShell onBackdropClick={reset}>
           <div
             onMouseDown={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
-            style={{ background: "#fff", borderRadius: "22px 22px 0 0", padding: "28px 24px 48px", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)", maxWidth: "430px", width: "100%", margin: "0 auto" }}>
+          >
             {!confirmed ? (
               <>
                 <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "20px" }}>
@@ -605,7 +610,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                     Not now
                   </button>
                   <button
-                    disabled={!bookerName.trim() || !bookerEmail.trim() || submitting}
+                    disabled={!bookerName.trim() || !bookerEmail.trim() || !bookerEmail.includes("@") || !bookerEmail.includes(".") || submitting}
                     onClick={async () => {
                       if (!start) return;
                       setSubmitting(true);
@@ -658,15 +663,15 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
               </div>
             )}
           </div>
-        </div>
+        </ModalShell>
       )}
       {/* Cancel modal */}
       {cancelTarget && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", justifyContent: "flex-end", zIndex: 100 }}>
+        <ModalShell onBackdropClick={() => setCancelTarget(null)}>
           <div
             onMouseDown={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
-            style={{ background: "#fff", borderRadius: "22px 22px 0 0", padding: "28px 24px 48px", animation: "slideUp 0.3s cubic-bezier(0.32,0.72,0,1)", maxWidth: "430px", width: "100%", margin: "0 auto" }}>
+          >
             <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "6px" }}>
               Cancel your booking?
             </div>
@@ -691,7 +696,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
               </button>
             </div>
           </div>
-        </div>
+        </ModalShell>
       )}
     </>
   );
