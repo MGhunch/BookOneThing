@@ -64,10 +64,10 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
           {/* Heading */}
           <div style={{ marginBottom: "20px" }}>
             <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "6px" }}>
-              Before you book…
+              Hello
             </div>
             <div style={{ fontSize: "13px", color: "#aaa", lineHeight: 1.6 }}>
-              Just let us know who you are.
+              First, remind us who you are.
             </div>
           </div>
 
@@ -89,7 +89,7 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
                 }}
               />
               <div style={{ fontSize: "11px", color: "#ccc", marginTop: "5px", paddingLeft: "2px" }}>
-                To confirm you're really you.
+                So we know you're really you.
               </div>
             </div>
 
@@ -127,7 +127,7 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
             disabled={!canSubmit}
             style={{
               width: "100%", padding: "15px", borderRadius: "14px", border: "none",
-              background: canSubmit ? "#1a1a1a" : "#f0ece6",
+              background: canSubmit ? ORANGE : "#f0ece6",
               color: canSubmit ? "#fff" : "#bbb",
               fontSize: "15px", fontWeight: 600, fontFamily: SYS,
               cursor: canSubmit ? "pointer" : "default",
@@ -135,11 +135,11 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
               marginBottom: "14px",
             }}
           >
-            {submitting ? "Sending…" : "That's me →"}
+            {submitting ? "Sending…" : "Let's go"}
           </button>
 
           <div style={{ textAlign: "center", fontSize: "12px", color: "#ccc" }}>
-            No password. No account. Just a link.
+            We'll remember you for next time.
           </div>
         </>
       ) : (
@@ -157,7 +157,7 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
             </svg>
           </div>
           <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "10px" }}>
-            Check your inbox.
+            Thanks, {firstName}.
           </div>
           <div style={{ fontSize: "14px", color: "#aaa", lineHeight: 1.6, maxWidth: "280px", margin: "0 auto" }}>
             Just tap the link in your email to unlock the calendar.
