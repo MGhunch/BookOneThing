@@ -124,13 +124,19 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
   );
 }
 
+interface BookerSession {
+  email:     string;
+  firstName: string;
+}
+
 interface CalendarProps {
   thing: Thing;
   orgName: string;
   bookings: Booking[];
+  bookerSession: BookerSession | null;
 }
 
-export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
+export default function Calendar({ thing, orgName, bookings, bookerSession }: CalendarProps) {
   const [weekOffset, setWeekOffset]   = useState(0);
   const [selectedDay, setSelectedDay] = useState(
     new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
@@ -139,8 +145,10 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
   const [start, setStart]           = useState<string | null>(null);
   const [end, setEnd]               = useState<string | null>(null);
   const [confirmed, setConfirmed]     = useState(false);
-  const [bookerName, setBookerName]   = useState<string>("");
-  const [bookerEmail, setBookerEmail] = useState<string>("");
+  // Identity comes from the server-side session cookie (set by the magic link flow).
+  // We keep local state so returning-device fallback (localStorage) can still populate them.
+  const [bookerName, setBookerName]   = useState<string>(bookerSession?.firstName ?? "");
+  const [bookerEmail, setBookerEmail] = useState<string>(bookerSession?.email ?? "");
   const [submitting, setSubmitting]   = useState(false);
   const [cancelTarget, setCancelTarget] = useState<{ id: string; timeStr: string } | null>(null);
   const [toast, setToast]             = useState({ visible: false, message: "" });
@@ -158,7 +166,9 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
   const dateStr   = selDate.toLocaleDateString("en-CA");
 
   // Is this a returning booker on this device?
-  const isKnownBooker = bookerName !== "" && bookerEmail !== "";
+  // A booker is "known" if they authenticated via the gate (session cookie)
+  // or if they previously booked on this device (localStorage fallback).
+  const isKnownBooker = bookerSession !== null || (bookerName !== "" && bookerEmail !== "");
 
   // Convert a slot string ("10:00") + the selected date into an ISO timestamp
   function slotToISO(slot: string, plusMins = 0): string {
@@ -183,7 +193,10 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
 
   const dateLabel = `${FULL_DAYS[selectedDay]} ${selDate.getDate()} ${MONTHS[selDate.getMonth()]}`;
 
+  // If we have a session from the cookie, that's authoritative.
+  // Otherwise fall back to localStorage for any users pre-gate-rollout.
   useEffect(() => {
+    if (bookerSession) return; // Session cookie wins — no localStorage needed
     const storedName  = localStorage.getItem("bookerName");
     const storedEmail = localStorage.getItem("bookerEmail");
     if (storedName)  setBookerName(storedName);
@@ -193,7 +206,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
       localStorage.removeItem("bookerEmail");
       localStorage.removeItem("bookerName");
     }
-  }, []);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
     if (!calRef.current) return;
@@ -597,10 +610,12 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                   </div>
                 )}
 
-                {/* Known booker — show name as context */}
+                {/* Known booker — show name as context (no fields needed) */}
                 {isKnownBooker && (
                   <div style={{ fontSize: "13px", color: "#bbb", marginBottom: "20px", fontFamily: SYS }}>
-                    Booking as <span style={{ color: "#1a1a1a", fontWeight: 600 }}>{bookerName}</span>
+                    Booking as <span style={{ color: "#1a1a1a", fontWeight: 600 }}>
+                      {bookerSession ? bookerSession.firstName : bookerName}
+                    </span>
                   </div>
                 )}
 
@@ -628,9 +643,11 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                         reset();
                         return;
                       }
-                      // Success — persist to localStorage
-                      localStorage.setItem("bookerName",  bookerName.trim());
-                      localStorage.setItem("bookerEmail", bookerEmail.trim().toLowerCase());
+                      // Success — persist to localStorage only for non-session users (legacy fallback)
+                      if (!bookerSession) {
+                        localStorage.setItem("bookerName",  bookerName.trim());
+                        localStorage.setItem("bookerEmail", bookerEmail.trim().toLowerCase());
+                      }
                       setConfirmed(true);
                       router.refresh();
                     }}
@@ -655,7 +672,7 @@ export default function Calendar({ thing, orgName, bookings }: CalendarProps) {
                   <Check size={26} strokeWidth={2.5} color="#fff" />
                 </div>
                 <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", marginBottom: "12px", letterSpacing: "-0.4px" }}>
-                  All booked, {bookerName}.
+                  All booked, {bookerSession ? bookerSession.firstName : bookerName}.
                 </div>
                 <div style={{ fontSize: "14px", color: "#bbb", lineHeight: 1.6 }}>
                   Check your email for a calendar invite.
