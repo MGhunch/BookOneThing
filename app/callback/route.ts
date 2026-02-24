@@ -60,6 +60,7 @@ export async function GET(request: NextRequest) {
           avail_start:     pending.avail_start,
           avail_end:       pending.avail_end,
           avail_weekends:  pending.avail_weekends,
+          timezone:        pending.timezone ?? "UTC",
           max_length_mins: pending.max_length_mins,
           book_ahead_days: pending.book_ahead_days,
           max_concurrent:  pending.max_concurrent,
