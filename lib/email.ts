@@ -101,12 +101,14 @@ export function buildConfirmationHTML({
   orgName,
   startsAt,
   endsAt,
+  cancelUrl,
 }: {
   bookerName: string;
   thingName:  string;
   orgName:    string;
   startsAt:   string;
   endsAt:     string;
+  cancelUrl?: string;
 }): string {
   const timeRange = `${fmtTime(startsAt)} – ${fmtTime(endsAt)}`;
   const dateStr   = fmtDate(startsAt);
@@ -205,9 +207,13 @@ export function buildConfirmationHTML({
                 </tr>
               </table>
 
-              <p style="margin:0;font-size:13px;color:#999;line-height:1.6;">
+              <p style="margin:0 0 ${cancelUrl ? "16px" : "0"};font-size:13px;color:#999;line-height:1.6;">
                 The calendar invite is attached. Add it to your calendar and you're done.
               </p>
+              ${cancelUrl ? `
+              <p style="margin:0;font-size:12px;color:#bbb;line-height:1.6;">
+                Changed your plans? <a href="${cancelUrl}" style="color:#888;font-weight:600;">Cancel your booking</a> so someone else can jump in.
+              </p>` : ""}
             </td>
           </tr>
 
@@ -402,6 +408,7 @@ export async function sendBookingConfirmation({
   startsAt,
   endsAt,
   timezone = "UTC",
+  cancelUrl,
 }: {
   bookingId:   string;
   bookerName:  string;
@@ -411,6 +418,7 @@ export async function sendBookingConfirmation({
   startsAt:    string;
   endsAt:      string;
   timezone?:   string;
+  cancelUrl?:  string;
 }) {
   const icsContent = buildICS({
     uid:         bookingId,
@@ -427,7 +435,7 @@ export async function sendBookingConfirmation({
     from:    "Book One Thing <bookings@bookonething.com>",
     to:      bookerEmail,
     subject: `You're booked — ${thingName}`,
-    html:    buildConfirmationHTML({ bookerName, thingName, orgName, startsAt, endsAt }),
+    html:    buildConfirmationHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl }),
     attachments: [{
       filename: "booking.ics",
       content:  Buffer.from(icsContent).toString("base64"),
@@ -662,6 +670,179 @@ export async function sendOwnerWelcome({
       availStart, availEnd, availWeekends,
       maxLengthMins, bookAheadDays, maxConcurrent,
     }),
+  });
+}
+
+// ─── REMINDER EMAIL ──────────────────────────────────────────────────────────
+
+export function buildReminderHTML({
+  bookerName,
+  thingName,
+  orgName,
+  startsAt,
+  endsAt,
+  cancelUrl,
+  reminderNote,
+}: {
+  bookerName:    string;
+  thingName:     string;
+  orgName:       string;
+  startsAt:      string;
+  endsAt:        string;
+  cancelUrl:     string;
+  reminderNote?: string;
+}): string {
+  const timeRange = `${fmtTime(startsAt)} – ${fmtTime(endsAt)}`;
+  const dateStr   = fmtDate(startsAt);
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<title>Reminder</title>
+</head>
+<body style="margin:0;padding:0;background:#e8e5e0;font-family:${SYS};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#e8e5e0;padding:48px 24px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
+
+          <!-- Logo -->
+          <tr>
+            <td style="padding-bottom:28px;">
+              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+
+              <p style="margin:0 0 6px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
+                See you tomorrow, ${bookerName}.
+              </p>
+              ${orgName ? `<p style="margin:0 0 24px;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;">${orgName}</p>` : `<div style="margin-bottom:24px;"></div>`}
+
+              <!-- Detail block -->
+              <table width="100%" cellpadding="0" cellspacing="0"
+                style="background:#fdf4ee;border-radius:14px;padding:18px 20px;margin-bottom:28px;">
+                <tr>
+                  <td style="padding:0 0 10px;">
+                    <table cellpadding="0" cellspacing="0"><tr>
+                      <td style="width:20px;height:20px;background:${ORANGE};border-radius:50%;text-align:center;vertical-align:middle;">
+                        <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="3"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
+                      </td>
+                      <td style="padding-left:10px;font-size:15px;font-weight:700;color:${DARK};">${thingName}</td>
+                    </tr></table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:0 0 10px;">
+                    <table cellpadding="0" cellspacing="0"><tr>
+                      <td style="width:20px;height:20px;background:${ORANGE};border-radius:50%;text-align:center;vertical-align:middle;">
+                        <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="3"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
+                      </td>
+                      <td style="padding-left:10px;font-size:15px;font-weight:700;color:${DARK};">${timeRange}</td>
+                    </tr></table>
+                  </td>
+                </tr>
+                <tr>
+                  <td${reminderNote ? ' style="padding:0 0 10px;"' : ""}>
+                    <table cellpadding="0" cellspacing="0"><tr>
+                      <td style="width:20px;height:20px;background:${ORANGE};border-radius:50%;text-align:center;vertical-align:middle;">
+                        <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="3"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
+                      </td>
+                      <td style="padding-left:10px;font-size:15px;font-weight:700;color:${DARK};">${dateStr}</td>
+                    </tr></table>
+                  </td>
+                </tr>
+                ${reminderNote ? `
+                <tr>
+                  <td>
+                    <table cellpadding="0" cellspacing="0"><tr>
+                      <td style="width:20px;height:20px;"></td>
+                      <td style="padding-left:10px;font-size:13px;color:#888;font-style:italic;">${reminderNote}</td>
+                    </tr></table>
+                  </td>
+                </tr>` : ""}
+              </table>
+
+              <!-- Body -->
+              <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
+                It's all ready, unless you're not...
+              </p>
+
+              <!-- Cancel CTA -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+                <tr>
+                  <td align="center">
+                    <a href="${cancelUrl}"
+                       style="display:inline-block;background:${DARK};color:#fff;text-decoration:none;font-size:15px;font-weight:700;padding:16px 40px;border-radius:14px;letter-spacing:-0.2px;">
+                      Cancel my booking
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 24px;font-size:12px;color:#bbb;text-align:center;line-height:1.6;">
+                Please cancel if you don't need it. Someone else can jump in.
+              </p>
+
+              <!-- Footer note -->
+              <p style="margin:0 0 16px;font-size:12px;color:#bbb;line-height:1.6;">
+                Got questions? <a href="https://bookonething.com/faq" style="color:#888;">Check the FAQs.</a>
+              </p>
+              <p style="margin:0;font-size:13px;font-weight:700;color:${DARK};">
+                All set. Let's book some things.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
+              BookOneThing | The easy way to share anything with anyone.
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendReminderEmail({
+  bookerName,
+  bookerEmail,
+  thingName,
+  orgName,
+  startsAt,
+  endsAt,
+  cancelUrl,
+  reminderNote,
+}: {
+  bookerName:    string;
+  bookerEmail:   string;
+  thingName:     string;
+  orgName:       string;
+  startsAt:      string;
+  endsAt:        string;
+  cancelUrl:     string;
+  reminderNote?: string;
+}) {
+  const timeStr  = fmtTime(startsAt);
+  const noteTag  = reminderNote ? ` — ${reminderNote}` : "";
+
+  await resend.emails.send({
+    from:    "Book One Thing <bookings@bookonething.com>",
+    to:      bookerEmail,
+    subject: `Reminder: ${thingName}${noteTag} — tomorrow at ${timeStr}`,
+    html:    buildReminderHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl, reminderNote }),
   });
 }
 
