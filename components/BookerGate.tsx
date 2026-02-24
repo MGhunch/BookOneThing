@@ -58,11 +58,20 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
       {!sent ? (
         <>
           <div style={{ marginBottom: "20px" }}>
-            <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "6px" }}>
-              Hello
+            <div style={{
+              width: 48, height: 48, borderRadius: 14,
+              background: ORANGE,
+              display: "flex", alignItems: "center", justifyContent: "center",
+              marginBottom: 20,
+            }}>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 4V2"/><path d="M15 16v-2"/><path d="M8 9h2"/><path d="M20 9h2"/>
+                <path d="M17.8 11.8 19 13"/><path d="M15 9h.01"/><path d="M17.8 6.2 19 5"/>
+                <path d="m3 21 9-9"/><path d="M12.2 6.2 11 5"/>
+              </svg>
             </div>
-            <div style={{ fontSize: "13px", color: "#aaa", lineHeight: 1.6 }}>
-              Pop in your email to get started.
+            <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", lineHeight: 1.25, marginBottom: "20px" }}>
+              Grab your <span style={{ color: ORANGE }}>magic link</span> and we'll stay out of your way
             </div>
           </div>
 
@@ -109,7 +118,7 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
           </button>
 
           <div style={{ textAlign: "center", fontSize: "12px", color: "#ccc" }}>
-            We'll send you a link. No password needed.
+            No pesky passwords, ever.
           </div>
         </>
       ) : (
@@ -120,16 +129,15 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
             display: "flex", alignItems: "center", justifyContent: "center",
             margin: "0 auto 20px",
           }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="4" width="20" height="16" rx="3"/>
-              <polyline points="2,4 12,14 22,4"/>
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3,11 8,17 19,5"/>
             </svg>
           </div>
           <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "10px" }}>
-            Check your email.
+            On its way
           </div>
-          <div style={{ fontSize: "14px", color: "#aaa", lineHeight: 1.6, maxWidth: "280px", margin: "0 auto" }}>
-            Tap the link and you're in.
+          <div style={{ fontSize: "14px", color: "#aaa", lineHeight: 1.65, maxWidth: "240px", margin: "0 auto" }}>
+            Click the link in your email and you're cooking
           </div>
         </div>
       )}
