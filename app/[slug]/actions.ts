@@ -21,7 +21,7 @@ function extractOrgName(profiles: unknown): string {
 }
 
 export type BookingResult =
-  | { ok: true }
+  | { ok: true; bookingId: string; cancelToken: string }
   | { error: string };
 
 export async function createBooking({
@@ -34,8 +34,8 @@ export async function createBooking({
   thingId:     string;
   bookerName:  string;
   bookerEmail: string;
-  startsAt:    string; // ISO string
-  endsAt:      string; // ISO string
+  startsAt:    string;
+  endsAt:      string;
 }): Promise<BookingResult> {
   const supabase = adminClient();
 
@@ -48,11 +48,10 @@ export async function createBooking({
       starts_at:    startsAt,
       ends_at:      endsAt,
     })
-    .select("id")
+    .select("id, cancel_token")
     .single();
 
   if (error) {
-    // Exclusion constraint violation — slot taken
     if (error.code === "23P01") {
       return { error: "Sorry, that slot was just taken. Pick another time." };
     }
@@ -60,7 +59,7 @@ export async function createBooking({
     return { error: "Something went wrong. Please try again." };
   }
 
-  // Fetch thing + org name for the email (non-blocking — don't fail the booking if email fails)
+  // Fetch thing + org name for the email (non-blocking)
   try {
     const { data: thing } = await supabase
       .from("things")
@@ -68,6 +67,7 @@ export async function createBooking({
       .eq("id", thingId)
       .single();
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bookonething.com";
     await sendBookingConfirmation({
       bookingId:   booking.id,
       bookerName:  bookerName.trim(),
@@ -77,13 +77,13 @@ export async function createBooking({
       startsAt,
       endsAt,
       timezone:    thing?.timezone ?? "UTC",
+      cancelUrl:   `${appUrl}/cancel?token=${booking.cancel_token}`,
     });
   } catch (emailErr) {
-    // Log but don't surface to the user — booking succeeded
     console.error("Confirmation email failed:", emailErr);
   }
 
-  return { ok: true };
+  return { ok: true, bookingId: booking.id, cancelToken: booking.cancel_token };
 }
 
 export async function cancelBooking(bookingId: string): Promise<BookingResult> {
@@ -126,6 +126,33 @@ export async function cancelBooking(bookingId: string): Promise<BookingResult> {
     } catch (emailErr) {
       console.error("Cancellation email failed:", emailErr);
     }
+  }
+
+  return { ok: true };
+}
+
+export async function setReminderPreference({
+  bookingId,
+  optIn,
+  note,
+}: {
+  bookingId: string;
+  optIn:     boolean;
+  note?:     string;
+}): Promise<{ ok: true } | { error: string }> {
+  const supabase = adminClient();
+
+  const { error } = await supabase
+    .from("bookings")
+    .update({
+      reminder_opt_in: optIn,
+      reminder_note:   note?.trim() || null,
+    })
+    .eq("id", bookingId);
+
+  if (error) {
+    console.error("Reminder preference failed:", error);
+    return { error: "Couldn't save that. Please try again." };
   }
 
   return { ok: true };
