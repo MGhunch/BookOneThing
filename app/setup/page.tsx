@@ -90,7 +90,7 @@ function Field({ label, explainer, children }: { label: string; explainer?: stri
 function OrangeBlock({ n }: { n: number }) {
   return (
     <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: ORANGE, borderRadius: "8px", width: "32px", height: "32px", marginBottom: "16px" }}>
-      <span style={{ fontSize: "13px", fontWeight: 800, color: "#fff", fontFamily: SYS, letterSpacing: "-0.5px" }}>0{n}</span>
+      <span style={{ fontSize: "13px", fontWeight: 500, color: "#fff", fontFamily: SYS, letterSpacing: "-0.5px" }}>0{n}</span>
     </div>
   );
 }
@@ -114,7 +114,7 @@ function DetailsModal({ name, onSubmit, loading, error }: {
     <ModalShell>
       <div style={{ marginBottom: "28px" }}>
         <div style={{ fontSize: "22px", fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, marginBottom: "8px" }}>
-          One more thing...
+          One more thing
         </div>
         <div style={{ fontSize: "14px", color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
           We know all about your thing, but we don't know you yet.
@@ -168,14 +168,14 @@ function DetailsModal({ name, onSubmit, loading, error }: {
         disabled={!canSubmit}
         style={{
           width: "100%", padding: "16px", borderRadius: "13px", border: "none",
-          background: canSubmit ? ORANGE : "#dedad4",
+          background: canSubmit ? ORANGE : "#f0ece6",
           color: canSubmit ? "#fff" : "#bbb",
           fontSize: "15px", fontWeight: 700, fontFamily: SYS,
           cursor: canSubmit ? "pointer" : "default",
           letterSpacing: "-0.3px", transition: "all 0.2s",
         }}
       >
-        {loading ? "Sending your link…" : canSubmit ? `Set up "${name}"` : "Fill in your details"}
+        {loading ? "Sending your link…" : canSubmit ? "Get your link" : "Fill in your details"}
       </button>
     </ModalShell>
   );
@@ -188,11 +188,22 @@ function SentModal({ name }: { name: string }) {
         <Check size={24} strokeWidth={2.5} color="#fff" />
       </div>
       <div style={{ fontSize: "26px", fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.2, marginBottom: "10px" }}>
-        {name} is live.
+        &ldquo;{name}&rdquo; is live
       </div>
-      <div style={{ fontSize: "15px", color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
+      <div style={{ fontSize: "15px", color: GREY, fontFamily: SYS, lineHeight: 1.6, marginBottom: "28px" }}>
         Start booking now. We'll flick you a link to share.
       </div>
+      <button
+        onClick={() => window.location.href = "/"}
+        style={{
+          width: "100%", padding: "16px", borderRadius: "13px", border: "none",
+          background: ORANGE, color: "#fff",
+          fontSize: "15px", fontWeight: 700, fontFamily: SYS,
+          cursor: "pointer", letterSpacing: "-0.3px",
+        }}
+      >
+        Dive in
+      </button>
     </ModalShell>
   );
 }
@@ -365,7 +376,7 @@ export default function SetupPage() {
               <>
                 <OrangeBlock n={1} />
                 <div style={{ fontSize: "28px", fontWeight: 800, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, fontFamily: SYS, marginBottom: "8px" }}>
-                  What are you sharing?
+                  What are you sharing
                 </div>
                 <div style={{ fontSize: "15px", color: GREY, fontFamily: SYS, fontWeight: 400, marginBottom: "36px" }}>
                   It only takes a minute to set up your thing.
@@ -391,7 +402,7 @@ export default function SetupPage() {
                     />
                   </Field>
 
-                  <Field label="Choose an icon." explainer="To help you remember which thing is which.">
+                  <Field label="Choose an icon" explainer="To help you remember which thing is which.">
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: "8px" }}>
                       {ICONS.map(({ key, Icon }) => {
                         const active = icon === key;
@@ -459,7 +470,7 @@ export default function SetupPage() {
                     )}
                   </Field>
 
-                  <Field label="Stuff people need to know." explainer="Any special rules or quirks.">
+                  <Field label="Stuff people need to know" explainer="Any special rules or quirks?">
                     <textarea
                       value={notes}
                       onChange={e => setNotes(e.target.value)}
@@ -490,14 +501,14 @@ export default function SetupPage() {
                   style={{
                     width: "100%", marginTop: "40px", padding: "18px",
                     borderRadius: "14px", border: "none",
-                    background: canFlip ? ORANGE : "#dedad4",
+                    background: canFlip ? ORANGE : "#f0ece6",
                     color: canFlip ? "#fff" : "#bbb",
                     fontSize: "16px", fontWeight: 700, fontFamily: SYS,
                     cursor: canFlip ? "pointer" : "default",
                     letterSpacing: "-0.3px", transition: "all 0.2s",
                   }}
                 >
-                  Next up. Make some rules.
+                  Let's set some rules
                 </button>
               </>
             )}
@@ -507,7 +518,7 @@ export default function SetupPage() {
               <>
                 <OrangeBlock n={2} />
                 <div style={{ fontSize: "28px", fontWeight: 800, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, fontFamily: SYS, marginBottom: "8px" }}>
-                  How will you share it?
+                  How will you share it
                 </div>
                 <div style={{ fontSize: "15px", color: GREY, fontFamily: SYS, fontWeight: 400, marginBottom: "36px" }}>
                   Simple rules to make it fair for everyone.
@@ -559,7 +570,7 @@ export default function SetupPage() {
                     cursor: "pointer", letterSpacing: "-0.3px",
                   }}
                 >
-                  Create {trimmed}
+                  {`Set up "${trimmed}"`}
                 </button>
 
 
