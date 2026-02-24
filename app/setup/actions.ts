@@ -55,6 +55,7 @@ export type SetupFormData = {
   fromH: number;
   toH: number;
   weekends: boolean;
+  timezone: string;
   notes: string;
   maxLen: string;
   ahead: string;
@@ -82,6 +83,7 @@ export async function submitSetup(data: SetupFormData) {
       avail_start:     start,
       avail_end:       end,
       avail_weekends:  data.weekends,
+      timezone:        data.timezone || "UTC",
       max_length_mins: maxLengthMins(data.maxLen),
       book_ahead_days: bookAheadDays(data.ahead),
       max_concurrent:  maxConcurrent(data.concurrent),
