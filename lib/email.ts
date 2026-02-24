@@ -13,6 +13,20 @@ function icsDate(iso: string): string {
   return iso.replace(/[-:]/g, "").replace(/\.\d{3}/, "");
 }
 
+function icsDateLocal(iso: string, timezone: string): string {
+  // Format for TZID: 20260224T090000 (no Z — local time in the named zone)
+  const d = new Date(iso);
+  const fmt = new Intl.DateTimeFormat("en-CA", {
+    timeZone: timezone,
+    year: "numeric", month: "2-digit", day: "2-digit",
+    hour: "2-digit", minute: "2-digit", second: "2-digit",
+    hour12: false,
+  });
+  const parts = fmt.formatToParts(d);
+  const p = (type: string) => parts.find(x => x.type === type)?.value ?? "00";
+  return `${p("year")}${p("month")}${p("day")}T${p("hour")}${p("minute")}${p("second")}`;
+}
+
 function buildICS({
   uid,
   summary,
@@ -21,6 +35,7 @@ function buildICS({
   endsAt,
   bookerEmail,
   bookerName,
+  timezone = "UTC",
 }: {
   uid:         string;
   summary:     string;
@@ -29,8 +44,16 @@ function buildICS({
   endsAt:      string;
   bookerEmail: string;
   bookerName:  string;
+  timezone?:   string;
 }): string {
-  const now = icsDate(new Date().toISOString());
+  const now      = icsDate(new Date().toISOString());
+  const dtStart  = timezone === "UTC"
+    ? `DTSTART:${icsDate(startsAt)}`
+    : `DTSTART;TZID=${timezone}:${icsDateLocal(startsAt, timezone)}`;
+  const dtEnd    = timezone === "UTC"
+    ? `DTEND:${icsDate(endsAt)}`
+    : `DTEND;TZID=${timezone}:${icsDateLocal(endsAt, timezone)}`;
+
   return [
     "BEGIN:VCALENDAR",
     "VERSION:2.0",
@@ -40,10 +63,11 @@ function buildICS({
     "BEGIN:VEVENT",
     `UID:${uid}@bookonething.com`,
     `DTSTAMP:${now}`,
-    `DTSTART:${icsDate(startsAt)}`,
-    `DTEND:${icsDate(endsAt)}`,
+    dtStart,
+    dtEnd,
     `SUMMARY:${summary}`,
     `DESCRIPTION:${description}`,
+    `ORGANIZER;CN=Book One Thing:mailto:bookings@bookonething.com`,
     `ATTENDEE;CN=${bookerName}:mailto:${bookerEmail}`,
     "STATUS:CONFIRMED",
     "END:VEVENT",
@@ -377,14 +401,16 @@ export async function sendBookingConfirmation({
   orgName,
   startsAt,
   endsAt,
+  timezone = "UTC",
 }: {
-  bookingId:  string;
-  bookerName: string;
+  bookingId:   string;
+  bookerName:  string;
   bookerEmail: string;
-  thingName:  string;
-  orgName:    string;
-  startsAt:   string;
-  endsAt:     string;
+  thingName:   string;
+  orgName:     string;
+  startsAt:    string;
+  endsAt:      string;
+  timezone?:   string;
 }) {
   const icsContent = buildICS({
     uid:         bookingId,
@@ -394,6 +420,7 @@ export async function sendBookingConfirmation({
     endsAt,
     bookerEmail,
     bookerName,
+    timezone,
   });
 
   await resend.emails.send({
@@ -428,6 +455,213 @@ export async function sendCancellationConfirmation({
     to:      bookerEmail,
     subject: `Booking cancelled — ${thingName}`,
     html:    buildCancellationHTML({ bookerName, thingName, orgName, startsAt, endsAt }),
+  });
+}
+
+// ─── OWNER WELCOME (thing live) ──────────────────────────────────────────────
+
+function fmtAvailTime(t: string): string {
+  // "09:00" → "9am", "17:30" → "5:30pm"
+  const [hStr, mStr] = t.split(":");
+  const h = parseInt(hStr);
+  const m = parseInt(mStr);
+  const suffix = h < 12 ? "am" : "pm";
+  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
+  return m === 0 ? `${h12}${suffix}` : `${h12}:${String(m).padStart(2,"0")}${suffix}`;
+}
+
+function fmtMaxLength(mins: number): string {
+  if (mins >= 99999) return "No limit";
+  if (mins >= 480) return "Full day";
+  if (mins >= 240) return "Half day";
+  if (mins >= 60) return `${mins / 60} hour${mins / 60 === 1 ? "" : "s"}`;
+  return `${mins} mins`;
+}
+
+function fmtBookAhead(days: number): string {
+  if (days >= 99999) return "Any time";
+  if (days >= 365) return "Up to 1 year";
+  if (days >= 180) return "Up to 6 months";
+  if (days >= 90)  return "Up to 3 months";
+  if (days >= 60)  return "Up to 2 months";
+  if (days >= 30)  return "Up to 1 month";
+  if (days >= 14)  return "Up to 2 weeks";
+  return `Up to ${days} days`;
+}
+
+export function buildOwnerWelcomeHTML({
+  firstName,
+  thingName,
+  shareUrl,
+  availStart,
+  availEnd,
+  availWeekends,
+  maxLengthMins,
+  bookAheadDays,
+  maxConcurrent,
+}: {
+  firstName:     string;
+  thingName:     string;
+  shareUrl:      string;
+  availStart:    string;
+  availEnd:      string;
+  availWeekends: boolean;
+  maxLengthMins: number;
+  bookAheadDays: number;
+  maxConcurrent: number;
+}): string {
+  const availability = `${fmtAvailTime(availStart)} – ${fmtAvailTime(availEnd)}${availWeekends ? ", 7 days" : ", weekdays"}`;
+  const maxLen       = fmtMaxLength(maxLengthMins);
+  const bookAhead    = fmtBookAhead(bookAheadDays);
+
+  // mailto for the pre-popped share button
+  const mailSubject = encodeURIComponent(`Book ${thingName} here.`);
+  const mailBody    = encodeURIComponent(`Hey there,\n\n${firstName} has set up ${thingName} ready to book.\n\n> ${shareUrl}\n\nJust pop in your email. Click the link. And you're in.\nNo passwords. No fuss.\n\nTry it. Go book some things.`);
+  const mailtoHref  = `mailto:?subject=${mailSubject}&body=${mailBody}`;
+
+  const faqUrl = "https://bookonething.com/faq";
+
+  const row = (label: string, value: string) => `
+    <tr>
+      <td style="padding:9px 0;border-bottom:1px solid #ede9e3;font-size:13px;font-weight:600;color:#1a1a1a;width:50%;">${label}</td>
+      <td style="padding:9px 0;border-bottom:1px solid #ede9e3;font-size:13px;color:#666;">${value}</td>
+    </tr>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<title>Here's your link to share</title>
+</head>
+<body style="margin:0;padding:0;background:#e8e5e0;font-family:${SYS};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#e8e5e0;padding:48px 24px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
+
+          <!-- Logo -->
+          <tr>
+            <td style="padding-bottom:28px;">
+              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+
+              <!-- Headline -->
+              <p style="margin:0 0 6px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
+                ${thingName} is live.
+              </p>
+              <p style="margin:0 0 28px;font-size:15px;color:#888;line-height:1.6;">
+                Hey ${firstName} — you're all set up. Nice.
+              </p>
+
+              <!-- Share link hero -->
+              <table width="100%" cellpadding="0" cellspacing="0"
+                style="background:#fdf4ee;border-radius:14px;padding:20px 22px;margin-bottom:10px;">
+                <tr>
+                  <td>
+                    <p style="margin:0 0 10px;font-size:13px;color:#888;line-height:1.5;">
+                      Here's where you'll find it:
+                    </p>
+                    <p style="margin:0 0 16px;font-size:14px;font-weight:700;color:${DARK};word-break:break-all;">
+                      ${shareUrl}
+                    </p>
+                    <p style="margin:0 0 14px;font-size:13px;color:#888;">
+                      Share the link with your team.
+                    </p>
+                    <a href="${shareUrl}"
+                       style="display:inline-block;background:${ORANGE};color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:13px 28px;border-radius:12px;letter-spacing:-0.2px;">
+                      Go book some things
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Pre-popped share email -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+                <tr>
+                  <td align="center" style="padding-top:8px;">
+                    <a href="${mailtoHref}"
+                       style="font-size:13px;color:#888;text-decoration:none;font-weight:600;">
+                      ✉︎ &nbsp;Share with your team
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Setup summary — icon + name header -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+                ${row("Available", availability)}
+                ${row("Max booking length", maxLen)}
+                ${row("Book ahead", bookAhead)}
+                ${row("Bookings per person", `Up to ${maxConcurrent} at a time`)}
+              </table>
+
+              <!-- Footer note -->
+              <p style="margin:0 0 16px;font-size:12px;color:#bbb;line-height:1.6;">
+                Got questions? <a href="${faqUrl}" style="color:#888;">Check the FAQs.</a>
+              </p>
+
+              <!-- Sign-off -->
+              <p style="margin:0;font-size:13px;font-weight:700;color:${DARK};">
+                All set. Let's book some things.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
+              BookOneThing | The easy way to share anything with anyone.
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendOwnerWelcome({
+  firstName,
+  toEmail,
+  thingName,
+  shareUrl,
+  availStart,
+  availEnd,
+  availWeekends,
+  maxLengthMins,
+  bookAheadDays,
+  maxConcurrent,
+}: {
+  firstName:     string;
+  toEmail:       string;
+  thingName:     string;
+  shareUrl:      string;
+  availStart:    string;
+  availEnd:      string;
+  availWeekends: boolean;
+  maxLengthMins: number;
+  bookAheadDays: number;
+  maxConcurrent: number;
+}) {
+  await resend.emails.send({
+    from:    "Book One Thing <bookings@bookonething.com>",
+    to:      toEmail,
+    subject: `${thingName} is ready to book.`,
+    html:    buildOwnerWelcomeHTML({
+      firstName, thingName, shareUrl,
+      availStart, availEnd, availWeekends,
+      maxLengthMins, bookAheadDays, maxConcurrent,
+    }),
   });
 }
 
