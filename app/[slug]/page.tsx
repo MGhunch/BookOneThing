@@ -23,6 +23,7 @@ export default async function BookerPage({
   const orgName: string = (thing.profiles as { org_name: string | null })?.org_name ?? "";
 
   const from = new Date();
+  from.setDate(from.getDate() - 1);
   from.setHours(0, 0, 0, 0);
   const to = new Date(from);
   to.setDate(to.getDate() + 60);
