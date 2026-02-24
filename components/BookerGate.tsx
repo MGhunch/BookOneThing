@@ -37,7 +37,6 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
       thingId,
       thingName,
       slug,
-      origin: window.location.origin,
     });
 
     setSubmitting(false);
