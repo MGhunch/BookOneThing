@@ -17,26 +17,40 @@ export type GateResult =
 
 export async function sendGateMagicLink({
   email,
-  firstName,
   thingId,
   thingName,
   slug,
 }: {
   email:     string;
-  firstName: string;
   thingId:   string;
   thingName: string;
   slug:      string;
 }): Promise<GateResult> {
   const supabase = adminClient();
+  const cleanEmail = email.trim().toLowerCase();
+
+  // Check if we already know this booker's name from a previous booking
+  const { data: existingBooking } = await supabase
+    .from("bookings")
+    .select("booker_name")
+    .eq("booker_email", cleanEmail)
+    .is("cancelled_at", null)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  // Use first word of their name if we have it, otherwise fall back to "there"
+  const firstName = existingBooking?.booker_name
+    ? existingBooking.booker_name.trim().split(" ")[0]
+    : "there";
 
   // Generate a secure random token
   const token = crypto.randomBytes(32).toString("hex");
-  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString(); // 1 hour
+  const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
   const { error } = await supabase.from("booker_sessions").insert({
-    email:      email.trim().toLowerCase(),
-    first_name: firstName.trim(),
+    email:      cleanEmail,
+    first_name: firstName,
     thing_id:   thingId,
     slug,
     token,
@@ -53,14 +67,13 @@ export async function sendGateMagicLink({
 
   try {
     await sendBookerMagicLink({
-      firstName: firstName.trim(),
-      toEmail:   email.trim().toLowerCase(),
+      firstName,
+      toEmail:   cleanEmail,
       thingName,
       magicLink,
     });
   } catch (emailErr) {
     console.error("Magic link email failed:", emailErr);
-    // Clean up the session if email failed
     await supabase.from("booker_sessions").delete().eq("token", token);
     return { error: "Couldn't send the email. Please try again." };
   }
