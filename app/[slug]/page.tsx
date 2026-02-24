@@ -43,20 +43,20 @@ export default async function BookerPage({
           align-items: center;
           justify-content: center;
           min-height: 100dvh;
-          padding: 90px 24px 70px;
+          padding: 72px 8px 40px;
         }
         .cal-arrow {
           display: none;
           flex-direction: column;
           align-items: center;
           justify-content: center;
-          width: 140px;
+          width: 72px;
           flex-shrink: 0;
           cursor: pointer;
           opacity: 0.18;
           transition: opacity 0.25s ease;
           text-decoration: none;
-          padding: 32px 16px;
+          padding: 32px 8px;
           border: none;
           background: none;
         }
@@ -71,7 +71,7 @@ export default async function BookerPage({
           .cal-arrow { display: flex; }
         }
         @media (min-width: 1080px) {
-          .cal-arrow { width: 180px; }
+          .cal-arrow { width: 100px; }
         }
       `}</style>
 
