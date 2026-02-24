@@ -67,7 +67,7 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
               Before you book…
             </div>
             <div style={{ fontSize: "13px", color: "#aaa", lineHeight: 1.6 }}>
-              We just need to know two things.
+              Just let us know who you are.
             </div>
           </div>
 
