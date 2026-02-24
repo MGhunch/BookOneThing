@@ -21,14 +21,12 @@ export async function sendGateMagicLink({
   thingId,
   thingName,
   slug,
-  origin,
 }: {
   email:     string;
   firstName: string;
   thingId:   string;
   thingName: string;
   slug:      string;
-  origin:    string;
 }): Promise<GateResult> {
   const supabase = adminClient();
 
@@ -50,7 +48,8 @@ export async function sendGateMagicLink({
     return { error: "Something went wrong. Please try again." };
   }
 
-  const magicLink = `${origin}/${slug}/auth?token=${token}`;
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bookonething.com";
+  const magicLink = `${appUrl}/${slug}/auth?token=${token}`;
 
   try {
     await sendBookerMagicLink({
