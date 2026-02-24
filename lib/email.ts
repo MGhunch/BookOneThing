@@ -276,6 +276,102 @@ export function buildCancellationHTML({
 </html>`;
 }
 
+// ─── BOOKER MAGIC LINK ───────────────────────────────────────────────────────
+
+export function buildMagicLinkHTML({
+  firstName,
+  thingName,
+  magicLink,
+}: {
+  firstName: string;
+  thingName: string;
+  magicLink: string;
+}): string {
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<title>Your link to ${thingName}</title>
+</head>
+<body style="margin:0;padding:0;background:#e8e5e0;font-family:${SYS};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#e8e5e0;padding:48px 24px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
+
+          <!-- Logo -->
+          <tr>
+            <td style="padding-bottom:28px;">
+              <img src="https://bookonething.com/Logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+
+              <p style="margin:0 0 8px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
+                Hey ${firstName}.
+              </p>
+              <p style="margin:0 0 28px;font-size:15px;color:#888;line-height:1.6;">
+                Here's your link to book <strong style="color:${DARK};">${thingName}</strong>. It expires in an hour.
+              </p>
+
+              <!-- CTA -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+                <tr>
+                  <td align="center">
+                    <a href="${magicLink}"
+                       style="display:inline-block;background:${ORANGE};color:#fff;text-decoration:none;font-size:15px;font-weight:700;padding:16px 40px;border-radius:14px;letter-spacing:-0.2px;">
+                      Open calendar →
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0;font-size:12px;color:#bbb;line-height:1.7;word-break:break-all;">
+                Or paste this into your browser:<br/>
+                <span style="color:#aaa;">${magicLink}</span>
+              </p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
+              Book One Thing · The simplest way to share a resource
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendBookerMagicLink({
+  firstName,
+  toEmail,
+  thingName,
+  magicLink,
+}: {
+  firstName:  string;
+  toEmail:    string;
+  thingName:  string;
+  magicLink:  string;
+}) {
+  await resend.emails.send({
+    from:    "Book One Thing <bookings@bookonething.com>",
+    to:      toEmail,
+    subject: `Your link to ${thingName}`,
+    html:    buildMagicLinkHTML({ firstName, thingName, magicLink }),
+  });
+}
+
 // ─── PUBLIC API ───────────────────────────────────────────────────────────────
 
 export async function sendBookingConfirmation({
