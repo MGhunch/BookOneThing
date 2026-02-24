@@ -430,3 +430,24 @@ export async function sendCancellationConfirmation({
     html:    buildCancellationHTML({ bookerName, thingName, orgName, startsAt, endsAt }),
   });
 }
+
+// ─── OWNER MAGIC LINK ────────────────────────────────────────────────────────
+
+export async function sendOwnerMagicLink({
+  firstName,
+  toEmail,
+  thingName,
+  magicLink,
+}: {
+  firstName: string;
+  toEmail:   string;
+  thingName: string;
+  magicLink: string;
+}) {
+  await resend.emails.send({
+    from:    "Book One Thing <bookings@bookonething.com>",
+    to:      toEmail,
+    subject: `Your link to set up ${thingName}`,
+    html:    buildMagicLinkHTML({ firstName, thingName, magicLink }),
+  });
+}
