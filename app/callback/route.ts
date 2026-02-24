@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { sendOwnerWelcome } from "@/lib/email";
 
 function adminClient() {
   return createClient(
@@ -72,6 +73,25 @@ export async function GET(request: NextRequest) {
       if (!thingError && thing) {
         // Clean up the pending row
         await supabase.from("pending_things").delete().eq("token", token);
+
+        // Send owner welcome email (non-blocking — don't fail the redirect if it errors)
+        try {
+          const shareUrl = `${origin}/${thing.slug}`;
+          await sendOwnerWelcome({
+            firstName:     pending.first_name,
+            toEmail:       pending.email,
+            thingName:     pending.name,
+            shareUrl,
+            availStart:    pending.avail_start,
+            availEnd:      pending.avail_end,
+            availWeekends: pending.avail_weekends,
+            maxLengthMins: pending.max_length_mins,
+            bookAheadDays: pending.book_ahead_days,
+            maxConcurrent: pending.max_concurrent,
+          });
+        } catch (emailErr) {
+          console.error("Owner welcome email failed:", emailErr);
+        }
 
         // Redirect to the live calendar
         return NextResponse.redirect(`${origin}/${thing.slug}`);
