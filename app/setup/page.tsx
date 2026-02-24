@@ -2,9 +2,52 @@
 
 import { useState } from "react";
 import {
-  Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check,
+  Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check, Clock,
 } from "lucide-react";
 import { submitSetup } from "./actions";
+
+// ─── TIMEZONE HELPERS ─────────────────────────────────────────────────────────
+
+const TZ_FRIENDLY: Record<string, string> = {
+  "Pacific/Auckland":    "New Zealand",
+  "Pacific/Chatham":     "Chatham Islands",
+  "Australia/Sydney":    "Sydney",
+  "Australia/Melbourne": "Melbourne",
+  "Australia/Brisbane":  "Brisbane",
+  "Australia/Perth":     "Perth",
+  "Australia/Adelaide":  "Adelaide",
+  "Asia/Tokyo":          "Tokyo",
+  "Asia/Singapore":      "Singapore",
+  "Asia/Hong_Kong":      "Hong Kong",
+  "Asia/Shanghai":       "China",
+  "Asia/Kolkata":        "India",
+  "Asia/Dubai":          "Dubai",
+  "Europe/London":       "London",
+  "Europe/Paris":        "Paris",
+  "Europe/Berlin":       "Berlin",
+  "Europe/Amsterdam":    "Amsterdam",
+  "Europe/Stockholm":    "Stockholm",
+  "Europe/Zurich":       "Zurich",
+  "America/New_York":    "New York",
+  "America/Chicago":     "Chicago",
+  "America/Denver":      "Denver",
+  "America/Los_Angeles": "Los Angeles",
+  "America/Toronto":     "Toronto",
+  "America/Vancouver":   "Vancouver",
+  "America/Sao_Paulo":   "São Paulo",
+  "America/Mexico_City": "Mexico City",
+  "UTC":                 "UTC",
+};
+
+const TZ_LIST = Object.entries(TZ_FRIENDLY).map(([iana, label]) => ({ iana, label }));
+
+function tzFriendly(iana: string): string {
+  return TZ_FRIENDLY[iana] ?? iana.replace(/_/g, " ").split("/").pop() ?? iana;
+}
+
+function detectTimezone(): string {
+  try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return "UTC"; }
+}
 import ModalShell from "@/components/ModalShell";
 
 const ORANGE       = "#e8722a";
@@ -274,6 +317,9 @@ export default function SetupPage() {
   const [fromH, setFromH]           = useState(9);
   const [toH, setToH]               = useState(17);
   const [weekends, setWeekends]     = useState(false);
+  const [timezone, setTimezone]     = useState(() => detectTimezone());
+  const [tzSearch, setTzSearch]     = useState("");
+  const [tzOpen, setTzOpen]         = useState(false);
   const [notes, setNotes]           = useState("");
   const [maxLen, setMaxLen]         = useState("120");
   const [ahead, setAhead]           = useState("1");
@@ -319,6 +365,7 @@ export default function SetupPage() {
       name: trimmed, icon: icon || "car",
       avail, fromH, toH, weekends, notes,
       maxLen, ahead, concurrent, buffer,
+      timezone,
       email, firstName,
     });
 
@@ -454,19 +501,73 @@ export default function SetupPage() {
                       </div>
                     )}
                     {avail !== "24" && (
-                      <button onClick={() => setWeekends(!weekends)}
-                        style={{ display: "flex", alignItems: "center", gap: "10px", marginTop: "16px", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: SYS }}>
-                        <div style={{
-                          width: "18px", height: "18px", borderRadius: "5px",
-                          border: weekends ? "none" : `1.5px solid ${BORDER}`,
-                          background: weekends ? ORANGE : "#f9f8f6",
-                          display: "flex", alignItems: "center", justifyContent: "center",
-                          flexShrink: 0, transition: "all 0.15s",
-                        }}>
-                          {weekends && <Check size={10} strokeWidth={3} color="#fff" />}
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "16px" }}>
+
+                        {/* Weekends checkbox */}
+                        <button onClick={() => setWeekends(!weekends)}
+                          style={{ display: "flex", alignItems: "center", gap: "10px", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: SYS }}>
+                          <div style={{
+                            width: "18px", height: "18px", borderRadius: "5px",
+                            border: weekends ? "none" : `1.5px solid ${BORDER}`,
+                            background: weekends ? ORANGE : "#f9f8f6",
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            flexShrink: 0, transition: "all 0.15s",
+                          }}>
+                            {weekends && <Check size={10} strokeWidth={3} color="#fff" />}
+                          </div>
+                          <span style={{ fontSize: "14px", fontWeight: 500, color: "#555" }}>Include weekends</span>
+                        </button>
+
+                        {/* Timezone */}
+                        <div style={{ position: "relative" }}>
+                          <button onClick={() => { setTzOpen(!tzOpen); setTzSearch(""); }}
+                            style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: SYS }}>
+                            <Clock size={13} color={GREY_LIGHT} strokeWidth={1.75} />
+                            <span style={{ fontSize: "13px", fontWeight: 500, color: GREY_LIGHT }}>{tzFriendly(timezone)}</span>
+                          </button>
+
+                          {tzOpen && (
+                            <div style={{
+                              position: "absolute", right: 0, top: "calc(100% + 8px)",
+                              background: CARD, borderRadius: "14px", padding: "10px 0",
+                              boxShadow: "0 4px 24px rgba(0,0,0,0.12)", zIndex: 100,
+                              minWidth: "200px",
+                            }}>
+                              <div style={{ padding: "0 12px 8px" }}>
+                                <input
+                                  autoFocus
+                                  value={tzSearch}
+                                  onChange={e => setTzSearch(e.target.value)}
+                                  placeholder="Search..."
+                                  style={{
+                                    width: "100%", padding: "8px 10px", borderRadius: "8px",
+                                    border: `1.5px solid ${BORDER}`, background: "#f9f8f6",
+                                    fontSize: "13px", fontFamily: SYS, outline: "none",
+                                    boxSizing: "border-box" as const,
+                                  }}
+                                />
+                              </div>
+                              <div style={{ maxHeight: "180px", overflowY: "auto" }}>
+                                {TZ_LIST
+                                  .filter(tz => tz.label.toLowerCase().includes(tzSearch.toLowerCase()))
+                                  .map(tz => (
+                                    <button key={tz.iana}
+                                      onClick={() => { setTimezone(tz.iana); setTzOpen(false); }}
+                                      style={{
+                                        display: "block", width: "100%", textAlign: "left",
+                                        padding: "9px 16px", background: tz.iana === timezone ? ORANGE_LIGHT : "none",
+                                        border: "none", cursor: "pointer", fontFamily: SYS,
+                                        fontSize: "13px", fontWeight: tz.iana === timezone ? 700 : 400,
+                                        color: tz.iana === timezone ? ORANGE : DARK,
+                                      }}>
+                                      {tz.label}
+                                    </button>
+                                  ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
-                        <span style={{ fontSize: "14px", fontWeight: 500, color: "#555" }}>Include weekends</span>
-                      </button>
+                      </div>
                     )}
                   </Field>
 
