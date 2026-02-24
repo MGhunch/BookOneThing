@@ -71,7 +71,7 @@ function fmtDate(iso: string): string {
 
 // ─── EMAIL HTML ───────────────────────────────────────────────────────────────
 
-function buildConfirmationHTML({
+export function buildConfirmationHTML({
   bookerName,
   thingName,
   orgName,
@@ -104,16 +104,7 @@ function buildConfirmationHTML({
           <!-- Logo -->
           <tr>
             <td style="padding-bottom:28px;">
-              <table cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background:${DARK};border-radius:10px;width:32px;height:32px;text-align:center;vertical-align:middle;">
-                    <div style="width:12px;height:12px;border-radius:50%;border:2.5px solid #fff;margin:auto;"></div>
-                  </td>
-                  <td style="padding-left:10px;font-size:18px;font-weight:800;color:${DARK};letter-spacing:-0.5px;">
-                    book<span style="font-weight:300;">one</span>thing
-                  </td>
-                </tr>
-              </table>
+              <img src="https://bookonething.com/Logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
             </td>
           </tr>
 
@@ -211,7 +202,7 @@ function buildConfirmationHTML({
 </html>`;
 }
 
-function buildCancellationHTML({
+export function buildCancellationHTML({
   bookerName,
   thingName,
   orgName,
@@ -244,16 +235,7 @@ function buildCancellationHTML({
           <!-- Logo -->
           <tr>
             <td style="padding-bottom:28px;">
-              <table cellpadding="0" cellspacing="0">
-                <tr>
-                  <td style="background:${DARK};border-radius:10px;width:32px;height:32px;text-align:center;vertical-align:middle;">
-                    <div style="width:12px;height:12px;border-radius:50%;border:2.5px solid #fff;margin:auto;"></div>
-                  </td>
-                  <td style="padding-left:10px;font-size:18px;font-weight:800;color:${DARK};letter-spacing:-0.5px;">
-                    book<span style="font-weight:300;">one</span>thing
-                  </td>
-                </tr>
-              </table>
+              <img src="https://bookonething.com/Logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
             </td>
           </tr>
 
