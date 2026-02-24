@@ -22,8 +22,8 @@ export default function Home() {
         <p style={{
           fontSize: "16px", color: "#888", lineHeight: 1.7, margin: 0, fontWeight: 400,
         }}>
-          Set up your thing. Share a link. Done.<br />
-          Anyone can book it. No sign ups. No fuss.
+          Just Set up your thing. Share a link. Done.<br />
+          Anyone can book it. No passwords. No fuss.
         </p>
       </div>
 
