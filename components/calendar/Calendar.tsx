@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Info, Car, Users, Coffee, Sun, X, Trash2 } from "lucide-react";
 import type { Thing, Booking } from "@/types";
-import { createBooking, cancelBooking } from "@/app/[slug]/actions";
+import { createBooking, cancelBooking, setReminderPreference } from "@/app/[slug]/actions";
 import ModalShell from "@/components/ModalShell";
 
 const ORANGE        = "#e8722a";
@@ -145,6 +145,10 @@ export default function Calendar({ thing, orgName, bookings, bookerSession }: Ca
   const [start, setStart]           = useState<string | null>(null);
   const [end, setEnd]               = useState<string | null>(null);
   const [confirmed, setConfirmed]     = useState(false);
+  const [confirmedBookingId, setConfirmedBookingId] = useState<string | null>(null);
+  const [reminderOptIn, setReminderOptIn] = useState(false);
+  const [reminderNote, setReminderNote]   = useState("");
+  const [reminderSaved, setReminderSaved] = useState(false);
   // Identity comes from the server-side session cookie (set by the magic link flow).
   // We keep local state so returning-device fallback (localStorage) can still populate them.
   const [bookerName, setBookerName]   = useState<string>(bookerSession?.firstName ?? "");
@@ -236,6 +240,7 @@ export default function Calendar({ thing, orgName, bookings, bookerSession }: Ca
   const reset = () => {
     if (seenTimer.current) clearTimeout(seenTimer.current);
     setPhase(S_IDLE); setStart(null); setEnd(null); setConfirmed(false);
+    setConfirmedBookingId(null); setReminderOptIn(false); setReminderNote(""); setReminderSaved(false);
   };
 
   const changeDay = (i: number) => { setSelectedDay(i); reset(); };
@@ -648,6 +653,7 @@ export default function Calendar({ thing, orgName, bookings, bookerSession }: Ca
                         localStorage.setItem("bookerName",  bookerName.trim());
                         localStorage.setItem("bookerEmail", bookerEmail.trim().toLowerCase());
                       }
+                      setConfirmedBookingId(result.bookingId);
                       setConfirmed(true);
                       router.refresh();
                     }}
@@ -674,8 +680,66 @@ export default function Calendar({ thing, orgName, bookings, bookerSession }: Ca
                 <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", marginBottom: "12px", letterSpacing: "-0.4px" }}>
                   All booked, {bookerSession ? bookerSession.firstName : bookerName}.
                 </div>
-                <div style={{ fontSize: "14px", color: "#bbb", lineHeight: 1.6 }}>
+                <div style={{ fontSize: "14px", color: "#bbb", lineHeight: 1.6, marginBottom: "24px" }}>
                   Check your email for a calendar invite.
+                </div>
+
+                {/* Reminder opt-in */}
+                <div style={{ borderTop: "1px solid #ede9e3", paddingTop: "20px", textAlign: "left" }}>
+                  <button
+                    onClick={async () => {
+                      const newOptIn = !reminderOptIn;
+                      setReminderOptIn(newOptIn);
+                      setReminderSaved(false);
+                      if (!newOptIn && confirmedBookingId) {
+                        await setReminderPreference({ bookingId: confirmedBookingId, optIn: false });
+                      }
+                    }}
+                    style={{ display: "flex", alignItems: "center", gap: "10px", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: SYS, width: "100%" }}
+                  >
+                    <div style={{
+                      width: "18px", height: "18px", borderRadius: "5px", flexShrink: 0,
+                      border: reminderOptIn ? "none" : "1.5px solid #ede9e3",
+                      background: reminderOptIn ? ORANGE : "#f9f8f6",
+                      display: "flex", alignItems: "center", justifyContent: "center",
+                      transition: "all 0.15s",
+                    }}>
+                      {reminderOptIn && <Check size={10} strokeWidth={3} color="#fff" />}
+                    </div>
+                    <span style={{ fontSize: "14px", fontWeight: 500, color: "#555" }}>Want a reminder?</span>
+                  </button>
+
+                  {reminderOptIn && (
+                    <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                      <input
+                        type="text"
+                        placeholder="Add a note (optional)"
+                        value={reminderNote}
+                        onChange={e => { setReminderNote(e.target.value); setReminderSaved(false); }}
+                        style={{
+                          width: "100%", padding: "12px 14px", borderRadius: "12px",
+                          border: "1.5px solid #ede9e3", fontSize: "14px", fontWeight: 400,
+                          fontFamily: SYS, color: "#1a1a1a", outline: "none",
+                          boxSizing: "border-box" as const, background: "#f9f8f6",
+                        }}
+                      />
+                      <button
+                        onClick={async () => {
+                          if (!confirmedBookingId) return;
+                          await setReminderPreference({ bookingId: confirmedBookingId, optIn: true, note: reminderNote });
+                          setReminderSaved(true);
+                        }}
+                        style={{
+                          width: "100%", padding: "12px", borderRadius: "12px", border: "none",
+                          background: reminderSaved ? "#1a9c5b" : DARK,
+                          fontSize: "13px", fontWeight: 600, color: "#fff",
+                          cursor: "pointer", fontFamily: SYS, transition: "background 0.2s",
+                        }}
+                      >
+                        {reminderSaved ? "Reminder saved ✓" : "Save reminder"}
+                      </button>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
