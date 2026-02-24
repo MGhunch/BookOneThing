@@ -11,9 +11,9 @@ interface BookerSession {
   firstName: string;
 }
 
-function readSession(): BookerSession | null {
+async function readSession(): Promise<BookerSession | null> {
   try {
-    const cookieStore = cookies();
+    const cookieStore = await cookies();
     const raw = cookieStore.get(SESSION_COOKIE)?.value;
     if (!raw) return null;
     const parsed = JSON.parse(raw);
@@ -60,7 +60,7 @@ export default async function BookerPage({
     .gte("starts_at", from.toISOString())
     .lte("starts_at", to.toISOString());
 
-  const session = readSession();
+  const session = await readSession();
 
   return (
     <>
