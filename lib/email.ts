@@ -104,7 +104,7 @@ export function buildConfirmationHTML({
           <!-- Logo -->
           <tr>
             <td style="padding-bottom:28px;">
-              <img src="https://bookonething.com/Logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
             </td>
           </tr>
 
@@ -190,7 +190,7 @@ export function buildConfirmationHTML({
           <!-- Footer -->
           <tr>
             <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
-              Book One Thing · The simplest way to share a resource
+              Book One Thing · The easy way to share anything with anyone.
             </td>
           </tr>
 
@@ -235,7 +235,7 @@ export function buildCancellationHTML({
           <!-- Logo -->
           <tr>
             <td style="padding-bottom:28px;">
-              <img src="https://bookonething.com/Logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
             </td>
           </tr>
 
@@ -264,7 +264,7 @@ export function buildCancellationHTML({
           <!-- Footer -->
           <tr>
             <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
-              Book One Thing · The simplest way to share a resource
+              Book One Thing · The easy way to share anything with anyone.
             </td>
           </tr>
 
@@ -304,7 +304,7 @@ export function buildMagicLinkHTML({
           <!-- Logo -->
           <tr>
             <td style="padding-bottom:28px;">
-              <img src="https://bookonething.com/Logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
             </td>
           </tr>
 
@@ -316,11 +316,11 @@ export function buildMagicLinkHTML({
                 Hey ${firstName}.
               </p>
               <p style="margin:0 0 28px;font-size:15px;color:#888;line-height:1.6;">
-                Here's your link to book <strong style="color:${DARK};">${thingName}</strong>. It expires in an hour.
+                You're nearly done. Click the link. Dive in.
               </p>
 
               <!-- CTA -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+              <table width="100%" cellpadding="0" cellspacing="0">
                 <tr>
                   <td align="center">
                     <a href="${magicLink}"
@@ -330,18 +330,13 @@ export function buildMagicLinkHTML({
                   </td>
                 </tr>
               </table>
-
-              <p style="margin:0;font-size:12px;color:#bbb;line-height:1.7;word-break:break-all;">
-                Or paste this into your browser:<br/>
-                <span style="color:#aaa;">${magicLink}</span>
-              </p>
             </td>
           </tr>
 
           <!-- Footer -->
           <tr>
             <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
-              Book One Thing · The simplest way to share a resource
+              Book One Thing · The easy way to share anything with anyone.
             </td>
           </tr>
 
