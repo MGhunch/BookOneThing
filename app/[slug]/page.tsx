@@ -1,6 +1,30 @@
 import { notFound } from "next/navigation";
+import { cookies } from "next/headers";
 import { createServerClient } from "@/lib/supabase";
 import Calendar from "@/components/calendar/Calendar";
+import BookerGate from "@/components/BookerGate";
+
+const SESSION_COOKIE = "bot_session";
+
+interface BookerSession {
+  email:     string;
+  firstName: string;
+}
+
+function readSession(): BookerSession | null {
+  try {
+    const cookieStore = cookies();
+    const raw = cookieStore.get(SESSION_COOKIE)?.value;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.email === "string" && typeof parsed.firstName === "string") {
+      return parsed as BookerSession;
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
 
 export default async function BookerPage({
   params,
@@ -35,6 +59,8 @@ export default async function BookerPage({
     .is("cancelled_at", null)
     .gte("starts_at", from.toISOString())
     .lte("starts_at", to.toISOString());
+
+  const session = readSession();
 
   return (
     <>
@@ -87,7 +113,12 @@ export default async function BookerPage({
 
         {/* Calendar hero */}
         <div className="cal-hero">
-          <Calendar thing={thing} orgName={orgName} bookings={bookings ?? []} />
+          <Calendar
+            thing={thing}
+            orgName={orgName}
+            bookings={bookings ?? []}
+            bookerSession={session}
+          />
         </div>
 
         {/* Right arrow */}
@@ -98,6 +129,15 @@ export default async function BookerPage({
         </a>
 
       </div>
+
+      {/* Gate — shown when no valid session cookie */}
+      {!session && (
+        <BookerGate
+          thingId={thing.id}
+          thingName={thing.name}
+          slug={slug}
+        />
+      )}
     </>
   );
 }
