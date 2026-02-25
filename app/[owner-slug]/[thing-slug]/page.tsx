@@ -1,6 +1,6 @@
 import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
-import { createServerClient } from "@/lib/supabase";
+import { createServiceClient } from "@/lib/supabase";
 import Calendar from "@/components/calendar/Calendar";
 import BookerGate from "@/components/BookerGate";
 import type { Thing } from "@/types";
@@ -33,7 +33,7 @@ export default async function BookerPage({
   params: Promise<{ "owner-slug": string; "thing-slug": string }>;
 }) {
   const { "owner-slug": ownerSlug, "thing-slug": thingSlug } = await params;
-  const supabase = createServerClient();
+  const supabase = createServiceClient();
 
   // ── Try the real thing first ──────────────────────────────────────────────
 
