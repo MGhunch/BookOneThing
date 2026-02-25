@@ -10,12 +10,14 @@ function adminClient() {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const code  = searchParams.get("code");
   const token = searchParams.get("token"); // our pending_things token
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bookonething.com";
+
   if (!code) {
-    return NextResponse.redirect(`${origin}/?error=no_code`);
+    return NextResponse.redirect(`${appUrl}/?error=no_code`);
   }
 
   const supabase = adminClient();
@@ -24,7 +26,7 @@ export async function GET(request: NextRequest) {
   const { data: sessionData, error: sessionError } = await supabase.auth.exchangeCodeForSession(code);
   if (sessionError || !sessionData.user) {
     console.error("Auth exchange failed:", sessionError);
-    return NextResponse.redirect(`${origin}/?error=auth_failed`);
+    return NextResponse.redirect(`${appUrl}/?error=auth_failed`);
   }
 
   const user = sessionData.user;
@@ -77,7 +79,7 @@ export async function GET(request: NextRequest) {
 
         // Send owner welcome email (non-blocking — don't fail the redirect if it errors)
         try {
-          const shareUrl = `${origin}/${thing.slug}`;
+          const shareUrl = `${appUrl}/${thing.slug}`;
           await sendOwnerWelcome({
             firstName:     pending.first_name,
             toEmail:       pending.email,
@@ -95,13 +97,13 @@ export async function GET(request: NextRequest) {
         }
 
         // Redirect to the live calendar
-        return NextResponse.redirect(`${origin}/${thing.slug}`);
+        return NextResponse.redirect(`${appUrl}/${thing.slug}`);
       }
     }
   }
 
   // Fallback — no pending thing, send to home
-  return NextResponse.redirect(`${origin}/`);
+  return NextResponse.redirect(`${appUrl}/`);
 }
 
 // If "the-car-park" is taken, try "the-car-park-2" etc.
