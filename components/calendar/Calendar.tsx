@@ -12,6 +12,7 @@ const ORANGE_BOOKED = "#f2c9a8";
 const ORANGE_AVAIL  = "#fdf4ee";
 const ORANGE_SOFT   = "#fbe0cc";
 const ORANGE_READY  = "#f0924a";
+const DARK = "#1a1a1a";
 const SYS = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
 
 const SLOT_H   = 36;
