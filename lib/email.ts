@@ -459,7 +459,7 @@ export async function sendCancellationConfirmation({
   endsAt:      string;
 }) {
   await resend.emails.send({
-    from:    "Book One Thing <bookings@bookonething.com>",
+    from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
     subject: `Booking cancelled — ${thingName}`,
     html:    buildCancellationHTML({ bookerName, thingName, orgName, startsAt, endsAt }),
