@@ -12,11 +12,13 @@ function adminClient() {
 }
 
 export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
+  const { searchParams } = new URL(request.url);
   const token = searchParams.get("token");
 
+  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bookonething.com";
+
   if (!token) {
-    return NextResponse.redirect(`${origin}/?error=no_token`);
+    return NextResponse.redirect(`${appUrl}/?error=no_token`);
   }
 
   const supabase = adminClient();
@@ -32,7 +34,7 @@ export async function GET(request: NextRequest) {
 
   if (error || !session) {
     // Token invalid, expired, or already used
-    return NextResponse.redirect(`${origin}/?error=invalid_link`);
+    return NextResponse.redirect(`${appUrl}/?error=invalid_link`);
   }
 
   // Mark the token as used
@@ -48,7 +50,7 @@ export async function GET(request: NextRequest) {
   });
 
   // Redirect to the calendar and set the session cookie
-  const redirectTo = `${origin}/${session.slug}`;
+  const redirectTo = `${appUrl}/${session.slug}`;
   const response = NextResponse.redirect(redirectTo);
 
   response.cookies.set(SESSION_COOKIE, cookieValue, {
