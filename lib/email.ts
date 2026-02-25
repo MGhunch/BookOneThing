@@ -921,15 +921,15 @@ export function buildCodewordHTML({
               <p style="margin:0 0 20px;font-size:15px;color:#888;line-height:1.6;">${greeting}</p>
 
               <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.6;">
-                Your codeword.
+                Here you go.
               </p>
 
               <!-- The codeword -->
               <table width="100%" cellpadding="0" cellspacing="0"
-                style="background:#1a1a1a;border-radius:16px;padding:24px;margin-bottom:24px;text-align:center;">
+                style="background:#e8722a;border-radius:16px;padding:24px;margin-bottom:24px;text-align:center;">
                 <tr>
                   <td align="center">
-                    <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#666;">Your codeword</p>
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:rgba(255,255,255,0.7);">Your codeword</p>
                     <p style="margin:0;font-size:42px;font-weight:800;color:#ffffff;letter-spacing:8px;font-family:${SYS};">${code}</p>
                   </td>
                 </tr>
