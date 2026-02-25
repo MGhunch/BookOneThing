@@ -141,7 +141,7 @@ export async function submitSetup(data: SetupFormData): Promise<SetupResult> {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://bookonething.com";
   const calUrl  = `${siteUrl}/${ownerSlug}/${thingSlug}`;
-  const redirectTo = `${siteUrl}/auth/callback?token=${pending.token}`;
+  const redirectTo = `${siteUrl}/callback?token=${pending.token}`;
 
   const { error: authError } = await supabase.auth.admin.generateLink({
     type:  "magiclink",
