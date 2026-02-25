@@ -34,7 +34,7 @@ export default function OurStoryPage() {
         color: DARK,
         marginBottom: "40px",
       }}>
-        A baby born<br />of frustration.
+        A baby born<br />of frustration
       </h1>
 
       {/* Story card */}
