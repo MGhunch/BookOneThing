@@ -12,7 +12,6 @@ const ORANGE_BOOKED = "#f2c9a8";
 const ORANGE_AVAIL  = "#fdf4ee";
 const ORANGE_SOFT   = "#fbe0cc";
 const ORANGE_READY  = "#f0924a";
-const DARK = "#1a1a1a";
 const SYS = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
 
 const SLOT_H   = 36;
@@ -556,6 +555,8 @@ export default function Calendar({ thing, orgName, bookings, bookerSession }: Ca
               </div>
             </div>
           </div>
+          {/* Fade at top of scroll */}
+          <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "32px", background: "linear-gradient(to top, transparent, rgba(255,255,255,0.98))", pointerEvents: "none" }} />
           {/* Fade at bottom of scroll */}
           <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "32px", background: "linear-gradient(to bottom, transparent, rgba(255,255,255,0.98))", pointerEvents: "none" }} />
         </div>
