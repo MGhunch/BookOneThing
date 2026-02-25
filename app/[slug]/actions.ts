@@ -1,7 +1,10 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { cookies } from "next/headers";
 import { sendBookingConfirmation, sendCancellationConfirmation } from "@/lib/email";
+
+const SESSION_COOKIE = "bot_session";
 
 function adminClient() {
   return createClient(
@@ -20,31 +23,51 @@ function extractOrgName(profiles: unknown): string {
   return (profiles as { org_name?: string | null })?.org_name ?? "";
 }
 
+// Read and validate the bot_session cookie server-side.
+// Returns the verified session, or null if missing/invalid.
+async function readSession(): Promise<{ email: string; firstName: string } | null> {
+  try {
+    const cookieStore = await cookies();
+    const raw = cookieStore.get(SESSION_COOKIE)?.value;
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    if (typeof parsed.email === "string" && typeof parsed.firstName === "string") {
+      return { email: parsed.email.trim().toLowerCase(), firstName: parsed.firstName.trim() };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export type BookingResult =
   | { ok: true; bookingId: string; cancelToken: string }
   | { error: string };
 
 export async function createBooking({
   thingId,
-  bookerName,
-  bookerEmail,
   startsAt,
   endsAt,
 }: {
-  thingId:     string;
-  bookerName:  string;
-  bookerEmail: string;
-  startsAt:    string;
-  endsAt:      string;
+  thingId:  string;
+  startsAt: string;
+  endsAt:   string;
 }): Promise<BookingResult> {
+  // Gate: must have a valid session cookie. We read identity server-side —
+  // the client has no say over who is making this booking.
+  const session = await readSession();
+  if (!session) {
+    return { error: "Click your magic link to book." };
+  }
+
   const supabase = adminClient();
 
   const { data: booking, error } = await supabase
     .from("bookings")
     .insert({
       thing_id:     thingId,
-      booker_name:  bookerName.trim(),
-      booker_email: bookerEmail.trim().toLowerCase(),
+      booker_name:  session.firstName,
+      booker_email: session.email,
       starts_at:    startsAt,
       ends_at:      endsAt,
     })
@@ -53,6 +76,8 @@ export async function createBooking({
 
   if (error) {
     if (error.code === "23P01") {
+      // Exclusion constraint violation — another booking beat us to it.
+      // The DB handles this atomically, so first-writer always wins.
       return { error: "Sorry, that slot was just taken. Pick another time." };
     }
     console.error("Booking insert failed:", error);
@@ -70,8 +95,8 @@ export async function createBooking({
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bookonething.com";
     await sendBookingConfirmation({
       bookingId:   booking.id,
-      bookerName:  bookerName.trim(),
-      bookerEmail: bookerEmail.trim().toLowerCase(),
+      bookerName:  session.firstName,
+      bookerEmail: session.email,
       thingName:   thing?.name ?? "your booking",
       orgName:     extractOrgName(thing?.profiles),
       startsAt,
