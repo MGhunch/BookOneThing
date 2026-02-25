@@ -1,8 +1,17 @@
 const ORANGE = "#e8722a";
 const DARK   = "#1a1a1a";
-const GREY   = "#888";
 const CARD   = "#ffffff";
 const SYS    = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+
+const PARAS = [
+  { text: "Small team. Twelve people. One meeting room.",                                                                                                          bold: true  },
+  { text: "You'd think there'd be an easy way to book it. But there wasn't. We got lost in the gap between Gmail and Outlook.",                                    bold: false },
+  { text: "Double bookings. Disappearing invites. Chaos.",                                                                                                         bold: true  },
+  { text: "So we asked the internet for help. No dice.",                                                                                                           bold: false },
+  { text: "Sure, there's stacks of different systems with thousands of features for hundreds of dollars. But no easy way to just book one thing.",                  bold: false },
+  { text: "So we made one.",                                                                                                                                        bold: true  },
+  { text: "Now anyone can book one thing.",                                                                                                                         bold: false },
+];
 
 export default function OurStoryPage() {
   return (
@@ -34,7 +43,7 @@ export default function OurStoryPage() {
         color: DARK,
         marginBottom: "40px",
       }}>
-        A baby born<br />of frustration
+        All we wanted to do<br />was book a room.
       </h1>
 
       {/* Story card */}
@@ -46,23 +55,15 @@ export default function OurStoryPage() {
         flexDirection: "column",
         gap: "18px",
       }}>
-        {[
-          "We couldn't find a way to book one thing. In our case it was a meeting room. Small office, a dozen people, one meeting room.",
-          "You'd think it would be straightforward. But no.",
-          "We were banging our heads on the wall between Gmail and Outlook. Nothing would sync or show up in the right places.",
-          "So we sat down and asked the internet.",
-          "Stacks of different systems with thousands of features for hundreds of dollars. Ridiculous.",
-          "So we gave up and made the thing we wanted.",
-          "We hope you find it useful to book one thing.",
-        ].map((para, i) => (
+        {PARAS.map((para, i) => (
           <p key={i} style={{
-            fontSize: i === 1 || i === 4 ? "15px" : "14px",
-            fontWeight: i === 1 || i === 4 ? 600 : 400,
+            fontSize: "15px",
+            fontWeight: para.bold ? 700 : 400,
             lineHeight: 1.75,
-            color: i === 1 || i === 4 ? DARK : "#555",
+            color: para.bold ? DARK : "#555",
             margin: 0,
           }}>
-            {para}
+            {para.text}
           </p>
         ))}
       </div>
@@ -83,7 +84,6 @@ export default function OurStoryPage() {
         }}>
           Set up your first thing on us
         </a>
-
       </div>
 
     </div>
