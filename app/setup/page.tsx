@@ -408,7 +408,8 @@ export default function SetupPage() {
           onSubmit={handleSubmit}
           loading={loading}
           error={submitError}
-        />\n      )}
+        />
+      )}
       {modal === "sent" && <SentModal name={trimmed} onDiveIn={() => { if (calUrl) window.location.href = calUrl; }} />}
 
       {/* Form */}
