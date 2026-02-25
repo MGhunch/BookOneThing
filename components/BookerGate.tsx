@@ -104,7 +104,7 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
               </svg>
             </div>
             <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", lineHeight: 1.25, marginBottom: "20px" }}>
-              Grab your <span style={{ color: ORANGE }}>magic link</span> and we'll stay out of your way
+              Grab a magic link<br/>and crack into it
             </div>
           </div>
 
@@ -124,7 +124,6 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
               }}
             />
             <div style={{ fontSize: "11px", color: "#ccc", marginTop: "5px", paddingLeft: "2px" }}>
-              So we know you're really you.
             </div>
           </div>
 
