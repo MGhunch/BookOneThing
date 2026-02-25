@@ -1,9 +1,7 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
-import { sendOwnerMagicLink } from "@/lib/email";
 
-// Service role client — bypasses RLS, only used server-side
 function adminClient() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -11,7 +9,6 @@ function adminClient() {
   );
 }
 
-// Convert display values to DB values
 function maxLengthMins(key: string): number {
   const map: Record<string, number> = {
     "30": 30, "120": 120, "hd": 240, "fd": 480, "none": 99999,
@@ -48,38 +45,81 @@ function slugify(name: string): string {
   return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 }
 
+function randomCode(): string {
+  return Math.random().toString(36).slice(2, 6);
+}
+
+async function uniqueOwnerSlug(
+  supabase: ReturnType<typeof adminClient>,
+  emailPrefix: string
+): Promise<string> {
+  const base = slugify(emailPrefix);
+  while (true) {
+    const slug = `${base}-${randomCode()}`;
+    const [{ data: profile }, { data: pending }] = await Promise.all([
+      supabase.from("profiles").select("id").eq("slug", slug).single(),
+      supabase.from("pending_things").select("id").eq("owner_slug", slug).single(),
+    ]);
+    if (!profile && !pending) return slug;
+  }
+}
+
+async function uniqueThingSlug(
+  supabase: ReturnType<typeof adminClient>,
+  ownerSlug: string,
+  base: string
+): Promise<string> {
+  let slug = base;
+  let i = 2;
+  while (true) {
+    const { data } = await supabase
+      .from("pending_things")
+      .select("id")
+      .eq("owner_slug", ownerSlug)
+      .eq("slug", slug)
+      .single();
+    if (!data) return slug;
+    slug = `${base}-${i++}`;
+  }
+}
+
 export type SetupFormData = {
-  // Thing
-  name: string;
-  icon: string;
-  avail: string;
-  fromH: number;
-  toH: number;
-  weekends: boolean;
-  timezone: string;
-  notes: string;
-  maxLen: string;
-  ahead: string;
+  name:       string;
+  icon:       string;
+  avail:      string;
+  fromH:      number;
+  toH:        number;
+  weekends:   boolean;
+  timezone:   string;
+  notes:      string;
+  maxLen:     string;
+  ahead:      string;
   concurrent: string;
-  buffer: string;
-  // Owner
-  email: string;
-  firstName: string;
+  buffer:     string;
+  email:      string;
+  firstName:  string;
 };
 
-export async function submitSetup(data: SetupFormData) {
+export type SetupResult =
+  | { ok: true; url: string }
+  | { error: string };
+
+export async function submitSetup(data: SetupFormData): Promise<SetupResult> {
   const supabase = adminClient();
-  const slug = slugify(data.name);
   const { start, end } = availTimes(data.avail, data.fromH, data.toH);
 
-  // 1. Store the pending thing
+  const emailPrefix = data.email.trim().toLowerCase().split("@")[0];
+  const ownerSlug   = await uniqueOwnerSlug(supabase, emailPrefix);
+  const thingSlug   = await uniqueThingSlug(supabase, ownerSlug, slugify(data.name));
+
   const { data: pending, error: pendingError } = await supabase
     .from("pending_things")
     .insert({
       email:           data.email.trim().toLowerCase(),
       first_name:      data.firstName.trim(),
       name:            data.name.trim(),
-      slug,
+      owner_slug:      ownerSlug,
+      slug:            thingSlug,
       icon:            data.icon || "car",
       avail_start:     start,
       avail_end:       end,
@@ -99,38 +139,27 @@ export async function submitSetup(data: SetupFormData) {
     return { error: "Something went wrong. Please try again." };
   }
 
-  // 2. Generate the magic link — this does NOT send an email, just creates the URL
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://bookonething.com";
+  const calUrl  = `${siteUrl}/${ownerSlug}/${thingSlug}`;
   const redirectTo = `${siteUrl}/auth/callback?token=${pending.token}`;
 
-  const { data: authData, error: authError } = await supabase.auth.admin.generateLink({
-    type: "magiclink",
+  const { error: authError } = await supabase.auth.admin.generateLink({
+    type:  "magiclink",
     email: data.email.trim().toLowerCase(),
     options: {
       redirectTo,
       data: {
         first_name: data.firstName.trim(),
+        owner_slug: ownerSlug,
+        thing_slug: thingSlug,
       },
     },
   });
 
-  if (authError || !authData?.properties?.action_link) {
-    console.error("Magic link generation failed:", authError);
+  if (authError) {
+    console.error("Magic link failed:", authError);
     return { error: "Couldn't send the magic link. Please try again." };
   }
 
-  // 3. Send the link via Resend
-  try {
-    await sendOwnerMagicLink({
-      firstName: data.firstName.trim(),
-      toEmail:   data.email.trim().toLowerCase(),
-      thingName: data.name.trim(),
-      magicLink: authData.properties.action_link,
-    });
-  } catch (emailErr) {
-    console.error("Owner magic link email failed:", emailErr);
-    return { error: "Couldn't send the magic link. Please try again." };
-  }
-
-  return { ok: true };
+  return { ok: true, url: calUrl };
 }

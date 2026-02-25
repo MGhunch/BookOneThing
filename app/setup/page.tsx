@@ -224,7 +224,7 @@ function DetailsModal({ name, onSubmit, loading, error }: {
   );
 }
 
-function SentModal({ name }: { name: string }) {
+function SentModal({ name, onDiveIn }: { name: string; onDiveIn: () => void }) {
   return (
     <ModalShell>
       <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
@@ -237,7 +237,7 @@ function SentModal({ name }: { name: string }) {
         Start booking now. We'll flick you a link to share.
       </div>
       <button
-        onClick={() => window.location.href = "/"}
+        onClick={onDiveIn}
         style={{
           width: "100%", padding: "16px", borderRadius: "13px", border: "none",
           background: ORANGE, color: "#fff",
@@ -327,7 +327,7 @@ export default function SetupPage() {
   const [buffer, setBuffer]         = useState("0");
   const [side, setSide]             = useState<"front" | "back">("front");
   const [flipping, setFlipping]     = useState(false);
-  const [modal, setModal]           = useState<"none" | "details" | "sent">("none");
+  const [modal, setModal]           = useState<"none" | "details" | "sent" | "preview">("none");
   const [loading, setLoading]       = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [nameFocus, setNameFocus]   = useState(false);
@@ -357,6 +357,8 @@ export default function SetupPage() {
     background: CARD, cursor: "pointer", outline: "none",
   };
 
+  const [calUrl, setCalUrl] = useState<string | null>(null);
+
   const handleSubmit = async (email: string, firstName: string) => {
     setLoading(true);
     setSubmitError(null);
@@ -371,11 +373,12 @@ export default function SetupPage() {
 
     setLoading(false);
 
-    if (result.error) {
+    if ("error" in result) {
       setSubmitError(result.error);
       return;
     }
 
+    setCalUrl(result.url);
     setModal("sent");
   };
 
@@ -389,7 +392,7 @@ export default function SetupPage() {
         .flip-in  { animation: flipIn  0.4s cubic-bezier(0.4,0,0.2,1) forwards; }
       `}</style>
 
-      {/* Calendar backdrop when modal is shown */}
+      {/* Calendar backdrop when modal is shown, or in preview mode */}
       {modal !== "none" && (
         <div style={{ position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "90px 24px 60px" }}>
           <div style={{ width: "100%", maxWidth: "390px", height: "100%", maxHeight: "700px", background: "#fff", borderRadius: "24px", overflow: "hidden", boxShadow: "0 8px 48px rgba(0,0,0,0.09)" }}>
@@ -405,9 +408,8 @@ export default function SetupPage() {
           onSubmit={handleSubmit}
           loading={loading}
           error={submitError}
-        />
-      )}
-      {modal === "sent" && <SentModal name={trimmed} />}
+        />\n      )}
+      {modal === "sent" && <SentModal name={trimmed} onDiveIn={() => { if (calUrl) window.location.href = calUrl; }} />}
 
       {/* Form */}
       {modal === "none" && (
