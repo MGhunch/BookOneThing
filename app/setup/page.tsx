@@ -218,7 +218,7 @@ function DetailsModal({ name, onSubmit, loading, error }: {
           letterSpacing: "-0.3px", transition: "all 0.2s",
         }}
       >
-        {loading ? "Sending your link…" : canSubmit ? "Get your link" : "Fill in your details"}
+        {loading ? "Sending your codeword…" : canSubmit ? "Get your codeword" : "Fill in your details"}
       </button>
     </ModalShell>
   );
