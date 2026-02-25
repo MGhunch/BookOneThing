@@ -639,11 +639,9 @@ export default function Calendar({ thing, orgName, bookings, bookerSession }: Ca
                       setSubmitting(true);
                       const endSlot = end ?? start;
                       const result = await createBooking({
-                        thingId:     thing.id,
-                        bookerName:  bookerName.trim(),
-                        bookerEmail: bookerEmail.trim(),
-                        startsAt:    slotToISO(start),
-                        endsAt:      slotToISO(endSlot, 30),
+                        thingId:  thing.id,
+                        startsAt: slotToISO(start),
+                        endsAt:   slotToISO(endSlot, 30),
                       });
                       setSubmitting(false);
                       if ("error" in result) {
