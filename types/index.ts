@@ -1,5 +1,14 @@
 // Book One Thing — shared types
 
+export type Profile = {
+  id: string;
+  email: string;
+  first_name: string | null;
+  org_name: string | null;
+  slug: string;               // e.g. "harbour-works-k7n2"
+  created_at: string;
+};
+
 export type Thing = {
   id: string;
   owner_id: string;

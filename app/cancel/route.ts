@@ -15,6 +15,12 @@ function extractOrgName(profiles: unknown): string {
   return (profiles as { org_name?: string | null })?.org_name ?? "";
 }
 
+function extractOwnerSlug(profiles: unknown): string {
+  if (!profiles) return "";
+  if (Array.isArray(profiles)) return (profiles[0] as { slug?: string | null })?.slug ?? "";
+  return (profiles as { slug?: string | null })?.slug ?? "";
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const token = searchParams.get("token");
@@ -57,7 +63,7 @@ export async function GET(request: NextRequest) {
     try {
       const { data: thing } = await supabase
         .from("things")
-        .select("name, slug, profiles(org_name)")
+        .select("name, slug, profiles(org_name, slug)")
         .eq("id", booking.thing_id)
         .single();
 
@@ -72,7 +78,10 @@ export async function GET(request: NextRequest) {
 
       // Redirect back to the thing's calendar
       if (thing?.slug) {
-        return NextResponse.redirect(`${origin}/${thing.slug}?cancelled=1`);
+        const ownerSlug = extractOwnerSlug(thing?.profiles);
+        if (ownerSlug) {
+          return NextResponse.redirect(`${origin}/${ownerSlug}/${thing.slug}?cancelled=1`);
+        }
       }
     } catch (emailErr) {
       console.error("Cancellation email failed:", emailErr);

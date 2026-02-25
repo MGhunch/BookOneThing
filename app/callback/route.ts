@@ -9,6 +9,50 @@ function adminClient() {
   );
 }
 
+// Generate a 4-char random code — e.g. "k7n2"
+function randomCode(): string {
+  return Math.random().toString(36).slice(2, 6);
+}
+
+function slugify(name: string): string {
+  return name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+}
+
+// Generate a unique owner slug from org name or email prefix + random code
+// e.g. "harbour-works-k7n2"
+async function uniqueOwnerSlug(
+  supabase: ReturnType<typeof adminClient>,
+  base: string
+): Promise<string> {
+  let slug = `${slugify(base)}-${randomCode()}`;
+  // Extremely unlikely to collide but check anyway
+  while (true) {
+    const { data } = await supabase.from("profiles").select("id").eq("slug", slug).single();
+    if (!data) return slug;
+    slug = `${slugify(base)}-${randomCode()}`;
+  }
+}
+
+// If "car-park" is taken for this owner, try "car-park-2" etc.
+async function uniqueThingSlug(
+  supabase: ReturnType<typeof adminClient>,
+  ownerId: string,
+  base: string
+): Promise<string> {
+  let slug = base;
+  let i = 2;
+  while (true) {
+    const { data } = await supabase
+      .from("things")
+      .select("id")
+      .eq("owner_id", ownerId)
+      .eq("slug", slug)
+      .single();
+    if (!data) return slug;
+    slug = `${base}-${i++}`;
+  }
+}
+
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
   const code  = searchParams.get("code");
@@ -31,11 +75,27 @@ export async function GET(request: NextRequest) {
 
   const user = sessionData.user;
 
-  // 2. Upsert the profile (may already exist if returning owner)
+  // 2. Upsert the profile — generate an owner slug if this is a new account
+  const { data: existingProfile } = await supabase
+    .from("profiles")
+    .select("id, slug")
+    .eq("id", user.id)
+    .single();
+
+  let ownerSlug = existingProfile?.slug ?? null;
+
+  if (!ownerSlug) {
+    // New owner — generate slug from org_name (if set) or email prefix
+    const baseName = user.user_metadata?.org_name
+      ?? user.email!.split("@")[0];
+    ownerSlug = await uniqueOwnerSlug(supabase, baseName);
+  }
+
   await supabase.from("profiles").upsert({
     id:         user.id,
     email:      user.email!,
     first_name: user.user_metadata?.first_name ?? null,
+    slug:       ownerSlug,
   }, { onConflict: "id" });
 
   // 3. If we have a pending thing token, claim it
@@ -48,16 +108,14 @@ export async function GET(request: NextRequest) {
       .single();
 
     if (!pendingError && pending) {
-      // Check slug isn't already taken
-      const slug = await uniqueSlug(supabase, pending.slug);
+      const thingSlug = await uniqueThingSlug(supabase, user.id, slugify(pending.name));
 
-      // Insert into things
       const { data: thing, error: thingError } = await supabase
         .from("things")
         .insert({
           owner_id:        user.id,
           name:            pending.name,
-          slug,
+          slug:            thingSlug,
           icon:            pending.icon,
           avail_start:     pending.avail_start,
           avail_end:       pending.avail_end,
@@ -74,12 +132,10 @@ export async function GET(request: NextRequest) {
         .single();
 
       if (!thingError && thing) {
-        // Clean up the pending row
         await supabase.from("pending_things").delete().eq("token", token);
 
-        // Send owner welcome email (non-blocking — don't fail the redirect if it errors)
         try {
-          const shareUrl = `${appUrl}/${thing.slug}`;
+          const shareUrl = `${appUrl}/${ownerSlug}/${thing.slug}`;
           await sendOwnerWelcome({
             firstName:     pending.first_name,
             toEmail:       pending.email,
@@ -96,8 +152,7 @@ export async function GET(request: NextRequest) {
           console.error("Owner welcome email failed:", emailErr);
         }
 
-        // Redirect to the live calendar
-        return NextResponse.redirect(`${appUrl}/${thing.slug}`);
+        return NextResponse.redirect(`${appUrl}/${ownerSlug}/${thing.slug}`);
       }
     }
   }
@@ -106,13 +161,3 @@ export async function GET(request: NextRequest) {
   return NextResponse.redirect(`${appUrl}/`);
 }
 
-// If "the-car-park" is taken, try "the-car-park-2" etc.
-async function uniqueSlug(supabase: ReturnType<typeof adminClient>, base: string): Promise<string> {
-  let slug = base;
-  let i = 2;
-  while (true) {
-    const { data } = await supabase.from("things").select("id").eq("slug", slug).single();
-    if (!data) return slug;
-    slug = `${base}-${i++}`;
-  }
-}

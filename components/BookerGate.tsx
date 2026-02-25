@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { sendGateMagicLink } from "@/app/[slug]/gate-actions";
+import { sendGateMagicLink } from "@/app/[owner-slug]/[thing-slug]/gate-actions";
 import ModalShell from "@/components/ModalShell";
 
 const ORANGE = "#e8722a";
@@ -10,10 +10,11 @@ const SYS    = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
 interface BookerGateProps {
   thingId:   string;
   thingName: string;
-  slug:      string;
+  ownerSlug: string;
+  thingSlug: string;
 }
 
-export default function BookerGate({ thingId, thingName, slug }: BookerGateProps) {
+export default function BookerGate({ thingId, thingName, ownerSlug, thingSlug }: BookerGateProps) {
   const [email, setEmail]           = useState("");
   const [sent, setSent]             = useState(false);
   const [dismissed, setDismissed]   = useState(false);
@@ -31,7 +32,7 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
     setSubmitting(true);
     setError(null);
 
-    const result = await sendGateMagicLink({ email, thingId, thingName, slug });
+    const result = await sendGateMagicLink({ email, thingId, thingName, ownerSlug, thingSlug });
 
     setSubmitting(false);
 

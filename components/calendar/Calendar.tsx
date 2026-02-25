@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Info, Car, Users, Coffee, Sun, X, Trash2 } from "lucide-react";
 import type { Thing, Booking } from "@/types";
-import { createBooking, cancelBooking, setReminderPreference } from "@/app/[slug]/actions";
+import { createBooking, cancelBooking, setReminderPreference } from "@/app/[owner-slug]/[thing-slug]/actions";
 import ModalShell from "@/components/ModalShell";
 
 const ORANGE        = "#e8722a";
@@ -639,9 +639,11 @@ export default function Calendar({ thing, orgName, bookings, bookerSession }: Ca
                       setSubmitting(true);
                       const endSlot = end ?? start;
                       const result = await createBooking({
-                        thingId:  thing.id,
-                        startsAt: slotToISO(start),
-                        endsAt:   slotToISO(endSlot, 30),
+                        thingId:     thing.id,
+                        bookerName:  bookerName.trim(),
+                        bookerEmail: bookerEmail.trim(),
+                        startsAt:    slotToISO(start),
+                        endsAt:      slotToISO(endSlot, 30),
                       });
                       setSubmitting(false);
                       if ("error" in result) {
