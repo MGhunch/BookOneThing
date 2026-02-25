@@ -143,9 +143,12 @@ interface CalendarProps {
 
 export default function Calendar({ thing, orgName, ownerSlug, thingSlug, bookings, bookerSession, isPending = false, ownerFirstName }: CalendarProps) {
   const [weekOffset, setWeekOffset]   = useState(0);
-  const [selectedDay, setSelectedDay] = useState(
-    new Date().getDay() === 0 ? 6 : new Date().getDay() - 1
-  );
+  const [selectedDay, setSelectedDay] = useState(0);
+
+  useEffect(() => {
+    const day = new Date().getDay();
+    setSelectedDay(day === 0 ? 6 : day - 1);
+  }, []);
   const [phase, setPhase]           = useState(S_IDLE);
   const [start, setStart]           = useState<string | null>(null);
   const [end, setEnd]               = useState<string | null>(null);
