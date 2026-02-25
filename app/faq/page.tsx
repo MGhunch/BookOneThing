@@ -147,6 +147,7 @@ export default function FAQPage() {
       padding: "120px 24px 100px",
       fontFamily: SYS,
     }}>
+      <div style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "1.2px", textTransform: "uppercase", color: ORANGE, marginBottom: "16px" }}>Headscratchers</div>
       <h1 style={{
         fontSize: "32px",
         fontWeight: 800,
@@ -154,14 +155,13 @@ export default function FAQPage() {
         color: DARK,
         marginBottom: "8px",
       }}>
-        FAQs
+        Questions people sometimes ask
       </h1>
       <p style={{
         fontSize: "14px",
         color: GREY,
         marginBottom: "48px",
       }}>
-        The things people actually want to know.
       </p>
 
       {SECTIONS.map((section) => (
