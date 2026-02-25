@@ -40,6 +40,25 @@ async function readSession(): Promise<{ email: string; firstName: string } | nul
   }
 }
 
+// Format minutes into a human-readable max length string.
+// Matches the preset labels from the setup flow where possible.
+function formatMaxLength(mins: number): string {
+  const presets: Record<number, string> = {
+    30:   "30 minutes",
+    60:   "1 hour",
+    120:  "2 hours",
+    240:  "4 hours",
+    480:  "half a day",
+    1440: "a full day",
+  };
+  if (presets[mins]) return presets[mins];
+  if (mins < 60) return `${mins} minutes`;
+  const hours     = Math.floor(mins / 60);
+  const remainder = mins % 60;
+  if (remainder === 0) return `${hours} hour${hours !== 1 ? "s" : ""}`;
+  return `${hours} hour${hours !== 1 ? "s" : ""} ${remainder} minutes`;
+}
+
 export type BookingResult =
   | { ok: true; bookingId: string; cancelToken: string }
   | { error: string };
@@ -61,6 +80,46 @@ export async function createBooking({
   }
 
   const supabase = adminClient();
+
+  // Fetch the thing's fairness rules before doing anything else.
+  const { data: thing, error: thingError } = await supabase
+    .from("things")
+    .select("max_length_mins, book_ahead_days, max_concurrent, name, timezone, profiles(org_name)")
+    .eq("id", thingId)
+    .single();
+
+  if (thingError || !thing) {
+    return { error: "Something went wrong. Please try again." };
+  }
+
+  const start = new Date(startsAt);
+  const end   = new Date(endsAt);
+  const now   = new Date();
+
+  // Rule 1 — Max booking length
+  const requestedMins = (end.getTime() - start.getTime()) / 60000;
+  if (requestedMins > thing.max_length_mins) {
+    return { error: `Sorry, bookings are ${formatMaxLength(thing.max_length_mins)} max.` };
+  }
+
+  // Rule 2 — Book ahead window
+  const maxAheadMs = thing.book_ahead_days * 24 * 60 * 60 * 1000;
+  if (start.getTime() - now.getTime() > maxAheadMs) {
+    return { error: "Sorry, that's too far in the future." };
+  }
+
+  // Rule 3 — Concurrent bookings per person
+  const { count } = await supabase
+    .from("bookings")
+    .select("id", { count: "exact", head: true })
+    .eq("thing_id", thingId)
+    .eq("booker_email", session.email)
+    .is("cancelled_at", null)
+    .gt("starts_at", now.toISOString());
+
+  if ((count ?? 0) >= thing.max_concurrent) {
+    return { error: "Sorry, you've maxed out your bookings. Want to cancel one?" };
+  }
 
   const { data: booking, error } = await supabase
     .from("bookings")
@@ -84,24 +143,18 @@ export async function createBooking({
     return { error: "Something went wrong. Please try again." };
   }
 
-  // Fetch thing + org name for the email (non-blocking)
+  // Send confirmation email (non-blocking)
   try {
-    const { data: thing } = await supabase
-      .from("things")
-      .select("name, timezone, profiles(org_name)")
-      .eq("id", thingId)
-      .single();
-
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bookonething.com";
     await sendBookingConfirmation({
       bookingId:   booking.id,
       bookerName:  session.firstName,
       bookerEmail: session.email,
-      thingName:   thing?.name ?? "your booking",
-      orgName:     extractOrgName(thing?.profiles),
+      thingName:   thing.name ?? "your booking",
+      orgName:     extractOrgName(thing.profiles),
       startsAt,
       endsAt,
-      timezone:    thing?.timezone ?? "UTC",
+      timezone:    thing.timezone ?? "UTC",
       cancelUrl:   `${appUrl}/cancel?token=${booking.cancel_token}`,
     });
   } catch (emailErr) {
