@@ -66,6 +66,8 @@ export default async function BookerPage({
     <>
       <style>{`
         .page-wrap {
+          overflow: hidden;
+          height: 100dvh;
           display: flex;
           align-items: center;
           justify-content: center;
