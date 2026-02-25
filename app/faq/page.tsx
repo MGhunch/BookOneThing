@@ -155,7 +155,7 @@ export default function FAQPage() {
         color: DARK,
         marginBottom: "8px",
       }}>
-        Questions people sometimes ask
+        Things you may be wondering
       </h1>
       <p style={{
         fontSize: "14px",
