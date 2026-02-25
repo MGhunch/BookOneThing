@@ -86,7 +86,7 @@ export async function createBooking({
   return { ok: true, bookingId: booking.id, cancelToken: booking.cancel_token };
 }
 
-export async function cancelBooking(bookingId: string): Promise<BookingResult> {
+export async function cancelBooking(bookingId: string): Promise<{ ok: true } | { error: string }> {
   const supabase = adminClient();
 
   // Fetch booking details before cancelling (needed for the email)
