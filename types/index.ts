@@ -18,6 +18,7 @@ export type Thing = {
   avail_start: string;        // "09:00"
   avail_end: string;          // "17:00"
   avail_weekends: boolean;
+  timezone:        string;
   max_length_mins: number;
   book_ahead_days: number;
   max_concurrent: number;
