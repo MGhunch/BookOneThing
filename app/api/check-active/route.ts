@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase";
+import { createServiceClient } from "@/lib/supabase";
 
 // Poll endpoint — Calendar calls this every 3s when isPending=true
 // Returns { active: true } once the owner has clicked the magic link
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ active: false });
   }
 
-  const supabase = createServerClient();
+  const supabase = createServiceClient();
 
   const { data: profile } = await supabase
     .from("profiles")
