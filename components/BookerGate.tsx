@@ -16,8 +16,10 @@ interface BookerGateProps {
 export default function BookerGate({ thingId, thingName, slug }: BookerGateProps) {
   const [email, setEmail]           = useState("");
   const [sent, setSent]             = useState(false);
+  const [dismissed, setDismissed]   = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError]           = useState<string | null>(null);
+  const [showToast, setShowToast]   = useState(false);
 
   const canSubmit =
     email.trim().includes("@") &&
@@ -29,12 +31,7 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
     setSubmitting(true);
     setError(null);
 
-    const result = await sendGateMagicLink({
-      email,
-      thingId,
-      thingName,
-      slug,
-    });
+    const result = await sendGateMagicLink({ email, thingId, thingName, slug });
 
     setSubmitting(false);
 
@@ -44,6 +41,42 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
     }
 
     setSent(true);
+  }
+
+  function handleDismiss() {
+    setDismissed(true);
+    setShowToast(true);
+    setTimeout(() => setShowToast(false), 4000);
+  }
+
+  if (dismissed) {
+    return (
+      <>
+        <style>{`
+          @keyframes toastIn {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+          }
+          @keyframes toastOut {
+            from { opacity: 1; }
+            to   { opacity: 0; }
+          }
+        `}</style>
+        {showToast && (
+          <div style={{
+            position: "fixed", bottom: "96px", left: "50%", transform: "translateX(-50%)",
+            background: "#1a1a1a", color: "#fff",
+            padding: "12px 20px", borderRadius: "12px",
+            fontSize: "13px", fontWeight: 500, fontFamily: SYS,
+            whiteSpace: "nowrap", zIndex: 200,
+            animation: "toastIn 0.25s ease forwards",
+            boxShadow: "0 4px 24px rgba(0,0,0,0.18)",
+          }}>
+            Just click the email link to unlock bookings
+          </div>
+        )}
+      </>
+    );
   }
 
   return (
@@ -136,9 +169,20 @@ export default function BookerGate({ thingId, thingName, slug }: BookerGateProps
           <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "10px" }}>
             On its way
           </div>
-          <div style={{ fontSize: "14px", color: "#aaa", lineHeight: 1.65, maxWidth: "240px", margin: "0 auto" }}>
-            Click the link in your email and you're cooking
+          <div style={{ fontSize: "14px", color: "#aaa", lineHeight: 1.65, maxWidth: "260px", margin: "0 auto 28px" }}>
+            May take a minute. Click the link in your email and you're cooking.
           </div>
+          <button
+            onClick={handleDismiss}
+            style={{
+              padding: "12px 32px", borderRadius: "12px",
+              border: "1.5px solid #ede9e3", background: "#fff",
+              fontSize: "14px", fontWeight: 600, color: "#888",
+              fontFamily: SYS, cursor: "pointer",
+            }}
+          >
+            Got it
+          </button>
         </div>
       )}
     </ModalShell>
