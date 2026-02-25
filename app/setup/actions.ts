@@ -141,24 +141,23 @@ export async function submitSetup(data: SetupFormData): Promise<SetupResult> {
 
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://bookonething.com";
   const calUrl  = `${siteUrl}/${ownerSlug}/${thingSlug}`;
-  const redirectTo = `${siteUrl}/callback?token=${pending.token}`;
 
-  const { error: authError } = await supabase.auth.admin.generateLink({
-    type:  "magiclink",
-    email: data.email.trim().toLowerCase(),
-    options: {
-      redirectTo,
-      data: {
-        first_name: data.firstName.trim(),
-        owner_slug: ownerSlug,
-        thing_slug: thingSlug,
-      },
-    },
+  // Send the codeword email immediately so it's in their inbox
+  // when they land on the pending calendar. 60-minute expiry gives
+  // them time to get there without feeling rushed.
+  const { sendCodeword } = await import("@/app/codeword-actions");
+  const codeResult = await sendCodeword({
+    context:       "setup",
+    email:         data.email.trim().toLowerCase(),
+    firstName:     data.firstName.trim(),
+    ownerSlug,
+    thingSlug,
+    expiryMinutes: 60,
   });
 
-  if (authError) {
-    console.error("Magic link failed:", authError);
-    return { error: "Couldn't send the magic link. Please try again." };
+  if ("error" in codeResult) {
+    console.error("Codeword send failed:", codeResult.error);
+    return { error: "Couldn't send your codeword. Please try again." };
   }
 
   return { ok: true, url: calUrl };

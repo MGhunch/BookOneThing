@@ -386,7 +386,7 @@ function AddThingCard({ hasThings }: { hasThings: boolean }) {
 
 // ─── CODEWORD SCREEN ──────────────────────────────────────────────────────────
 
-function CodewordScreen({ onAuthed }: { onAuthed: () => void }) {
+function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
   const [screen, setScreen]   = useState<"email" | "code">("email");
   const [email, setEmail]     = useState("");
   const [code, setCode]       = useState("");
@@ -421,7 +421,7 @@ function CodewordScreen({ onAuthed }: { onAuthed: () => void }) {
       setTimeout(() => setShake(false), 500);
       return;
     }
-    onAuthed();
+    onAuthed(email.trim());
   }
 
   // ── Email step ──────────────────────────────────────────────────────────────
@@ -539,52 +539,33 @@ function CodewordScreen({ onAuthed }: { onAuthed: () => void }) {
 // ─── MAIN ─────────────────────────────────────────────────────────────────────
 
 export default function ManagePage() {
-  const [authState, setAuthState]   = useState<"loading" | "unauthed" | "authed">("loading");
+  const [authState, setAuthState]   = useState<"loading" | "unauthed" | "authed">("unauthed");
+  const [authedEmail, setAuthedEmail] = useState<string | null>(null);
   const [profile, setProfile]       = useState<Profile | null>(null);
   const [things, setThings]         = useState<Thing[]>([]);
   const [dataLoading, setDataLoading] = useState(false);
 
-  useEffect(() => {
-    const supabase = getSupabase();
-
-    async function load() {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { setAuthState("unauthed"); return; }
-
-      setAuthState("authed");
-      setDataLoading(true);
-
-      const [{ data: profileData }, { data: thingsData }] = await Promise.all([
-        supabase.from("profiles").select("slug, first_name, org_name").eq("id", session.user.id).single(),
-        supabase.from("things").select("id, name, slug, icon, avail_start, avail_end, avail_weekends, max_length_mins, book_ahead_days, max_concurrent, buffer_mins").eq("owner_id", session.user.id).eq("is_active", true).order("created_at", { ascending: true }),
-      ]);
-
-      if (profileData) setProfile(profileData);
-      if (thingsData)  setThings(thingsData);
-      setDataLoading(false);
-    }
-
-    load();
-
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      if (event === "SIGNED_IN" && session) { setAuthState("authed"); load(); }
-      if (event === "SIGNED_OUT") { setAuthState("unauthed"); setProfile(null); setThings([]); }
-    });
-
-    return () => subscription.unsubscribe();
-  }, []);
-
-  const signOut = () => getSupabase().auth.signOut();
-
-  // ── Loading ──────────────────────────────────────────────────────────────────
-
-  if (authState === "loading") {
-    return (
-      <div style={{ minHeight: "100vh", background: BG, display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <div style={{ width: 8, height: 8, borderRadius: "50%", background: ORANGE, opacity: 0.6 }} />
-      </div>
-    );
+  async function loadData(email: string) {
+    setDataLoading(true);
+    const { loadOwnerData } = await import("@/app/codeword-actions");
+    const result = await loadOwnerData(email);
+    if (result.profile) setProfile(result.profile as Profile);
+    setThings(result.things as Thing[]);
+    setDataLoading(false);
   }
+
+  function handleAuthed(email: string) {
+    setAuthedEmail(email);
+    setAuthState("authed");
+    loadData(email);
+  }
+
+  const signOut = () => {
+    setAuthState("unauthed");
+    setAuthedEmail(null);
+    setProfile(null);
+    setThings([]);
+  };
 
   // ── Not authenticated ────────────────────────────────────────────────────────
 
@@ -592,7 +573,7 @@ export default function ManagePage() {
     return (
       <div style={{ minHeight: "100vh", background: BG, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
         <div style={{ background: CARD, borderRadius: 24, padding: "48px 40px", maxWidth: 380, width: "100%", boxShadow: "0 4px 32px rgba(0,0,0,0.07)" }}>
-          <CodewordScreen onAuthed={() => { setAuthState("authed"); }} />
+          <CodewordScreen onAuthed={handleAuthed} />
         </div>
       </div>
     );

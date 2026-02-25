@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { sendCodeword, verifyCodeword } from "@/app/codeword-actions";
+import { sendCodeword, verifyCodeword, activatePendingThing } from "@/app/codeword-actions";
 
 const ORANGE       = "#e8722a";
 const ORANGE_LIGHT = "#fdf4ee";
@@ -11,13 +11,13 @@ const BORDER       = "#ede9e3";
 const SYS          = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
 
 interface SetupGateProps {
-  ownerSlug:     string;
-  thingSlug:     string;
+  ownerSlug:       string;
+  thingSlug:       string;
   ownerFirstName?: string;
-  onActivated:   () => void; // fires setShowActivationModal(true) in Calendar
+  onActivated:     () => void;
 }
 
-type Screen = "prompt" | "email" | "code";
+type Screen = "prompt" | "email" | "code" | "activating";
 
 export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActivated }: SetupGateProps) {
   const [screen, setScreen]   = useState<Screen>("prompt");
@@ -35,9 +35,11 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
     setLoading(true);
     setError(null);
     const result = await sendCodeword({
-      context:   "manage",
-      email:     email.trim(),
-      firstName: ownerFirstName,
+      context:       "setup",
+      email:         email.trim(),
+      firstName:     ownerFirstName,
+      ownerSlug,
+      thingSlug,
     });
     setLoading(false);
     if ("error" in result) { setError(result.error); return; }
@@ -48,25 +50,39 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
     if (!validCode || loading) return;
     setLoading(true);
     setError(null);
-    const result = await verifyCodeword({
+
+    // Step 1: verify the codeword
+    const verifyResult = await verifyCodeword({
       email:   email.trim(),
       code:    code.trim().toUpperCase(),
-      context: "manage",
+      context: "setup",
     });
-    setLoading(false);
-    if ("error" in result) {
-      setError(result.error);
+
+    if ("error" in verifyResult) {
+      setLoading(false);
+      setError(verifyResult.error);
       setShake(true);
       setTimeout(() => setShake(false), 500);
       return;
     }
+
+    // Step 2: activate the pending thing
+    setScreen("activating");
+    const activateResult = await activatePendingThing(email.trim(), ownerSlug, thingSlug);
+    setLoading(false);
+
+    if ("error" in activateResult) {
+      setError(activateResult.error);
+      setScreen("code");
+      return;
+    }
+
+    // Done — tell the calendar to show the activation modal
     onActivated();
   }
 
-  // ── Shared input style ─────────────────────────────────────────────────────
-
   const inputBase = {
-    width: "100%", borderRadius: 10, border: "none",
+    width: "100%", borderRadius: 10,
     fontSize: 13, fontWeight: 600, fontFamily: SYS,
     outline: "none", boxSizing: "border-box" as const,
     transition: "all 0.15s",
@@ -79,28 +95,32 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
     flexShrink: 0,
   };
 
-  // ── Prompt — the resting banner ─────────────────────────────────────────────
+  // ── Prompt ──────────────────────────────────────────────────────────────────
 
   if (screen === "prompt") {
     return (
       <button
         onClick={() => setScreen("email")}
-        style={{
-          background: "none", border: "none", cursor: "pointer",
-          padding: 0, textAlign: "left" as const, display: "block",
-        }}
+        style={{ background: "none", border: "none", cursor: "pointer", padding: 0, textAlign: "left" as const, display: "block" }}
       >
-        <span style={{
-          fontSize: 11, fontWeight: 600, color: ORANGE,
-          fontFamily: SYS, letterSpacing: "-0.1px",
-        }}>
+        <span style={{ fontSize: 11, fontWeight: 600, color: ORANGE, fontFamily: SYS }}>
           Tap to activate your thing ›
         </span>
       </button>
     );
   }
 
-  // ── Email — compact inline form ─────────────────────────────────────────────
+  // ── Activating spinner ──────────────────────────────────────────────────────
+
+  if (screen === "activating") {
+    return (
+      <div style={{ fontSize: 11, fontWeight: 600, color: ORANGE, fontFamily: SYS }}>
+        Activating…
+      </div>
+    );
+  }
+
+  // ── Email ───────────────────────────────────────────────────────────────────
 
   if (screen === "email") {
     return (
@@ -110,42 +130,23 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
         </div>
         <div style={{ display: "flex", gap: 6 }}>
           <input
-            type="email"
-            value={email}
+            type="email" value={email} autoFocus
             onChange={e => { setEmail(e.target.value); setError(null); }}
             onKeyDown={e => e.key === "Enter" && handleSend()}
             placeholder="your@email.com"
-            autoFocus
-            style={{
-              ...inputBase,
-              padding: "9px 12px",
-              flex: 1,
-              background: email ? ORANGE_LIGHT : "#f5f4f0",
-              border: `1.5px solid ${email ? ORANGE : BORDER}`,
-              color: DARK,
-            }}
+            style={{ ...inputBase, padding: "9px 12px", flex: 1, border: `1.5px solid ${email ? ORANGE : BORDER}`, background: email ? ORANGE_LIGHT : "#f5f4f0", color: DARK }}
           />
-          <button
-            onClick={handleSend}
-            disabled={!validEmail || loading}
-            style={{
-              ...btnBase,
-              padding: "9px 14px",
-              background: validEmail ? ORANGE : "#ede9e3",
-              color: validEmail ? "#fff" : "#bbb",
-            }}
-          >
+          <button onClick={handleSend} disabled={!validEmail || loading}
+            style={{ ...btnBase, padding: "9px 14px", background: validEmail ? ORANGE : "#ede9e3", color: validEmail ? "#fff" : "#bbb" }}>
             {loading ? "…" : "Send"}
           </button>
         </div>
-        {error && (
-          <div style={{ fontSize: 11, color: "#c0392b", fontFamily: SYS, marginTop: 5 }}>{error}</div>
-        )}
+        {error && <div style={{ fontSize: 11, color: "#c0392b", fontFamily: SYS, marginTop: 5 }}>{error}</div>}
       </div>
     );
   }
 
-  // ── Code — compact inline codeword entry ────────────────────────────────────
+  // ── Code ────────────────────────────────────────────────────────────────────
 
   return (
     <div style={{ marginTop: 6 }}>
@@ -162,47 +163,20 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
       `}</style>
       <div className={shake ? "setup-shake" : ""} style={{ display: "flex", gap: 6 }}>
         <input
-          type="text"
-          value={code}
+          type="text" value={code} autoFocus maxLength={10}
           onChange={e => { setCode(e.target.value.toUpperCase()); setError(null); }}
           onKeyDown={e => e.key === "Enter" && handleVerify()}
           placeholder="CODEWORD"
-          maxLength={10}
-          autoFocus
-          style={{
-            ...inputBase,
-            padding: "9px 12px",
-            flex: 1,
-            background: error ? "#fdf0ee" : code ? ORANGE_LIGHT : "#f5f4f0",
-            border: `1.5px solid ${error ? "#c0392b" : code ? ORANGE : BORDER}`,
-            color: error ? "#c0392b" : DARK,
-            letterSpacing: "2px",
-            textTransform: "uppercase" as const,
-          }}
+          style={{ ...inputBase, padding: "9px 12px", flex: 1, border: `1.5px solid ${error ? "#c0392b" : code ? ORANGE : BORDER}`, background: error ? "#fdf0ee" : code ? ORANGE_LIGHT : "#f5f4f0", color: error ? "#c0392b" : DARK, letterSpacing: "2px", textTransform: "uppercase" as const }}
         />
-        <button
-          onClick={handleVerify}
-          disabled={!validCode || loading}
-          style={{
-            ...btnBase,
-            padding: "9px 14px",
-            background: validCode ? DARK : "#ede9e3",
-            color: validCode ? "#fff" : "#bbb",
-          }}
-        >
+        <button onClick={handleVerify} disabled={!validCode || loading}
+          style={{ ...btnBase, padding: "9px 14px", background: validCode ? DARK : "#ede9e3", color: validCode ? "#fff" : "#bbb" }}>
           {loading ? "…" : "Confirm"}
         </button>
       </div>
-      {error && (
-        <div style={{ fontSize: 11, color: "#c0392b", fontFamily: SYS, marginTop: 5 }}>{error}</div>
-      )}
-      <button
-        onClick={() => { setScreen("email"); setCode(""); setError(null); }}
-        style={{
-          background: "none", border: "none", cursor: "pointer",
-          fontSize: 11, color: GREY, fontFamily: SYS, padding: "4px 0 0",
-        }}
-      >
+      {error && <div style={{ fontSize: 11, color: "#c0392b", fontFamily: SYS, marginTop: 5 }}>{error}</div>}
+      <button onClick={() => { setScreen("email"); setCode(""); setError(null); }}
+        style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, color: GREY, fontFamily: SYS, padding: "4px 0 0" }}>
         ← Different email
       </button>
     </div>
