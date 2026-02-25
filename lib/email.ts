@@ -870,3 +870,118 @@ export async function sendOwnerMagicLink({
     html:    buildMagicLinkHTML({ firstName, thingName, magicLink }),
   });
 }
+
+// ─── CODEWORD EMAILS ─────────────────────────────────────────────────────────
+// Replaces all magic link auth emails.
+// Three contexts: booker (unlock calendar), owner setup, owner manage.
+
+export function buildCodewordHTML({
+  firstName,
+  code,
+  context,
+  thingName,
+}: {
+  firstName?: string;
+  code:        string;
+  context:     "booker" | "manage" | "setup";
+  thingName?:  string;
+}): string {
+  const greeting = firstName ? `Hi ${firstName},` : "Hi there,";
+
+  const actionLine =
+    context === "booker" ? `Use it to unlock the calendar. Easy.` :
+    context === "setup"  ? `Use it to set up your thing. Easy.`   :
+                           `Use it to manage your things. Easy.`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet"/>
+<title>Your codeword</title>
+</head>
+<body style="margin:0;padding:0;background:#e8e5e0;font-family:${SYS};">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#e8e5e0;padding:48px 24px;">
+    <tr>
+      <td align="center">
+        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
+
+          <!-- Logo -->
+          <tr>
+            <td style="padding-bottom:28px;">
+              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+            </td>
+          </tr>
+
+          <!-- Card -->
+          <tr>
+            <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
+
+              <p style="margin:0 0 20px;font-size:15px;color:#888;line-height:1.6;">${greeting}</p>
+
+              <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.6;">
+                Your codeword.
+              </p>
+
+              <!-- The codeword -->
+              <table width="100%" cellpadding="0" cellspacing="0"
+                style="background:#1a1a1a;border-radius:16px;padding:24px;margin-bottom:24px;text-align:center;">
+                <tr>
+                  <td align="center">
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:1.2px;text-transform:uppercase;color:#666;">Your codeword</p>
+                    <p style="margin:0;font-size:42px;font-weight:800;color:#ffffff;letter-spacing:8px;font-family:${SYS};">${code}</p>
+                  </td>
+                </tr>
+              </table>
+
+              <p style="margin:0 0 20px;font-size:15px;color:#555;line-height:1.6;">
+                ${actionLine}
+              </p>
+
+              <p style="margin:0 0 0;font-size:13px;color:#bbb;line-height:1.6;">
+                Your codeword only lasts 15 minutes. Get in there.
+              </p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
+              Book One Thing · The easy way to share anything with anyone.
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+}
+
+export async function sendCodewordEmail({
+  toEmail,
+  firstName,
+  code,
+  context,
+  thingName,
+}: {
+  toEmail:    string;
+  firstName?: string;
+  code:       string;
+  context:    "booker" | "manage" | "setup";
+  thingName?: string;
+}) {
+  const subject =
+    context === "booker" ? "Your booking codeword" :
+                           "Your BookOneThing codeword";
+
+  await resend.emails.send({
+    from:    "Book One Thing <bookings@bookonething.com>",
+    to:      toEmail,
+    subject,
+    html:    buildCodewordHTML({ firstName, code, context, thingName }),
+  });
+}

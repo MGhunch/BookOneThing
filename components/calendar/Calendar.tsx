@@ -6,6 +6,7 @@ import { Check, Info, Car, Users, Coffee, Sun, X, Trash2, ChevronLeft, ChevronRi
 import type { Thing, Booking } from "@/types";
 import { createBooking, cancelBooking, setReminderPreference } from "@/app/[owner-slug]/[thing-slug]/actions";
 import ModalShell from "@/components/ModalShell";
+import SetupGate from "@/components/SetupGate";
 
 const ORANGE        = "#e8722a";
 const ORANGE_BOOKED = "#f2c9a8";
@@ -476,9 +477,12 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                 </div>
               )}
               {isPending && !showActivationModal && (
-                <div style={{ fontSize: "11px", fontWeight: 600, color: ORANGE, marginTop: "3px" }}>
-                  Check your email to activate ›
-                </div>
+                <SetupGate
+                  ownerSlug={ownerSlug}
+                  thingSlug={thingSlug}
+                  ownerFirstName={ownerFirstName}
+                  onActivated={() => setShowActivationModal(true)}
+                />
               )}
             </div>
             <button style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "4px", flexShrink: 0, display: "flex", alignItems: "center" }}>
