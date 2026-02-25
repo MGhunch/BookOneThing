@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Info, Car, Users, Coffee, Sun, X, Trash2 } from "lucide-react";
+import { Check, Info, Car, Users, Coffee, Sun, X, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
 import type { Thing, Booking } from "@/types";
 import { createBooking, cancelBooking, setReminderPreference } from "@/app/[owner-slug]/[thing-slug]/actions";
 import ModalShell from "@/components/ModalShell";
@@ -485,7 +485,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
           {/* Day strip */}
           <div style={{ display: "grid", gridTemplateColumns: "16px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 16px", gap: "1px", alignItems: "center", marginBottom: "12px", marginTop: "16px" }}>
-            <button onClick={() => changeWeek(-1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ddd", padding: 0 }}>‹</button>
+            <button onClick={() => changeWeek(-1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", display: "flex", alignItems: "center", color: weekOffset <= 0 ? "#ddd" : "#aaa" }}><ChevronLeft size={20} strokeWidth={2} /></button>
             {DAYS.map((day, i) => {
               const d = dates[i];
               const sel = i === selectedDay;
@@ -502,7 +502,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                 </button>
               );
             })}
-            <button onClick={() => changeWeek(1)} style={{ background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#ddd", padding: 0 }}>›</button>
+            <button onClick={() => changeWeek(1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", display: "flex", alignItems: "center", color: "#aaa" }}><ChevronRight size={20} strokeWidth={2} /></button>
           </div>
 
           {/* Date row */}
