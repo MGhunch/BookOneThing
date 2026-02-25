@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
+import { sendOwnerMagicLink } from "@/lib/email";
 
 // Service role client — bypasses RLS, only used server-side
 function adminClient() {
@@ -98,11 +99,11 @@ export async function submitSetup(data: SetupFormData) {
     return { error: "Something went wrong. Please try again." };
   }
 
-  // 2. Send the magic link — redirect goes to /auth/callback
+  // 2. Generate the magic link — this does NOT send an email, just creates the URL
   const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://bookonething.com";
   const redirectTo = `${siteUrl}/auth/callback?token=${pending.token}`;
 
-  const { error: authError } = await supabase.auth.admin.generateLink({
+  const { data: authData, error: authError } = await supabase.auth.admin.generateLink({
     type: "magiclink",
     email: data.email.trim().toLowerCase(),
     options: {
@@ -113,8 +114,21 @@ export async function submitSetup(data: SetupFormData) {
     },
   });
 
-  if (authError) {
-    console.error("Magic link failed:", authError);
+  if (authError || !authData?.properties?.action_link) {
+    console.error("Magic link generation failed:", authError);
+    return { error: "Couldn't send the magic link. Please try again." };
+  }
+
+  // 3. Send the link via Resend
+  try {
+    await sendOwnerMagicLink({
+      firstName: data.firstName.trim(),
+      toEmail:   data.email.trim().toLowerCase(),
+      thingName: data.name.trim(),
+      magicLink: authData.properties.action_link,
+    });
+  } catch (emailErr) {
+    console.error("Owner magic link email failed:", emailErr);
     return { error: "Couldn't send the magic link. Please try again." };
   }
 
