@@ -189,7 +189,6 @@ function ThingNavSlot({
       <div style={{
         fontSize: 11, fontWeight: 600, color: "#1a1a1a",
         fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif",
-        textAlign: isRight ? "left" : "right",
         lineHeight: 1.3,
         width: "100%",
         textAlign: "center",
