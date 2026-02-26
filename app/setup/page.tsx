@@ -160,7 +160,7 @@ function DetailsModal({ name, onSubmit, loading, error }: {
           One more thing
         </div>
         <div style={{ fontSize: "14px", color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
-          We know all about your thing, but we don't know you yet.
+          We know all about your thing, but we don't know you.
         </div>
       </div>
 
@@ -231,10 +231,10 @@ function SentModal({ name, onDiveIn }: { name: string; onDiveIn: () => void }) {
         <Check size={24} strokeWidth={2.5} color="#fff" />
       </div>
       <div style={{ fontSize: "26px", fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.2, marginBottom: "10px" }}>
-        &ldquo;{name}&rdquo; is live
+        Check your email
       </div>
       <div style={{ fontSize: "15px", color: GREY, fontFamily: SYS, lineHeight: 1.6, marginBottom: "28px" }}>
-        Start booking now. We'll flick you a link to share.
+        We've sent a codeword to activate &ldquo;{name}&rdquo;. Grab it then come back and enter it.
       </div>
       <button
         onClick={onDiveIn}
@@ -245,7 +245,7 @@ function SentModal({ name, onDiveIn }: { name: string; onDiveIn: () => void }) {
           cursor: "pointer", letterSpacing: "-0.3px",
         }}
       >
-        Dive in
+        I've got my codeword →
       </button>
     </ModalShell>
   );
@@ -358,6 +358,7 @@ export default function SetupPage() {
   };
 
   const [calUrl, setCalUrl] = useState<string | null>(null);
+  const [submittedEmail, setSubmittedEmail] = useState<string>("");
 
   const handleSubmit = async (email: string, firstName: string) => {
     setLoading(true);
@@ -378,6 +379,7 @@ export default function SetupPage() {
       return;
     }
 
+    setSubmittedEmail(email.trim().toLowerCase());
     setCalUrl(result.url);
     setModal("sent");
   };
@@ -410,14 +412,22 @@ export default function SetupPage() {
           error={submitError}
         />
       )}
-      {modal === "sent" && <SentModal name={trimmed} onDiveIn={() => { if (calUrl) window.location.href = calUrl; }} />}
+      {modal === "sent" && <SentModal name={trimmed} onDiveIn={() => {
+        if (calUrl) {
+          if (typeof window !== "undefined") {
+            sessionStorage.setItem("setupEmail", submittedEmail);
+          }
+          window.location.href = calUrl;
+        }
+      }} />}
 
       {/* Form */}
       {modal === "none" && (
-        <div style={{ maxWidth: "640px", margin: "0 auto", padding: "100px 40px 140px" }}>
+        <div style={{ maxWidth: "640px", margin: "0 auto", padding: "100px 24px 140px" }}>
+          <style>{`.setup-icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; } @media (max-width: 600px) { .setup-icon-grid { grid-template-columns: repeat(4, 1fr); } .setup-card { padding: 28px 24px 28px !important; } }`}</style>
 
           <div
-            className={flipping ? (side === "front" ? "flip-out" : "flip-in") : ""}
+            className={`setup-card ${flipping ? (side === "front" ? "flip-out" : "flip-in") : ""}`}
             style={{ background: CARD, borderRadius: "24px", padding: "44px 44px 40px", boxShadow: "0 4px 32px rgba(0,0,0,0.07)" }}
           >
 
@@ -453,7 +463,7 @@ export default function SetupPage() {
                   </Field>
 
                   <Field label="Choose an icon" explainer="To help you remember which thing is which.">
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(8, 1fr)", gap: "8px" }}>
+                    <div className="setup-icon-grid">
                       {ICONS.map(({ key, Icon }) => {
                         const active = icon === key;
                         return (
@@ -525,8 +535,8 @@ export default function SetupPage() {
                         <div style={{ position: "relative" }}>
                           <button onClick={() => { setTzOpen(!tzOpen); setTzSearch(""); }}
                             style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: SYS }}>
-                            <Clock size={13} color={GREY_LIGHT} strokeWidth={1.75} />
-                            <span style={{ fontSize: "13px", fontWeight: 500, color: GREY_LIGHT }}>{tzFriendly(timezone)}</span>
+                            <Clock size={18} color={"#555"} strokeWidth={1.75} />
+                            <span style={{ fontSize: "14px", fontWeight: 500, color: "#555" }}>{tzFriendly(timezone)} time</span>
                           </button>
 
                           {tzOpen && (

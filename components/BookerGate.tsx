@@ -142,7 +142,7 @@ export default function BookerGate({ thingId, thingName, ownerSlug, thingSlug }:
         <>
           <div style={{ marginBottom: 24 }}>
             <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 8 }}>
-              Enter your codeword.
+              Enter your codeword
             </div>
             <div style={{ fontSize: 14, color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
               Check your email. It expires in 15 minutes.
@@ -159,7 +159,7 @@ export default function BookerGate({ thingId, thingName, ownerSlug, thingSlug }:
             />
           </div>
           {error && <div style={{ fontSize: 12, color: "#c0392b", fontFamily: SYS, marginBottom: 10, textAlign: "center" as const }}>{error}</div>}
-          <button onClick={handleVerify} disabled={!validCode || loading} style={{ width: "100%", padding: 15, borderRadius: 13, border: "none", background: validCode ? DARK : "#f0ece6", color: validCode ? "#fff" : "#bbb", fontSize: 15, fontWeight: 700, fontFamily: SYS, cursor: validCode ? "pointer" : "default", transition: "all 0.15s", marginBottom: 14 }}>
+          <button onClick={handleVerify} disabled={!validCode || loading} style={{ width: "100%", padding: 15, borderRadius: 13, border: "none", background: validCode ? ORANGE : "#f0ece6", color: validCode ? "#fff" : "#bbb", fontSize: 15, fontWeight: 700, fontFamily: SYS, cursor: validCode ? "pointer" : "default", transition: "all 0.15s", marginBottom: 14 }}>
             {loading ? "Checking…" : "Confirm"}
           </button>
           <div style={{ textAlign: "center" as const, fontSize: 12, color: "#ccc", fontFamily: SYS }}>

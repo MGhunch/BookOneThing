@@ -43,7 +43,7 @@ export default function OurStoryPage() {
         color: DARK,
         marginBottom: "40px",
       }}>
-        All we wanted to do<br />was book a room.
+        All we wanted to do<br />was book a room
       </h1>
 
       {/* Story card */}

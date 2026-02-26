@@ -561,10 +561,7 @@ export default function ManagePage() {
   }
 
   const signOut = () => {
-    setAuthState("unauthed");
-    setAuthedEmail(null);
-    setProfile(null);
-    setThings([]);
+    window.location.href = "/";
   };
 
   // ── Not authenticated ────────────────────────────────────────────────────────

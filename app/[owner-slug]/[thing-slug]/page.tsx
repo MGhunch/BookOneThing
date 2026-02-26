@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServiceClient } from "@/lib/supabase";
 import Calendar from "@/components/calendar/Calendar";
 import BookerGate from "@/components/BookerGate";
+import SetupGate from "@/components/SetupGate";
 import type { Thing } from "@/types";
 
 const SESSION_COOKIE = "bot_session";
@@ -215,6 +216,15 @@ function CalendarPage({
           thingName={thing.name}
           ownerSlug={ownerSlug}
           thingSlug={thingSlug}
+        />
+      )}
+
+      {isPending && (
+        <SetupGate
+          ownerSlug={ownerSlug}
+          thingSlug={thingSlug}
+          ownerFirstName={ownerFirstName}
+          onActivated={() => window.location.reload()}
         />
       )}
     </>

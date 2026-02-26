@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { sendCodeword, verifyCodeword, activatePendingThing } from "@/app/codeword-actions";
+import ModalShell from "@/components/ModalShell";
 
 const ORANGE       = "#e8722a";
 const ORANGE_LIGHT = "#fdf4ee";
@@ -17,15 +18,24 @@ interface SetupGateProps {
   onActivated:     () => void;
 }
 
-type Screen = "prompt" | "email" | "code" | "activating";
+type Screen = "email" | "code" | "activating" | "done";
 
 export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActivated }: SetupGateProps) {
-  const [screen, setScreen]   = useState<Screen>("prompt");
+  const [screen, setScreen]   = useState<Screen>("email");
   const [email, setEmail]     = useState("");
   const [code, setCode]       = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError]     = useState<string | null>(null);
   const [shake, setShake]     = useState(false);
+
+  // Read email from sessionStorage if available (set during setup flow)
+  useEffect(() => {
+    const stored = sessionStorage.getItem("setupEmail");
+    if (stored) {
+      setEmail(stored);
+      setScreen("code");
+    }
+  }, []);
 
   const validEmail = email.trim().includes("@") && email.trim().includes(".");
   const validCode  = code.trim().length >= 3;
@@ -35,9 +45,9 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
     setLoading(true);
     setError(null);
     const result = await sendCodeword({
-      context:       "setup",
-      email:         email.trim(),
-      firstName:     ownerFirstName,
+      context:   "setup",
+      email:     email.trim(),
+      firstName: ownerFirstName,
       ownerSlug,
       thingSlug,
     });
@@ -51,7 +61,6 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
     setLoading(true);
     setError(null);
 
-    // Step 1: verify the codeword
     const verifyResult = await verifyCodeword({
       email:   email.trim(),
       code:    code.trim().toUpperCase(),
@@ -66,7 +75,6 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
       return;
     }
 
-    // Step 2: activate the pending thing
     setScreen("activating");
     const activateResult = await activatePendingThing(email.trim(), ownerSlug, thingSlug);
     setLoading(false);
@@ -77,108 +85,107 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
       return;
     }
 
-    // Done — tell the calendar to show the activation modal
-    onActivated();
+    sessionStorage.removeItem("setupEmail");
+    setScreen("done");
+    setTimeout(() => onActivated(), 1500);
   }
 
-  const inputBase = {
-    width: "100%", borderRadius: 10,
-    fontSize: 13, fontWeight: 600, fontFamily: SYS,
-    outline: "none", boxSizing: "border-box" as const,
-    transition: "all 0.15s",
-  };
+  return (
+    <ModalShell>
+      <style>{`
+        @keyframes shake {
+          0%,100% { transform: translateX(0); }
+          20%,60%  { transform: translateX(-6px); }
+          40%,80%  { transform: translateX(6px); }
+        }
+        .setup-shake { animation: shake 0.4s ease; }
+        .setup-input:focus { outline: none; }
+      `}</style>
 
-  const btnBase = {
-    borderRadius: 8, border: "none", cursor: "pointer",
-    fontSize: 12, fontWeight: 700, fontFamily: SYS,
-    transition: "all 0.15s", whiteSpace: "nowrap" as const,
-    flexShrink: 0,
-  };
-
-  // ── Prompt ──────────────────────────────────────────────────────────────────
-
-  if (screen === "prompt") {
-    return (
-      <button
-        onClick={() => setScreen("email")}
-        style={{ background: "none", border: "none", cursor: "pointer", padding: 0, textAlign: "left" as const, display: "block" }}
-      >
-        <span style={{ fontSize: 11, fontWeight: 600, color: ORANGE, fontFamily: SYS }}>
-          Tap to activate your thing ›
-        </span>
-      </button>
-    );
-  }
-
-  // ── Activating spinner ──────────────────────────────────────────────────────
-
-  if (screen === "activating") {
-    return (
-      <div style={{ fontSize: 11, fontWeight: 600, color: ORANGE, fontFamily: SYS }}>
-        Activating…
-      </div>
-    );
-  }
-
-  // ── Email ───────────────────────────────────────────────────────────────────
-
-  if (screen === "email") {
-    return (
-      <div style={{ marginTop: 6 }}>
-        <div style={{ fontSize: 11, fontWeight: 600, color: ORANGE, fontFamily: SYS, marginBottom: 6 }}>
-          Just pop in your email to get a codeword.
-        </div>
-        <div style={{ display: "flex", gap: 6 }}>
+      {/* Email */}
+      {screen === "email" && (
+        <>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 8 }}>
+              Activate your thing
+            </div>
+            <div style={{ fontSize: 14, color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
+              Pop in the email you used to set it up.
+            </div>
+          </div>
           <input
+            className="setup-input"
             type="email" value={email} autoFocus
             onChange={e => { setEmail(e.target.value); setError(null); }}
             onKeyDown={e => e.key === "Enter" && handleSend()}
             placeholder="your@email.com"
-            style={{ ...inputBase, padding: "9px 12px", flex: 1, border: `1.5px solid ${email ? ORANGE : BORDER}`, background: email ? ORANGE_LIGHT : "#f5f4f0", color: DARK }}
+            style={{ width: "100%", padding: "14px 16px", borderRadius: 12, border: `1.5px solid ${email ? ORANGE : BORDER}`, background: email ? ORANGE_LIGHT : "#f9f8f6", fontSize: 15, fontWeight: 500, fontFamily: SYS, color: DARK, outline: "none", transition: "all 0.15s", boxSizing: "border-box" as const, marginBottom: 10 }}
           />
-          <button onClick={handleSend} disabled={!validEmail || loading}
-            style={{ ...btnBase, padding: "9px 14px", background: validEmail ? ORANGE : "#ede9e3", color: validEmail ? "#fff" : "#bbb" }}>
-            {loading ? "…" : "Send"}
+          {error && <div style={{ fontSize: 12, color: "#c0392b", fontFamily: SYS, marginBottom: 10 }}>{error}</div>}
+          <button onClick={handleSend} disabled={!validEmail || loading} style={{ width: "100%", padding: 15, borderRadius: 13, border: "none", background: validEmail ? ORANGE : "#f0ece6", color: validEmail ? "#fff" : "#bbb", fontSize: 15, fontWeight: 700, fontFamily: SYS, cursor: validEmail ? "pointer" : "default", transition: "all 0.15s" }}>
+            {loading ? "Sending…" : "Send my codeword"}
           </button>
+        </>
+      )}
+
+      {/* Code */}
+      {screen === "code" && (
+        <>
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 8 }}>
+              Enter your codeword
+            </div>
+            <div style={{ fontSize: 14, color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
+              Check your email. It expires in 15 minutes.
+            </div>
+          </div>
+          <div className={shake ? "setup-shake" : ""}>
+            <input
+              className="setup-input"
+              type="text" value={code} autoFocus maxLength={10}
+              onChange={e => { setCode(e.target.value.toUpperCase()); setError(null); }}
+              onKeyDown={e => e.key === "Enter" && handleVerify()}
+              placeholder="CODEWORD"
+              style={{ width: "100%", padding: "16px", borderRadius: 12, textAlign: "center" as const, border: `2px solid ${error ? "#c0392b" : code ? ORANGE : BORDER}`, background: error ? "#fdf0ee" : code ? ORANGE_LIGHT : "#f9f8f6", fontSize: 24, fontWeight: 800, fontFamily: SYS, color: error ? "#c0392b" : DARK, outline: "none", letterSpacing: "4px", transition: "all 0.15s", boxSizing: "border-box" as const, marginBottom: 10 }}
+            />
+          </div>
+          {error && <div style={{ fontSize: 12, color: "#c0392b", fontFamily: SYS, marginBottom: 10, textAlign: "center" as const }}>{error}</div>}
+          <button onClick={handleVerify} disabled={!validCode || loading} style={{ width: "100%", padding: 15, borderRadius: 13, border: "none", background: validCode ? ORANGE : "#f0ece6", color: validCode ? "#fff" : "#bbb", fontSize: 15, fontWeight: 700, fontFamily: SYS, cursor: validCode ? "pointer" : "default", transition: "all 0.15s", marginBottom: 14 }}>
+            {loading ? "Checking…" : "Confirm"}
+          </button>
+          <div style={{ textAlign: "center" as const, fontSize: 12, color: "#ccc", fontFamily: SYS }}>
+            Used a different email?{" "}
+            <span onClick={() => { setScreen("email"); setCode(""); setError(null); }} style={{ color: ORANGE, fontWeight: 600, cursor: "pointer" }}>
+              Try again
+            </span>
+          </div>
+        </>
+      )}
+
+      {/* Activating */}
+      {screen === "activating" && (
+        <div style={{ textAlign: "center" as const, padding: "8px 0" }}>
+          <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, marginBottom: 6 }}>
+            Activating…
+          </div>
+          <div style={{ fontSize: 14, color: GREY, fontFamily: SYS }}>Just a moment.</div>
         </div>
-        {error && <div style={{ fontSize: 11, color: "#c0392b", fontFamily: SYS, marginTop: 5 }}>{error}</div>}
-      </div>
-    );
-  }
+      )}
 
-  // ── Code ────────────────────────────────────────────────────────────────────
-
-  return (
-    <div style={{ marginTop: 6 }}>
-      <div style={{ fontSize: 11, fontWeight: 600, color: ORANGE, fontFamily: SYS, marginBottom: 6 }}>
-        Check your email. Enter your codeword.
-      </div>
-      <style>{`
-        @keyframes shake {
-          0%,100% { transform: translateX(0); }
-          20%,60%  { transform: translateX(-5px); }
-          40%,80%  { transform: translateX(5px); }
-        }
-        .setup-shake { animation: shake 0.4s ease; }
-      `}</style>
-      <div className={shake ? "setup-shake" : ""} style={{ display: "flex", gap: 6 }}>
-        <input
-          type="text" value={code} autoFocus maxLength={10}
-          onChange={e => { setCode(e.target.value.toUpperCase()); setError(null); }}
-          onKeyDown={e => e.key === "Enter" && handleVerify()}
-          placeholder="CODEWORD"
-          style={{ ...inputBase, padding: "9px 12px", flex: 1, border: `1.5px solid ${error ? "#c0392b" : code ? ORANGE : BORDER}`, background: error ? "#fdf0ee" : code ? ORANGE_LIGHT : "#f5f4f0", color: error ? "#c0392b" : DARK, letterSpacing: "2px", textTransform: "uppercase" as const }}
-        />
-        <button onClick={handleVerify} disabled={!validCode || loading}
-          style={{ ...btnBase, padding: "9px 14px", background: validCode ? DARK : "#ede9e3", color: validCode ? "#fff" : "#bbb" }}>
-          {loading ? "…" : "Confirm"}
-        </button>
-      </div>
-      {error && <div style={{ fontSize: 11, color: "#c0392b", fontFamily: SYS, marginTop: 5 }}>{error}</div>}
-      <button onClick={() => { setScreen("email"); setCode(""); setError(null); }}
-        style={{ background: "none", border: "none", cursor: "pointer", fontSize: 11, color: GREY, fontFamily: SYS, padding: "4px 0 0" }}>
-        ← Different email
-      </button>
-    </div>
+      {/* Done */}
+      {screen === "done" && (
+        <div style={{ textAlign: "center" as const, padding: "8px 0" }}>
+          <div style={{ width: 52, height: 52, borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <polyline points="3,11 8,17 19,5"/>
+            </svg>
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, marginBottom: 6 }}>
+            You're live.
+          </div>
+          <div style={{ fontSize: 14, color: GREY, fontFamily: SYS }}>Taking you to your calendar.</div>
+        </div>
+      )}
+    </ModalShell>
   );
 }

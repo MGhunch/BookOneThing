@@ -22,7 +22,7 @@ export default function Home() {
         <p style={{
           fontSize: "16px", color: "#888", lineHeight: 1.7, margin: 0, fontWeight: 400,
         }}>
-          Just Set up your thing. Share a link. Done.<br />
+          Just set up your thing. Share a link. Done.<br />
           Anyone can book it. No passwords. No fuss.
         </p>
       </div>

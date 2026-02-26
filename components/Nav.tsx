@@ -6,7 +6,8 @@ const DARK   = "#1a1a1a";
 const SYS    = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
 
 const NAV_LINKS = [
-  { label: "Manage your things", href: "/manage"      },
+  { label: "Home",               href: "/"             },
+  { label: "Manage your things", href: "/manage"       },
   { label: "FAQs",               href: "/faq"          },
   { label: "Our story",          href: "/our-story"    },
   { label: "House rules",        href: "/house-rules"  },
