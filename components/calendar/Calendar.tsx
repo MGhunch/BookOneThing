@@ -131,6 +131,13 @@ interface BookerSession {
   firstName: string;
 }
 
+interface NavThing {
+  id:   string;
+  name: string;
+  slug: string;
+  icon: string;
+}
+
 interface CalendarProps {
   thing:            Thing;
   orgName:          string;
@@ -140,9 +147,10 @@ interface CalendarProps {
   bookerSession:    BookerSession | null;
   isPending?:       boolean;
   ownerFirstName?:  string;
+  allThings?:       NavThing[];
 }
 
-export default function Calendar({ thing, orgName, ownerSlug, thingSlug, bookings, bookerSession, isPending = false, ownerFirstName }: CalendarProps) {
+export default function Calendar({ thing, orgName, ownerSlug, thingSlug, bookings, bookerSession, isPending = false, ownerFirstName, allThings = [] }: CalendarProps) {
   const [weekOffset, setWeekOffset]   = useState(0);
   const [selectedDay, setSelectedDay] = useState(0);
 
@@ -506,7 +514,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
           {/* Day strip */}
           <div style={{ display: "grid", gridTemplateColumns: "16px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 16px", gap: "1px", alignItems: "center", marginBottom: "12px", marginTop: "16px" }}>
-            <button onClick={() => changeWeek(-1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", display: "flex", alignItems: "center", color: weekOffset <= 0 ? "#ddd" : "#aaa" }}><ChevronLeft size={20} strokeWidth={2} /></button>
+            <button onClick={() => changeWeek(-1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", display: "flex", alignItems: "center", color: weekOffset <= 0 ? "#ddd" : "#aaa" }}><ChevronLeft size={26} strokeWidth={1.75} /></button>
             {DAYS.map((day, i) => {
               const d = dates[i];
               const sel = i === selectedDay;
@@ -523,7 +531,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                 </button>
               );
             })}
-            <button onClick={() => changeWeek(1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", display: "flex", alignItems: "center", color: "#aaa" }}><ChevronRight size={20} strokeWidth={2} /></button>
+            <button onClick={() => changeWeek(1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", display: "flex", alignItems: "center", color: "#aaa" }}><ChevronRight size={26} strokeWidth={1.75} /></button>
           </div>
 
           {/* Date row */}
@@ -841,6 +849,113 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
           onClose={() => setShowGate(false)}
         />
       )}
+
+      {/* ── Bottom nav — thing switcher ─────────────────────────────────── */}
+      <div style={{
+        position: "fixed", bottom: 0, left: 0, right: 0,
+        display: "flex", flexDirection: "column", alignItems: "center",
+        padding: "10px 0 28px", gap: "10px",
+        background: "transparent", pointerEvents: "none",
+      }}>
+        {/* BOOK MORE THINGS label */}
+        {allThings.length > 1 && (
+          <div style={{
+            fontSize: "10px", fontWeight: 700, letterSpacing: "1.2px",
+            textTransform: "uppercase", color: "#aaa",
+            fontFamily: SYS, pointerEvents: "none",
+          }}>
+            Book more things
+          </div>
+        )}
+        {allThings.length === 0 && (
+          <a href="/setup" style={{
+            fontSize: "11px", fontWeight: 700, letterSpacing: "0.8px",
+            color: ORANGE, fontFamily: SYS, textDecoration: "none",
+            pointerEvents: "auto",
+          }}>
+            Add another thing ›
+          </a>
+        )}
+
+        {/* Icon row with prev/next chevrons */}
+        {allThings.length > 0 && (
+          <div style={{
+            display: "flex", alignItems: "center", gap: "6px",
+            pointerEvents: "auto",
+          }}>
+            {/* Prev chevron */}
+            {(() => {
+              const idx = allThings.findIndex(t => t.slug === thingSlug);
+              const hasPrev = idx > 0;
+              return (
+                <a
+                  href={hasPrev ? `/${ownerSlug}/${allThings[idx - 1].slug}` : undefined}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    width: 32, height: 32, borderRadius: "50%",
+                    color: hasPrev ? "#888" : "#ddd",
+                    pointerEvents: hasPrev ? "auto" : "none",
+                    transition: "color 0.15s",
+                    textDecoration: "none",
+                  }}
+                >
+                  <ChevronLeft size={22} strokeWidth={1.75} />
+                </a>
+              );
+            })()}
+
+            {/* Thing icons */}
+            {allThings.map((t) => {
+              const IconComp = ICON_MAP[t.icon] || Car;
+              const isActive = t.slug === thingSlug;
+              return (
+                <a
+                  key={t.id}
+                  href={`/${ownerSlug}/${t.slug}`}
+                  title={t.name}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    width: isActive ? 38 : 32,
+                    height: isActive ? 38 : 32,
+                    borderRadius: isActive ? "12px" : "50%",
+                    background: isActive ? DARK : "rgba(255,255,255,0.85)",
+                    boxShadow: isActive ? "0 2px 10px rgba(0,0,0,0.18)" : "0 1px 4px rgba(0,0,0,0.10)",
+                    transition: "all 0.2s cubic-bezier(0.32,0.72,0,1)",
+                    textDecoration: "none",
+                  }}
+                >
+                  <IconComp
+                    size={isActive ? 18 : 15}
+                    strokeWidth={1.75}
+                    color={isActive ? "#fff" : "#aaa"}
+                  />
+                </a>
+              );
+            })}
+
+            {/* Next chevron */}
+            {(() => {
+              const idx = allThings.findIndex(t => t.slug === thingSlug);
+              const hasNext = idx < allThings.length - 1;
+              return (
+                <a
+                  href={hasNext ? `/${ownerSlug}/${allThings[idx + 1].slug}` : undefined}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    width: 32, height: 32, borderRadius: "50%",
+                    color: hasNext ? "#888" : "#ddd",
+                    pointerEvents: hasNext ? "auto" : "none",
+                    transition: "color 0.15s",
+                    textDecoration: "none",
+                  }}
+                >
+                  <ChevronRight size={22} strokeWidth={1.75} />
+                </a>
+              );
+            })()}
+          </div>
+        )}
+      </div>
     </>
   );
 }
