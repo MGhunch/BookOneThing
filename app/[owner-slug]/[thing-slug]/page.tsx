@@ -228,8 +228,11 @@ function CalendarPage({
           align-items: center;
           justify-content: center;
           min-height: 100dvh;
-          padding: 72px 8px 24px;
+          padding: 64px 24px 8px;
           overflow: hidden;
+        }
+        @media (max-width: 779px) {
+          .page-wrap { padding: 72px 8px 8px; }
         }
         .cal-hero {
           width: 100%;
