@@ -156,7 +156,7 @@ function ThingNavSlot({
   t?: NavThing; ownerSlug: string; side: "left" | "right"; isAdd?: boolean;
 }) {
   const IconComp = t ? (ICON_MAP[t.icon] || Car) : Plus;
-  const label    = t ? t.name : "Add more things";
+  const label    = t ? t.name : "Add another thing";
   const href     = t ? `/${ownerSlug}/${t.slug}` : "/setup";
   const isRight  = side === "right";
 
@@ -228,7 +228,7 @@ function CalendarPage({
           align-items: center;
           justify-content: center;
           min-height: 100dvh;
-          padding: 72px 24px 8px;
+          padding: 72px 8px 24px;
           overflow: hidden;
         }
         .cal-hero {
@@ -275,6 +275,80 @@ function CalendarPage({
           thingSlug={thingSlug}
           ownerFirstName={ownerFirstName}
         />
+      )}
+
+      {/* Mobile bottom nav — only when multiple things exist */}
+      {things.length > 1 && (
+        <>
+          <style>{`
+            .mob-nav {
+              display: flex;
+              justify-content: center;
+              gap: 12px;
+              padding: 12px 16px 20px;
+              background: #fff;
+              border-top: 1px solid #f0ece6;
+              margin: 0 8px;
+              border-radius: 0 0 24px 24px;
+            }
+            @media (min-width: 780px) {
+              .mob-nav { display: none; }
+            }
+            .mob-slot {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              gap: 5px;
+              text-decoration: none;
+              opacity: 0.32;
+              transition: opacity 0.2s;
+            }
+            .mob-slot-active { opacity: 1; }
+            .mob-slot-add { opacity: 0.8; }
+            .mob-slot-icon {
+              width: 44px; height: 44px;
+              border-radius: 14px;
+              background: #1a1a1a;
+              display: flex; align-items: center; justify-content: center;
+            }
+            .mob-slot-active .mob-slot-icon { background: #e8722a; }
+            .mob-slot-add .mob-slot-icon { background: #fdf4ee; }
+            .mob-slot-name {
+              font-size: 9px;
+              font-weight: 600;
+              color: #1a1a1a;
+              text-align: center;
+              line-height: 1.3;
+              max-width: 52px;
+              font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+            }
+            .mob-slot-add .mob-slot-name { color: #e8722a; }
+          `}</style>
+          <div className="mob-nav">
+            {things.map(t => {
+              const IconComp = ICON_MAP[t.icon] || Car;
+              const isActive = t.slug === thingSlug;
+              return (
+                <a
+                  key={t.id}
+                  href={`/${ownerSlug}/${t.slug}`}
+                  className={`mob-slot${isActive ? " mob-slot-active" : ""}`}
+                >
+                  <div className="mob-slot-icon">
+                    <IconComp size={20} strokeWidth={1.75} color="#fff" />
+                  </div>
+                  <div className="mob-slot-name">{t.name}</div>
+                </a>
+              );
+            })}
+            <a href="/setup" className="mob-slot mob-slot-add">
+              <div className="mob-slot-icon">
+                <Plus size={20} strokeWidth={1.75} color="#e8722a" />
+              </div>
+              <div className="mob-slot-name">Add more</div>
+            </a>
+          </div>
+        </>
       )}
     </>
   );
