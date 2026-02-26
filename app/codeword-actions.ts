@@ -61,6 +61,8 @@ export async function sendCodeword(args: SendCodewordArgs): Promise<SendCodeword
   }
 
   try {
+    const t0 = Date.now();
+    console.log(`[codeword] sending email to ${email} via Resend...`);
     await sendCodewordEmail({
       toEmail:   email,
       firstName: args.firstName,
@@ -68,6 +70,7 @@ export async function sendCodeword(args: SendCodewordArgs): Promise<SendCodeword
       context:   args.context,
       thingName: args.context === "booker" ? args.thingName : undefined,
     });
+    console.log(`[codeword] email sent in ${Date.now() - t0}ms`);
   } catch (err) {
     console.error("Codeword email failed:", err);
     return { error: "Couldn't send the email. Please try again." };
