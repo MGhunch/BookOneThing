@@ -394,7 +394,7 @@ export async function sendBookerMagicLink({
   magicLink:  string;
 }) {
   await resend.emails.send({
-    from:    "Book One Thing <bookings@bookonething.com>",
+    from:    "BookOneThing <bookings@bookonething.com>",
     to:      toEmail,
     subject: `Your link to ${thingName}`,
     html:    buildMagicLinkHTML({ firstName, thingName, magicLink }),
@@ -436,7 +436,7 @@ export async function sendBookingConfirmation({
   });
 
   await resend.emails.send({
-    from:    "Book One Thing <bookings@bookonething.com>",
+    from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
     subject: `You're booked — ${thingName}`,
     html:    buildConfirmationHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl }),
@@ -663,7 +663,7 @@ export async function sendOwnerWelcome({
   maxConcurrent: number;
 }) {
   await resend.emails.send({
-    from:    "Book One Thing <bookings@bookonething.com>",
+    from:    "BookOneThing <bookings@bookonething.com>",
     to:      toEmail,
     subject: `${thingName} is ready to book.`,
     html:    buildOwnerWelcomeHTML({
@@ -840,7 +840,7 @@ export async function sendReminderEmail({
   const noteTag  = reminderNote ? ` — ${reminderNote}` : "";
 
   await resend.emails.send({
-    from:    "Book One Thing <bookings@bookonething.com>",
+    from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
     subject: `Reminder: ${thingName}${noteTag} — tomorrow at ${timeStr}`,
     html:    buildReminderHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl, reminderNote }),
@@ -861,7 +861,7 @@ export async function sendOwnerMagicLink({
   magicLink: string;
 }) {
   await resend.emails.send({
-    from:    "Book One Thing <bookings@bookonething.com>",
+    from:    "BookOneThing <bookings@bookonething.com>",
     to:      toEmail,
     subject: `Your link to set up ${thingName}`,
     html:    buildMagicLinkHTML({ firstName, thingName, magicLink }),
@@ -883,12 +883,9 @@ export function buildCodewordHTML({
   context:     "booker" | "manage" | "setup";
   thingName?:  string;
 }): string {
-  const greeting = firstName ? `Hi ${firstName},` : "Hi there,";
+  const greeting = firstName ? `Hey ${firstName},` : "Hey,";
 
-  const actionLine =
-    context === "booker" ? `Use it to unlock the calendar. Easy.` :
-    context === "setup"  ? `Use it to set up your thing. Easy.`   :
-                           `Use it to manage your things. Easy.`;
+  const actionLine = "Just plug it in and you're good to go.";
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -907,7 +904,7 @@ export function buildCodewordHTML({
           <!-- Logo -->
           <tr>
             <td style="padding-bottom:28px;">
-              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+              <img src="https://bookonething.com/logo2.png" alt="BookOneThing" width="160" style="display:block;border:0;"/>
             </td>
           </tr>
 
@@ -915,11 +912,7 @@ export function buildCodewordHTML({
           <tr>
             <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
-              <p style="margin:0 0 20px;font-size:15px;color:#888;line-height:1.6;">${greeting}</p>
-
-              <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.6;">
-                Here you go.
-              </p>
+              <p style="margin:0 0 24px;font-size:15px;color:#888;line-height:1.6;">${greeting}</p>
 
               <!-- The codeword -->
               <table width="100%" cellpadding="0" cellspacing="0"
@@ -936,7 +929,7 @@ export function buildCodewordHTML({
                 ${actionLine}
               </p>
 
-              <p style="margin:0 0 0;font-size:13px;color:#bbb;line-height:1.6;">
+              <p style="margin:0;font-size:13px;color:#bbb;line-height:1.6;">
                 Your codeword only lasts 15 minutes. Get in there.
               </p>
 
@@ -946,7 +939,7 @@ export function buildCodewordHTML({
           <!-- Footer -->
           <tr>
             <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
-              Book One Thing · The easy way to share anything with anyone.
+              BookOneThing · The easy way to share anything with anyone.
             </td>
           </tr>
 
@@ -972,11 +965,11 @@ export async function sendCodewordEmail({
   thingName?: string;
 }) {
   const subject =
-    context === "booker" ? "Your booking codeword" :
-                           "Your BookOneThing codeword";
+    context === "booker" && thingName ? `Your codeword for ${thingName}` :
+                                        "Your BookOneThing codeword";
 
   await resend.emails.send({
-    from:    "Book One Thing <bookings@bookonething.com>",
+    from:    "BookOneThing <bookings@bookonething.com>",
     to:      toEmail,
     subject,
     html:    buildCodewordHTML({ firstName, code, context, thingName }),
