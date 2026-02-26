@@ -141,8 +141,10 @@ export default async function BookerPage({
 
 // ── Shared render component ───────────────────────────────────────────────────
 
+interface NavThing { id: string; name: string; slug: string; icon: string; }
+
 function CalendarPage({
-  thing, orgName, ownerSlug, thingSlug, bookings, session, isPending, ownerFirstName,
+  thing, orgName, ownerSlug, thingSlug, bookings, session, isPending, ownerFirstName, allThings,
 }: {
   thing:           Thing;
   orgName:         string;
@@ -152,6 +154,7 @@ function CalendarPage({
   session:         BookerSession | null;
   isPending:       boolean;
   ownerFirstName?: string;
+  allThings?:      NavThing[];
 }) {
   return (
     <>
@@ -212,6 +215,7 @@ function CalendarPage({
             bookerSession={session}
             isPending={isPending}
             ownerFirstName={ownerFirstName}
+            allThings={allThings ?? []}
           />
         </div>
 
