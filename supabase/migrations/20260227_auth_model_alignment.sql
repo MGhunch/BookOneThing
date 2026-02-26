@@ -18,6 +18,18 @@ alter index if exists magic_codes_email_code rename to codewords_email_code_idx;
 alter table public.booker_sessions
   add column if not exists org_slug text;
 
+-- Unique constraint so upsert works correctly.
+-- One row per person per thing per org — Sam appears once per thing she books.
+alter table public.booker_sessions
+  drop constraint if exists booker_sessions_email_org_slug_key;
+
+alter table public.booker_sessions
+  drop constraint if exists booker_sessions_email_thing_key;
+
+alter table public.booker_sessions
+  add constraint booker_sessions_email_thing_key
+  unique (email, thing_id);
+
 -- Index for fast org-scoped lookups (manage page sharers list)
 create index if not exists booker_sessions_org_slug_idx
   on public.booker_sessions(org_slug);
