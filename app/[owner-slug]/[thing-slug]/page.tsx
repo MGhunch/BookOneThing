@@ -224,7 +224,6 @@ function CalendarPage({
           ownerSlug={ownerSlug}
           thingSlug={thingSlug}
           ownerFirstName={ownerFirstName}
-          onActivated={() => window.location.reload()}
         />
       )}
     </>
