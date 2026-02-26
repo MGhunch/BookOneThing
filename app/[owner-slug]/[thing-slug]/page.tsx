@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServiceClient } from "@/lib/supabase";
 import Calendar from "@/components/calendar/Calendar";
-import BookerGate from "@/components/BookerGate";
 import SetupGate from "@/components/SetupGate";
 import type { Thing } from "@/types";
 
@@ -209,15 +208,6 @@ function CalendarPage({
           </svg>
         </a>
       </div>
-
-      {!isPending && !session && (
-        <BookerGate
-          thingId={thing.id}
-          thingName={thing.name}
-          ownerSlug={ownerSlug}
-          thingSlug={thingSlug}
-        />
-      )}
 
       {isPending && (
         <SetupGate

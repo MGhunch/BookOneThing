@@ -577,14 +577,11 @@ export function buildOwnerWelcomeHTML({
                 style="background:#fdf4ee;border-radius:14px;padding:20px 22px;margin-bottom:10px;">
                 <tr>
                   <td>
-                    <p style="margin:0 0 10px;font-size:13px;color:#888;line-height:1.5;">
-                      Here's where you'll find it:
+                    <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${ORANGE};">
+                      Share the link
                     </p>
-                    <p style="margin:0 0 16px;font-size:14px;font-weight:700;color:${DARK};word-break:break-all;">
+                    <p style="margin:0 0 18px;font-size:14px;font-weight:700;color:${DARK};word-break:break-all;">
                       ${shareUrl}
-                    </p>
-                    <p style="margin:0 0 14px;font-size:13px;color:#888;">
-                      Share the link with your team.
                     </p>
                     <a href="${shareUrl}"
                        style="display:inline-block;background:${ORANGE};color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:13px 28px;border-radius:12px;letter-spacing:-0.2px;">

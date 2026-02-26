@@ -115,7 +115,7 @@ export async function verifyCodeword(args: VerifyCodewordArgs): Promise<VerifyCo
 // Called by SetupGate after codeword verification.
 // Does everything callback/route.ts used to do — without a magic link.
 
-export type ActivateResult = { ok: true } | { error: string };
+export type ActivateResult = { ok: true; shareUrl: string } | { error: string };
 
 export async function activatePendingThing(
   email:     string,
@@ -228,7 +228,7 @@ export async function activatePendingThing(
     console.error("Owner welcome email failed (non-fatal):", err);
   }
 
-  return { ok: true };
+  return { ok: true, shareUrl: `${siteUrl}/${ownerSlug}/${thing.slug}` };
 }
 
 // ─── SET BOOKER SESSION COOKIE — Bug 3 fix ────────────────────────────────────

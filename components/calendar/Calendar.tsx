@@ -2,10 +2,11 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Info, Car, Users, Coffee, Sun, X, Trash2, ChevronLeft, ChevronRight } from "lucide-react";
+import { Check, Info, Car, Users, Coffee, Sun, X, Trash2, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import type { Thing, Booking } from "@/types";
 import { createBooking, cancelBooking, setReminderPreference } from "@/app/[owner-slug]/[thing-slug]/actions";
 import ModalShell from "@/components/ModalShell";
+import BookerGate from "@/components/BookerGate";
 
 const ORANGE        = "#e8722a";
 const ORANGE_BOOKED = "#f2c9a8";
@@ -174,6 +175,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
   // ── Pending / activation state ────────────────────────────────────────────
   const [showActivationModal, setShowActivationModal] = useState(false);
+  const [showGate, setShowGate]                       = useState(false);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
@@ -467,8 +469,13 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
               <ThingIcon size={17} strokeWidth={1.75} color="#fff" />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: "19px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                {thing.name}
+              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                <div style={{ fontSize: "19px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "180px" }}>
+                  {thing.name}
+                </div>
+                <button style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "2px", flexShrink: 0, display: "flex", alignItems: "center" }}>
+                  <Info size={14} strokeWidth={1.75} />
+                </button>
               </div>
               {orgName && (
                 <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", color: "#bbb", marginTop: "2px" }}>
@@ -476,8 +483,17 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                 </div>
               )}
             </div>
-            <button style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "4px", flexShrink: 0, display: "flex", alignItems: "center" }}>
-              <Info size={15} strokeWidth={1.75} />
+
+            {/* Lock / Tick */}
+            <button
+              onClick={() => { if (!bookerSession) setShowGate(true); }}
+              style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#fdf4ee", border: "none", cursor: bookerSession ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+            >
+              {bookerSession ? (
+                <Check size={14} strokeWidth={2.5} color={ORANGE} />
+              ) : (
+                <Lock size={13} strokeWidth={2.5} color={ORANGE} />
+              )}
             </button>
           </div>
 
@@ -843,6 +859,16 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
             </div>
           </div>
         </ModalShell>
+      )}
+
+      {showGate && !bookerSession && (
+        <BookerGate
+          thingId={thing.id}
+          thingName={thing.name}
+          ownerSlug={ownerSlug}
+          thingSlug={thingSlug}
+          onClose={() => setShowGate(false)}
+        />
       )}
     </>
   );

@@ -16,11 +16,12 @@ interface BookerGateProps {
   thingName: string;
   ownerSlug: string;
   thingSlug: string;
+  onClose?:  () => void;
 }
 
 type Screen = "email" | "code" | "name" | "done";
 
-export default function BookerGate({ thingId, thingName, ownerSlug, thingSlug }: BookerGateProps) {
+export default function BookerGate({ thingId, thingName, ownerSlug, thingSlug, onClose }: BookerGateProps) {
   const [screen, setScreen]       = useState<Screen>("email");
   const [email, setEmail]         = useState("");
   const [code, setCode]           = useState("");
@@ -97,7 +98,7 @@ export default function BookerGate({ thingId, thingName, ownerSlug, thingSlug }:
   if (dismissed) return null;
 
   return (
-    <ModalShell>
+    <ModalShell onBackdropClick={onClose}>
       <style>{`
         @keyframes shake {
           0%,100% { transform: translateX(0); }
