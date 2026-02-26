@@ -5,20 +5,24 @@ import Calendar from "@/components/calendar/Calendar";
 import SetupGate from "@/components/SetupGate";
 import type { Thing } from "@/types";
 
-const SESSION_COOKIE = "bot_session";
 
 interface BookerSession {
   email:     string;
   firstName: string;
+  orgSlug:   string;
 }
 
-async function readSession(): Promise<BookerSession | null> {
+async function readSession(ownerSlug: string): Promise<BookerSession | null> {
   try {
     const cookieStore = await cookies();
-    const raw = cookieStore.get(SESSION_COOKIE)?.value;
+    const raw = cookieStore.get(`bot_session_${ownerSlug}`)?.value;
     if (!raw) return null;
     const parsed = JSON.parse(raw);
-    if (typeof parsed.email === "string" && typeof parsed.firstName === "string") {
+    if (
+      typeof parsed.email     === "string" &&
+      typeof parsed.firstName === "string" &&
+      typeof parsed.orgSlug   === "string"
+    ) {
       return parsed as BookerSession;
     }
     return null;
@@ -52,6 +56,14 @@ export default async function BookerPage({
       .eq("is_active", true)
       .single();
 
+    // Fetch all owner's things for bottom nav
+    const { data: allThings } = await supabase
+      .from("things")
+      .select("id, name, slug, icon")
+      .eq("owner_id", profile.id)
+      .eq("is_active", true)
+      .order("created_at", { ascending: true });
+
     if (thing) {
       const from = new Date();
       from.setDate(from.getDate() - 1);
@@ -67,7 +79,7 @@ export default async function BookerPage({
         .gte("starts_at", from.toISOString())
         .lte("starts_at", to.toISOString());
 
-      const session = await readSession();
+      const session = await readSession(ownerSlug);
 
       return <CalendarPage
         thing={thing}
@@ -77,6 +89,7 @@ export default async function BookerPage({
         bookings={bookings ?? []}
         session={session}
         isPending={false}
+        allThings={allThings ?? []}
       />;
     }
   }
