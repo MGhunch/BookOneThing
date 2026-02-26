@@ -141,7 +141,66 @@ export default async function BookerPage({
 
 // ── Shared render component ───────────────────────────────────────────────────
 
+import { Car, Users, Coffee, Sun, Plus, Wrench, Monitor, Home } from "lucide-react";
+
+const ICON_MAP: Record<string, React.ComponentType<{ size: number; strokeWidth: number; color: string }>> = {
+  car: Car, users: Users, coffee: Coffee, sun: Sun,
+  wrench: Wrench, monitor: Monitor, home: Home,
+};
+
 interface NavThing { id: string; name: string; slug: string; icon: string; }
+
+function ThingNavSlot({
+  t, ownerSlug, side, isAdd,
+}: {
+  t?: NavThing; ownerSlug: string; side: "left" | "right"; isAdd?: boolean;
+}) {
+  const IconComp = t ? (ICON_MAP[t.icon] || Car) : Plus;
+  const label    = t ? t.name : "Add another thing";
+  const href     = t ? `/${ownerSlug}/${t.slug}` : "/setup";
+  const isRight  = side === "right";
+
+  return (
+    <a href={href} style={{
+      display: "none",
+      flexDirection: "column",
+      alignItems: "center",
+      gap: "10px",
+      width: "88px",
+      flexShrink: 0,
+      textDecoration: "none",
+      opacity: t || isAdd ? 0.28 : 0,
+      pointerEvents: t || isAdd ? "auto" : "none",
+      transition: "opacity 0.2s ease",
+      padding: "8px 4px",
+    }}
+    className={`cal-side cal-side-${side}`}
+    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; }}
+    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "0.28"; }}
+    >
+      {/* Icon */}
+      <div style={{
+        width: 44, height: 44, borderRadius: 14,
+        background: "#1a1a1a",
+        display: "flex", alignItems: "center", justifyContent: "center",
+        flexShrink: 0,
+      }}>
+        <IconComp size={20} strokeWidth={1.75} color="#fff" />
+      </div>
+      {/* Name */}
+      <div style={{
+        fontSize: 11, fontWeight: 600, color: "#1a1a1a",
+        fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif",
+        textAlign: isRight ? "left" : "right",
+        lineHeight: 1.3,
+        width: "100%",
+        textAlign: "center",
+      }}>
+        {label}
+      </div>
+    </a>
+  );
+}
 
 function CalendarPage({
   thing, orgName, ownerSlug, thingSlug, bookings, session, isPending, ownerFirstName, allThings,
@@ -156,54 +215,44 @@ function CalendarPage({
   ownerFirstName?: string;
   allThings?:      NavThing[];
 }) {
+  const things = allThings ?? [];
+  const idx    = things.findIndex(t => t.slug === thingSlug);
+  const prev   = idx > 0 ? things[idx - 1] : undefined;
+  // Right side: next thing if exists, otherwise "Add another thing" prompt
+  const next   = idx >= 0 && idx < things.length - 1 ? things[idx + 1] : undefined;
+  const showAdd = !next; // always show add on the right if no next thing
+
   return (
     <>
       <style>{`
         .page-wrap {
-          overflow: hidden;
           height: 100dvh;
           display: flex;
           align-items: center;
           justify-content: center;
           min-height: 100dvh;
-          padding: 72px 8px 40px;
+          padding: 72px 8px 24px;
+          overflow: hidden;
         }
-        .cal-arrow {
-          display: none;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          width: 72px;
-          flex-shrink: 0;
-          cursor: pointer;
-          opacity: 0.18;
-          transition: opacity 0.25s ease;
-          text-decoration: none;
-          padding: 32px 8px;
-          border: none;
-          background: none;
-        }
-        .cal-arrow:hover { opacity: 0.55; }
-        .cal-arrow svg { display: block; }
         .cal-hero {
           width: 100%;
           max-width: 420px;
           flex-shrink: 0;
+          height: 100%;
         }
+        .cal-side { display: none !important; }
         @media (min-width: 780px) {
-          .cal-arrow { display: flex; }
+          .cal-side { display: flex !important; }
         }
         @media (min-width: 1080px) {
-          .cal-arrow { width: 100px; }
+          .cal-side-left  { width: 110px; }
+          .cal-side-right { width: 110px; }
         }
       `}</style>
 
       <div className="page-wrap">
-        <a href={`/${ownerSlug}`} className="cal-arrow">
-          <svg width="32" height="56" viewBox="0 0 32 56" fill="none">
-            <path d="M28 4L4 28L28 52" stroke="#1a1a1a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </a>
+        {/* Left — previous thing */}
+        <ThingNavSlot t={prev} ownerSlug={ownerSlug} side="left" />
 
         <div className="cal-hero">
           <Calendar
@@ -215,15 +264,11 @@ function CalendarPage({
             bookerSession={session}
             isPending={isPending}
             ownerFirstName={ownerFirstName}
-            allThings={allThings ?? []}
           />
         </div>
 
-        <a href={`/${ownerSlug}`} className="cal-arrow">
-          <svg width="32" height="56" viewBox="0 0 32 56" fill="none">
-            <path d="M4 4L28 28L4 52" stroke="#1a1a1a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-        </a>
+        {/* Right — next thing or add prompt */}
+        <ThingNavSlot t={next} ownerSlug={ownerSlug} side="right" isAdd={showAdd} />
       </div>
 
       {isPending && (
