@@ -156,7 +156,7 @@ function ThingNavSlot({
   t?: NavThing; ownerSlug: string; side: "left" | "right"; isAdd?: boolean;
 }) {
   const IconComp = t ? (ICON_MAP[t.icon] || Car) : Plus;
-  const label    = t ? t.name : "Add another thing";
+  const label    = t ? t.name : "Add more things";
   const href     = t ? `/${ownerSlug}/${t.slug}` : "/setup";
   const isRight  = side === "right";
 
@@ -228,7 +228,7 @@ function CalendarPage({
           align-items: center;
           justify-content: center;
           min-height: 100dvh;
-          padding: 72px 8px 24px;
+          padding: 72px 24px 8px;
           overflow: hidden;
         }
         .cal-hero {
