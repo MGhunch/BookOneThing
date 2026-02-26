@@ -175,8 +175,6 @@ function ThingNavSlot({
       padding: "8px 4px",
     }}
     className={`cal-side cal-side-${side}`}
-    onMouseEnter={e => { (e.currentTarget as HTMLElement).style.opacity = "0.75"; }}
-    onMouseLeave={e => { (e.currentTarget as HTMLElement).style.opacity = "0.28"; }}
     >
       {/* Icon */}
       <div style={{
@@ -191,6 +189,7 @@ function ThingNavSlot({
       <div style={{
         fontSize: 11, fontWeight: 600, color: "#1a1a1a",
         fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif",
+        textAlign: isRight ? "left" : "right",
         lineHeight: 1.3,
         width: "100%",
         textAlign: "center",
@@ -240,6 +239,7 @@ function CalendarPage({
           height: 100%;
         }
         .cal-side { display: none !important; }
+        .cal-side:hover { opacity: 0.75 !important; }
         @media (min-width: 780px) {
           .cal-side { display: flex !important; }
         }
