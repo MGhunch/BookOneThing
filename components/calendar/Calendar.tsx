@@ -314,7 +314,14 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     }
   };
 
-  const handleSelectionTap = () => { if (phase === S_READY) setPhase(S_MODAL); };
+  const handleSelectionTap = () => {
+    if (phase !== S_READY) return;
+    if (!isKnownBooker) {
+      setShowGate(true); // auth first — onDone resumes to S_MODAL
+    } else {
+      setPhase(S_MODAL);
+    }
+  };
 
   const slotBg = (s: string) => {
     if (!inRange(s)) return ORANGE_AVAIL;
@@ -663,47 +670,12 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                   <TickRow label={dateLabel} />
                 </div>
 
-                {/* Name + email — only shown to first-time bookers */}
-                {!isKnownBooker && (
-                  <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
-                    <input
-                      type="text"
-                      placeholder="Your name"
-                      value={bookerName}
-                      onChange={(e) => setBookerName(e.target.value)}
-                      style={{
-                        width: "100%", padding: "13px 16px", borderRadius: "12px",
-                        border: "1.5px solid #ede9e3", fontSize: "14px", fontWeight: 500,
-                        fontFamily: SYS, color: "#1a1a1a", outline: "none",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                    <input
-                      type="email"
-                      placeholder="Email — for your calendar invite"
-                      value={bookerEmail}
-                      onChange={(e) => setBookerEmail(e.target.value)}
-                      style={{
-                        width: "100%", padding: "13px 16px", borderRadius: "12px",
-                        border: "1.5px solid #ede9e3", fontSize: "14px", fontWeight: 500,
-                        fontFamily: SYS, color: "#1a1a1a", outline: "none",
-                        boxSizing: "border-box",
-                      }}
-                    />
-                    <div style={{ fontSize: "11px", color: "#bbb", fontFamily: SYS, paddingLeft: "2px" }}>
-                      We'll try and remember you next time.
-                    </div>
-                  </div>
-                )}
-
-                {/* Known booker — show name as context (no fields needed) */}
-                {isKnownBooker && (
-                  <div style={{ fontSize: "13px", color: "#bbb", marginBottom: "20px", fontFamily: SYS }}>
-                    Booking as <span style={{ color: "#1a1a1a", fontWeight: 600 }}>
-                      {bookerSession ? bookerSession.firstName : bookerName}
-                    </span>
-                  </div>
-                )}
+                {/* Booking identity — always known by this point (gate intercepts otherwise) */}
+                <div style={{ fontSize: "13px", color: "#bbb", marginBottom: "20px", fontFamily: SYS }}>
+                  Booking as <span style={{ color: "#1a1a1a", fontWeight: 600 }}>
+                    {bookerSession?.firstName ?? bookerName}
+                  </span>
+                </div>
 
                 <div style={{ display: "flex", gap: "10px" }}>
                   <button onClick={reset}
@@ -711,15 +683,18 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                     Not now
                   </button>
                   <button
-                    disabled={!bookerName.trim() || !bookerEmail.trim() || !bookerEmail.includes("@") || !bookerEmail.includes(".") || submitting}
+                    disabled={submitting}
                     onClick={async () => {
                       if (!start) return;
+                      const name  = bookerSession?.firstName ?? bookerName;
+                      const email = bookerSession?.email     ?? bookerEmail;
+                      if (!name || !email) return;
                       setSubmitting(true);
                       const endSlot = end ?? start;
                       const result = await createBooking({
                         thingId:     thing.id,
-                        bookerName:  bookerName.trim(),
-                        bookerEmail: bookerEmail.trim(),
+                        bookerName:  name,
+                        bookerEmail: email,
                         startsAt:    slotToISO(start),
                         endsAt:      slotToISO(endSlot, 30),
                       });
@@ -729,21 +704,16 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                         reset();
                         return;
                       }
-                      // Success — persist to localStorage only for non-session users (legacy fallback)
-                      if (!bookerSession) {
-                        localStorage.setItem("bookerName",  bookerName.trim());
-                        localStorage.setItem("bookerEmail", bookerEmail.trim().toLowerCase());
-                      }
                       setConfirmedBookingId(result.bookingId);
                       setConfirmed(true);
                       router.refresh();
                     }}
                     style={{
                       flex: 1, padding: "14px", borderRadius: "12px", border: "none",
-                      background: (!bookerName.trim() || !bookerEmail.trim() || submitting) ? "#f0ece6" : ORANGE,
-                      cursor: (!bookerName.trim() || !bookerEmail.trim() || submitting) ? "default" : "pointer",
+                      background: submitting ? "#f0ece6" : ORANGE,
+                      cursor: submitting ? "default" : "pointer",
                       fontSize: "14px", fontWeight: 600,
-                      color: (!bookerName.trim() || !bookerEmail.trim() || submitting) ? "#bbb" : "#fff",
+                      color: submitting ? "#bbb" : "#fff",
                       fontFamily: SYS, transition: "all 0.15s",
                     }}>
                     {submitting ? "Booking…" : "Confirm"}
@@ -759,7 +729,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                   <Check size={26} strokeWidth={2.5} color="#fff" />
                 </div>
                 <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", marginBottom: "12px", letterSpacing: "-0.4px" }}>
-                  All booked, {bookerSession ? bookerSession.firstName : bookerName}.
+                  All booked, {bookerSession?.firstName ?? bookerName}.
                 </div>
                 <div style={{ fontSize: "14px", color: "#bbb", lineHeight: 1.6, marginBottom: "24px" }}>
                   Check your email for a calendar invite.
@@ -863,6 +833,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
       {showGate && !bookerSession && (
         <BookerGate
+          onDone={() => { setShowGate(false); setPhase(S_MODAL); }}
           thingId={thing.id}
           thingName={thing.name}
           ownerSlug={ownerSlug}
