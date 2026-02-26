@@ -174,7 +174,7 @@ export default function BookerGate({
       setTimeout(() => setShake(false), 500);
       return;
     }
-    await setBookerSessionCookie(email.trim(), firstName.trim());
+    await setBookerSessionCookie(email.trim(), firstName.trim(), ownerSlug, thingId);
     if (typeof window !== "undefined") {
       localStorage.setItem("bookerName",  firstName.trim());
       localStorage.setItem("bookerEmail", email.trim().toLowerCase());
