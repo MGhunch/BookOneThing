@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { Check, Info, Car, Users, Coffee, Sun, X, Trash2, ChevronLeft, ChevronRight, Lock } from "lucide-react";
+import { Check, Car, Users, Coffee, Sun, X, Trash2, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import type { Thing, Booking } from "@/types";
 import { createBooking, cancelBooking, setReminderPreference } from "@/app/[owner-slug]/[thing-slug]/actions";
 import ModalShell from "@/components/ModalShell";
@@ -476,13 +476,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
               <ThingIcon size={17} strokeWidth={1.75} color="#fff" />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                <div style={{ fontSize: "19px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", maxWidth: "180px" }}>
-                  {thing.name}
-                </div>
-                <button style={{ background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: "2px", flexShrink: 0, display: "flex", alignItems: "center" }}>
-                  <Info size={14} strokeWidth={1.75} />
-                </button>
+              <div style={{ fontSize: "19px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", overflowWrap: "break-word", wordBreak: "break-word" }}>
+                {thing.name}
               </div>
               {orgName && (
                 <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", color: "#bbb", marginTop: "2px" }}>
