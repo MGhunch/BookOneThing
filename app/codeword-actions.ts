@@ -31,7 +31,7 @@ export async function sendCodeword(args: SendCodewordArgs): Promise<SendCodeword
   const expiryMins = args.expiryMinutes ?? 15;
 
   await supabase
-    .from("magic_codes")
+    .from("codewords")
     .update({ used_at: new Date().toISOString() })
     .eq("email", email)
     .eq("context", args.context)
@@ -54,7 +54,7 @@ export async function sendCodeword(args: SendCodewordArgs): Promise<SendCodeword
     row.thing_slug = args.thingSlug;
   }
 
-  const { error: insertError } = await supabase.from("magic_codes").insert(row);
+  const { error: insertError } = await supabase.from("codewords").insert(row);
   if (insertError) {
     console.error("magic_codes insert failed:", insertError);
     return { error: "Something went wrong. Please try again." };
@@ -90,7 +90,7 @@ export async function verifyCodeword(args: VerifyCodewordArgs): Promise<VerifyCo
   const code     = args.code.trim().toUpperCase();
 
   const { data, error } = await supabase
-    .from("magic_codes")
+    .from("codewords")
     .select("*")
     .eq("email", email)
     .eq("code", code)
@@ -102,7 +102,7 @@ export async function verifyCodeword(args: VerifyCodewordArgs): Promise<VerifyCo
   if (error || !data) return { error: "That codeword isn't right. Try again." };
 
   await supabase
-    .from("magic_codes")
+    .from("codewords")
     .update({ used_at: new Date().toISOString() })
     .eq("id", data.id);
 
@@ -236,28 +236,63 @@ export async function activatePendingThing(
 
 // ─── SET BOOKER SESSION COOKIE — Bug 3 fix ────────────────────────────────────
 // Called by BookerGate after codeword + name are confirmed.
-// Sets the bot_session cookie so the calendar knows who this person is.
+// 1. Sets an org-scoped bot_session cookie so the calendar knows who this person is.
+// 2. Upserts a booker_sessions row so the owner's manage page can see sharers.
 
 export type SetBookerSessionResult = { ok: true } | { error: string };
 
 export async function setBookerSessionCookie(
   email:     string,
   firstName: string,
+  orgSlug:   string,
+  thingId:   string,
 ): Promise<SetBookerSessionResult> {
+  const supabase   = adminClient();
+  const cleanEmail = email.trim().toLowerCase();
+
+  // ── 1. Set org-scoped cookie ───────────────────────────────────────────────
+  // Cookie name is org-specific so Hunch and Harbour tokens are independent.
+  const cookieName = `bot_session_${orgSlug}`;
   try {
     const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE, JSON.stringify({ email, firstName }), {
+    cookieStore.set(cookieName, JSON.stringify({ email: cleanEmail, firstName, orgSlug }), {
       httpOnly: true,
       sameSite: "lax",
       secure:   process.env.NODE_ENV === "production",
       maxAge:   COOKIE_MAX_AGE,
       path:     "/",
     });
-    return { ok: true };
   } catch (err) {
     console.error("Cookie set failed:", err);
     return { error: "Couldn't save your session." };
   }
+
+  // ── 2. Upsert booker_sessions row ─────────────────────────────────────────
+  // Lets the owner see this person in Manage My Things → Sharers.
+  // Upsert on (email, org_slug) so re-authenticating updates rather than duplicates.
+  try {
+    await supabase
+      .from("booker_sessions")
+      .upsert({
+        email:            cleanEmail,
+        first_name:       firstName,
+        thing_id:         thingId,
+        org_slug:         orgSlug,
+        authenticated_at: new Date().toISOString(),
+        // Legacy columns — set safe defaults
+        token:      null,
+        expires_at: null,
+        slug:       null,
+      }, {
+        onConflict:        "email,org_slug",
+        ignoreDuplicates:  false,
+      });
+  } catch (err) {
+    // Non-fatal — cookie is set, session works. Sharers list just won't update.
+    console.error("booker_sessions upsert failed (non-fatal):", err);
+  }
+
+  return { ok: true };
 }
 
 // ─── LOAD OWNER DATA — Bug 2 fix ─────────────────────────────────────────────
