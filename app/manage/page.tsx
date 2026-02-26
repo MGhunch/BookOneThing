@@ -7,6 +7,7 @@ import {
   Copy, Check, ExternalLink, Settings, ChevronRight, ChevronDown, ChevronUp,
   LogOut, Edit2, X,
 } from "lucide-react";
+import { CodewordProgressBar } from "@/components/CodewordProgressBar";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
@@ -254,7 +255,7 @@ function ThingCard({ thing, ownerSlug }: { thing: Thing; ownerSlug: string }) {
   const shareUrl   = `${siteUrl}/${ownerSlug}/${thing.slug}`;
   const availLabel = `${fmtTime(thing.avail_start)} – ${fmtTime(thing.avail_end)}${thing.avail_weekends ? ", 7 days" : ", weekdays"}`;
 
-  // Load sharers on first open
+  // Load sharers on first open — per thing, so each card shows its own bookers
   const handleOpen = async () => {
     const next = !open;
     setOpen(next);
@@ -264,7 +265,7 @@ function ThingCard({ thing, ownerSlug }: { thing: Thing; ownerSlug: string }) {
         .from("booker_sessions")
         .select("id, first_name, email")
         .eq("thing_id", thing.id)
-        .order("created_at", { ascending: true });
+        .order("authenticated_at", { ascending: true });
       setSharers(data ?? []);
       setSharersLoaded(true);
     }
@@ -384,15 +385,18 @@ function AddThingCard({ hasThings }: { hasThings: boolean }) {
   );
 }
 
+
+
 // ─── CODEWORD SCREEN ──────────────────────────────────────────────────────────
 
 function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
-  const [screen, setScreen]   = useState<"email" | "code">("email");
-  const [email, setEmail]     = useState("");
-  const [code, setCode]       = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError]     = useState<string | null>(null);
-  const [shake, setShake]     = useState(false);
+  const [screen, setScreen]     = useState<"email" | "code">("email");
+  const [email, setEmail]       = useState("");
+  const [code, setCode]         = useState("");
+  const [loading, setLoading]   = useState(false);
+  const [error, setError]       = useState<string | null>(null);
+  const [shake, setShake]       = useState(false);
+  const [resetKey, setResetKey] = useState(0);
 
   const validEmail = email.trim().includes("@") && email.trim().includes(".");
   const validCode  = code.trim().length >= 3;
@@ -405,6 +409,7 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
     const result = await sendCodeword({ context: "manage", email: email.trim() });
     setLoading(false);
     if ("error" in result) { setError(result.error); return; }
+    setResetKey(k => k + 1);
     setScreen("code");
   }
 
@@ -437,12 +442,12 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
           }
           .cw-shake { animation: shake 0.4s ease; }
         `}</style>
-        <div style={{ textAlign: "center" as const, marginBottom: 32 }}>
-          <div style={{ fontSize: 28, fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.15, marginBottom: 10 }}>
-            Manage your things.
+        <div style={{ marginBottom: 28 }}>
+          <div style={{ fontSize: 28, fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.15, marginBottom: 8 }}>
+            Let's find your things.
           </div>
           <div style={{ fontSize: 15, color: GREY, fontFamily: SYS, lineHeight: 1.65 }}>
-            Just pop in your email to get a codeword.
+            Just pop in your email.
           </div>
         </div>
         <input
@@ -471,7 +476,7 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
             letterSpacing: "-0.3px", transition: "all 0.2s",
           }}
         >
-          {loading ? "Sending…" : "Send my codeword"}
+          {loading ? "Sending…" : "Get a codeword"}
         </button>
       </>
     );
@@ -481,14 +486,14 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
 
   return (
     <>
-      <div style={{ textAlign: "center" as const, marginBottom: 32 }}>
-        <div style={{ fontSize: 28, fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.15, marginBottom: 10 }}>
+      <div style={{ marginBottom: 20 }}>
+        <div style={{ fontSize: 28, fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.15 }}>
           Enter your codeword.
         </div>
-        <div style={{ fontSize: 15, color: GREY, fontFamily: SYS, lineHeight: 1.65 }}>
-          Check your email. It expires in 15 minutes.
-        </div>
       </div>
+
+      <CodewordProgressBar resetKey={resetKey} />
+
       <div className={shake ? "cw-shake" : ""}>
         <input
           type="text" value={code}
@@ -521,7 +526,7 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
           marginBottom: 14,
         }}
       >
-        {loading ? "Checking…" : "Confirm"}
+        {loading ? "Checking…" : "Unlock"}
       </button>
       <div style={{ textAlign: "center" as const, fontSize: 13, color: GREY_LIGHT, fontFamily: SYS }}>
         Didn't get it?{" "}
