@@ -15,16 +15,17 @@ interface SetupGateProps {
   ownerSlug:       string;
   thingSlug:       string;
   ownerFirstName?: string;
-  onActivated:     () => void;
 }
 
 type Screen = "email" | "code" | "activating" | "done";
 
-export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActivated }: SetupGateProps) {
+export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName }: SetupGateProps) {
   const [screen, setScreen]   = useState<Screen>("email");
   const [email, setEmail]     = useState("");
   const [code, setCode]       = useState("");
-  const [loading, setLoading] = useState(false);
+  const [shareUrl, setShareUrl] = useState<string | null>(null);
+  const [copied, setCopied]     = useState(false);
+  const [loading, setLoading]   = useState(false);
   const [error, setError]     = useState<string | null>(null);
   const [shake, setShake]     = useState(false);
 
@@ -86,8 +87,8 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
     }
 
     sessionStorage.removeItem("setupEmail");
+    if ("shareUrl" in activateResult) setShareUrl(activateResult.shareUrl);
     setScreen("done");
-    setTimeout(() => onActivated(), 1500);
   }
 
   return (
@@ -174,7 +175,7 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
 
       {/* Done */}
       {screen === "done" && (
-        <div style={{ textAlign: "center" as const, padding: "8px 0" }}>
+        <div style={{ textAlign: "center" as const }}>
           <div style={{ width: 52, height: 52, borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
             <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="3,11 8,17 19,5"/>
@@ -183,7 +184,34 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName, onActi
           <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, marginBottom: 6 }}>
             You're live.
           </div>
-          <div style={{ fontSize: 14, color: GREY, fontFamily: SYS }}>Taking you to your calendar.</div>
+          <div style={{ fontSize: 14, color: GREY, fontFamily: SYS, marginBottom: 24 }}>
+            Share this link and people can start booking.
+          </div>
+
+          {shareUrl && (
+            <div
+              onClick={() => {
+                navigator.clipboard.writeText(shareUrl);
+                setCopied(true);
+                setTimeout(() => setCopied(false), 2000);
+              }}
+              style={{ background: ORANGE_LIGHT, border: `1.5px solid ${copied ? ORANGE : "#f0e8e0"}`, borderRadius: 12, padding: "14px 16px", cursor: "pointer", marginBottom: 20, transition: "all 0.15s" }}
+            >
+              <div style={{ fontSize: 11, fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" as const, color: ORANGE, fontFamily: SYS, marginBottom: 4 }}>
+                {copied ? "Copied!" : "Tap to copy"}
+              </div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: DARK, fontFamily: SYS, wordBreak: "break-all" as const }}>
+                {shareUrl.replace(/^https?:\/\//, "")}
+              </div>
+            </div>
+          )}
+
+          <button
+            onClick={() => window.location.reload()}
+            style={{ width: "100%", padding: 15, borderRadius: 13, border: "none", background: DARK, color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: SYS, cursor: "pointer" }}
+          >
+            Go to my calendar →
+          </button>
         </div>
       )}
     </ModalShell>
