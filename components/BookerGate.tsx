@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { sendCodeword, verifyCodeword, setBookerSessionCookie } from "@/app/codeword-actions";
 import ModalShell from "@/components/ModalShell";
 
@@ -22,6 +23,7 @@ interface BookerGateProps {
 type Screen = "email" | "name" | "code" | "done";
 
 export default function BookerGate({ thingId, thingName, ownerSlug, thingSlug, onClose }: BookerGateProps) {
+  const router = useRouter();
   const [screen, setScreen]       = useState<Screen>("email");
   const [email, setEmail]         = useState("");
   const [code, setCode]           = useState("");
@@ -81,6 +83,7 @@ export default function BookerGate({ thingId, thingName, ownerSlug, thingSlug, o
       localStorage.setItem("bookerEmail", email.trim().toLowerCase());
     }
     setLoading(false);
+    router.refresh();
     setScreen("done");
   }
 
