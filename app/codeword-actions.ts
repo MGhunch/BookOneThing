@@ -12,7 +12,6 @@ function adminClient() {
   );
 }
 
-const SESSION_COOKIE = "bot_session";
 const COOKIE_MAX_AGE = 60 * 60 * 24 * 365;
 
 // ─── SEND CODEWORD ────────────────────────────────────────────────────────────
@@ -284,8 +283,8 @@ export async function setBookerSessionCookie(
         expires_at: null,
         slug:       null,
       }, {
-        onConflict:        "email,org_slug",
-        ignoreDuplicates:  false,
+        onConflict:       "email,thing_id",
+        ignoreDuplicates: false,
       });
   } catch (err) {
     // Non-fatal — cookie is set, session works. Sharers list just won't update.
