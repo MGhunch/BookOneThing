@@ -107,14 +107,9 @@ const BUFFER_PRESETS = [
 
 function Pill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <button onClick={onClick} style={{
-      padding: "10px 22px", borderRadius: "999px",
-      border: active ? `1.5px solid ${ORANGE}` : `1.5px solid ${BORDER}`,
-      background: active ? ORANGE_LIGHT : "#f9f8f6",
-      color: active ? ORANGE : DARK,
-      fontSize: "14px", fontWeight: 600, fontFamily: SYS,
-      cursor: "pointer", transition: "all 0.15s", whiteSpace: "nowrap",
-    }}>{label}</button>
+    <button onClick={onClick} className={`btn-selector${active ? " active" : ""}`}>
+      {label}
+    </button>
   );
 }
 
@@ -641,15 +636,8 @@ export default function SetupPage() {
                 <button
                   onClick={() => canFlip && flip("back")}
                   disabled={!canFlip}
-                  style={{
-                    width: "100%", marginTop: "40px", padding: "18px",
-                    borderRadius: "14px", border: "none",
-                    background: canFlip ? ORANGE : "#f0ece6",
-                    color: canFlip ? "#fff" : "#bbb",
-                    fontSize: "16px", fontWeight: 700, fontFamily: SYS,
-                    cursor: canFlip ? "pointer" : "default",
-                    letterSpacing: "-0.3px", transition: "all 0.2s",
-                  }}
+                  className={`btn ${canFlip ? "btn-primary" : "btn-inactive"}`}
+                  style={{ marginTop: "40px", fontSize: "16px", letterSpacing: "-0.3px" }}
                 >
                   Let's set some rules
                 </button>
