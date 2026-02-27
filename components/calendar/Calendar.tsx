@@ -319,8 +319,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
   const slotBg = (s: string) => {
     if (!inRange(s)) return ORANGE_AVAIL;
-    if (phase === S_READY) return ORANGE_READY;
-    return ORANGE_SOFT;
+    return ORANGE;
   };
 
   const startLabel = (slot: string) => {
@@ -520,13 +519,10 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
               <div style={{ position: "absolute", left: "40px", right: 0, top: 0 }}>
 
-                {/* ── Range fill: covers PILL_GAP between hour-pair groups during selection ── */}
-                {phase !== S_IDLE && start && (() => {
-                  const si = slotIdx(start);
-                  const ei = end ? slotIdx(end) : si;
-                  const lo = Math.min(si, ei);
-                  const hi = Math.max(si, ei);
-                  if (lo === hi) return null;
+                {/* ── Gap fill: solid orange underlay covering PILL_GAP between groups ── */}
+                {start && end && (() => {
+                  const lo = Math.min(slotIdx(start), slotIdx(end));
+                  const hi = Math.max(slotIdx(start), slotIdx(end));
                   return (
                     <div style={{
                       position: "absolute",
@@ -537,6 +533,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                       background: ORANGE,
                       borderRadius: "8px",
                       pointerEvents: "none",
+                      zIndex: 0,
                     }} />
                   );
                 })()}
@@ -589,8 +586,9 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                         onClick={ready ? handleSelectionTap : undefined}
                         style={{ position: "absolute", top, left: 0, right: 0, height,
                           borderRadius: wrapRadius, overflow: "hidden",
-                          border: bothActive ? `2px solid ${ORANGE}` : "2px solid transparent",
-                          boxSizing: "border-box", cursor: ready ? "pointer" : "default", transition: "border 0.15s" }}>
+                          border: bothActive ? "none" : "2px solid transparent",
+                          boxSizing: "border-box", cursor: ready ? "pointer" : "default",
+                          transition: "border 0.15s", zIndex: 1 }}>
                         <button
                           onClick={ready ? handleSelectionTap : () => handleSlot(group.s1!)}
                           style={{ display: "flex", alignItems: "center", paddingLeft: "11px", width: "100%", height: `${SLOT_H}px`,
@@ -629,7 +627,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                         border: active ? `2px solid ${ORANGE}` : "2px solid transparent",
                         borderRadius: active ? rangeRadius(slot) : "8px", cursor: "pointer",
                         display: "flex", alignItems: "center", paddingLeft: "11px",
-                        boxSizing: "border-box", textAlign: "left", transition: "background 0.3s, border 0.15s" }}>
+                        boxSizing: "border-box", textAlign: "left", transition: "background 0.3s, border 0.15s",
+                        zIndex: 1 }}>
                       {startLabel(slot)}
                       {endLabel(slot)}
                     </button>
