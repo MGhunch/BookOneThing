@@ -319,7 +319,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
       return (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", fontFamily: SYS }}>
           <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff" }}>{rangeStr}</span>
-          <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff", background: "rgba(0,0,0,0.15)", borderRadius: "20px", padding: "3px 10px", flexShrink: 0 }}>Book it?</span>
+          <span style={{ fontSize: "12px", fontWeight: 700, color: ORANGE, background: "#fff", borderRadius: "20px", padding: "3px 10px", flexShrink: 0 }}>Book it?</span>
         </div>
       );
     }
