@@ -736,7 +736,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                   <Check size={26} strokeWidth={2.5} color="#fff" />
                 </div>
                 <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", marginBottom: "12px", letterSpacing: "-0.4px" }}>
-                  All booked, {bookerSession?.firstName ?? bookerName}.
+                  All booked, {bookerSession?.firstName ?? bookerName}
                 </div>
                 <div style={{ fontSize: "14px", color: "#bbb", lineHeight: 1.6, marginBottom: "24px" }}>
                   Check your email for a calendar invite.
