@@ -102,16 +102,29 @@ export function buildConfirmationHTML({
   startsAt,
   endsAt,
   cancelUrl,
+  specialInstructions,
+  calBaseUrl = "https://bookonething.com",
 }: {
-  bookerName: string;
-  thingName:  string;
-  orgName:    string;
-  startsAt:   string;
-  endsAt:     string;
-  cancelUrl?: string;
+  bookerName:           string;
+  thingName:            string;
+  orgName:              string;
+  startsAt:             string;
+  endsAt:               string;
+  cancelUrl?:           string;
+  specialInstructions?: string;
+  calBaseUrl?:          string;
 }): string {
   const timeRange = `${fmtTime(startsAt)} – ${fmtTime(endsAt)}`;
   const dateStr   = fmtDate(startsAt);
+
+  // Google Calendar URL
+  const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE`
+    + `&text=${encodeURIComponent(thingName)}`
+    + `&dates=${icsDate(startsAt)}/${icsDate(endsAt)}`
+    + `&details=${encodeURIComponent(orgName ? `${thingName} · ${orgName}` : thingName)}`;
+
+  // Hosted .ics URL for Apple / Outlook
+  const icsUrl = `${calBaseUrl}/api/ics?starts=${encodeURIComponent(startsAt)}&ends=${encodeURIComponent(endsAt)}&name=${encodeURIComponent(thingName)}`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -207,13 +220,41 @@ export function buildConfirmationHTML({
                 </tr>
               </table>
 
-              <p style="margin:0 0 ${cancelUrl ? "16px" : "0"};font-size:13px;color:#999;line-height:1.6;">
-                The calendar invite is attached. Add it to your calendar and you're done.
-              </p>
+              ${specialInstructions ? `
+              <!-- Things to remember -->
+              <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;">Things to remember</p>
+              <table width="100%" cellpadding="0" cellspacing="0"
+                style="background:#f9f8f6;border-radius:12px;padding:14px 16px;margin-bottom:20px;border:1.5px solid #ede9e3;">
+                <tr><td style="font-size:13px;color:#555;line-height:1.6;">${specialInstructions}</td></tr>
+              </table>` : ""}
+
+              <!-- Add to calendar -->
+              <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;">Add it to your calendar</p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                <tr>
+                  <td width="48%" style="padding-right:6px;">
+                    <a href="${gcalUrl}"
+                       style="display:block;background:#ffffff;color:#e8722a;text-decoration:none;font-size:13px;font-weight:700;padding:12px 10px;border-radius:10px;text-align:center;border:1.5px solid #fbe0cc;">
+                      Google Calendar
+                    </a>
+                  </td>
+                  <td width="4%"></td>
+                  <td width="48%" style="padding-left:6px;">
+                    <a href="${icsUrl}"
+                       style="display:block;background:#ffffff;color:#e8722a;text-decoration:none;font-size:13px;font-weight:700;padding:12px 10px;border-radius:10px;text-align:center;border:1.5px solid #fbe0cc;">
+                      Apple &amp; Outlook
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
               ${cancelUrl ? `
-              <p style="margin:0;font-size:12px;color:#bbb;line-height:1.6;">
-                Changed your plans? <a href="${cancelUrl}" style="color:#888;font-weight:600;">Cancel your booking</a> so someone else can jump in.
-              </p>` : ""}
+              <!-- Cancel -->
+              <table width="100%" cellpadding="0" cellspacing="0"
+                style="border-top:1px solid #ede9e3;padding-top:14px;">
+                <tr><td style="font-size:12px;color:#bbb;padding-bottom:2px;">Change of plans?</td></tr>
+                <tr><td style="font-size:12px;color:#bbb;"><a href="${cancelUrl}" style="color:#888;font-weight:600;">Cancel your booking</a> so someone else can jump in.</td></tr>
+              </table>` : ""}
             </td>
           </tr>
 
@@ -413,37 +454,24 @@ export async function sendBookingConfirmation({
   endsAt,
   timezone = "UTC",
   cancelUrl,
+  specialInstructions,
 }: {
-  bookingId:   string;
-  bookerName:  string;
-  bookerEmail: string;
-  thingName:   string;
-  orgName:     string;
-  startsAt:    string;
-  endsAt:      string;
-  timezone?:   string;
-  cancelUrl?:  string;
+  bookingId:            string;
+  bookerName:           string;
+  bookerEmail:          string;
+  thingName:            string;
+  orgName:              string;
+  startsAt:             string;
+  endsAt:               string;
+  timezone?:            string;
+  cancelUrl?:           string;
+  specialInstructions?: string;
 }) {
-  const icsContent = buildICS({
-    uid:         bookingId,
-    summary:     `${thingName} booked`,
-    description: orgName ? `${thingName} · ${orgName}` : thingName,
-    startsAt,
-    endsAt,
-    bookerEmail,
-    bookerName,
-    timezone,
-  });
-
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
-    subject: `You're booked — ${thingName}`,
-    html:    buildConfirmationHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl }),
-    attachments: [{
-      filename: "booking.ics",
-      content:  Buffer.from(icsContent).toString("base64"),
-    }],
+    subject: `You're booked in "${thingName}"`,
+    html:    buildConfirmationHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl, specialInstructions }),
   });
 }
 
