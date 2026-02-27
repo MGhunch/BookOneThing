@@ -266,7 +266,19 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     return idx >= Math.min(si, ei) && idx <= Math.max(si, ei);
   };
 
-  const hasConflict = (a: string, b: string) => {
+  const rangeRadius = (slot: string): string => {
+    if (!start) return "8px";
+    const si = slotIdx(start);
+    const ei = end ? slotIdx(end) : si;
+    const lo = Math.min(si, ei);
+    const hi = Math.max(si, ei);
+    const idx = slotIdx(slot);
+    if (lo === hi) return "8px";
+    if (idx === lo) return "8px 8px 0 0";
+    if (idx === hi) return "0 0 8px 8px";
+    return "0";
+  };
+
     const lo = Math.min(slotIdx(a), slotIdx(b));
     const hi = Math.max(slotIdx(a), slotIdx(b));
     return ALL_SLOTS.slice(lo, hi + 1).some((s) => bookingMap[s] && !YOURS.includes(s));
@@ -538,11 +550,22 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                     const bothActive = a1 && a2;
                     const ready = anyA && phase === S_READY;
 
+                    // Wrapper radius: driven by range position when both slots active
+                    let wrapRadius = "8px";
+                    if (bothActive && start) {
+                      const lo = Math.min(slotIdx(start), end ? slotIdx(end) : slotIdx(start));
+                      const hi = Math.max(slotIdx(start), end ? slotIdx(end) : slotIdx(start));
+                      const topR = slotIdx(group.s1!) === lo ? "8px" : "0";
+                      const botR = slotIdx(group.s2!) === hi ? "8px" : "0";
+                      wrapRadius = `${topR} ${topR} ${botR} ${botR}`;
+                    }
+
                     return (
                       <div key={gi}
                         className={ready ? "ready-pop" : ""}
                         onClick={ready ? handleSelectionTap : undefined}
-                        style={{ position: "absolute", top, left: 0, right: 0, height, borderRadius: "8px", overflow: "hidden",
+                        style={{ position: "absolute", top, left: 0, right: 0, height,
+                          borderRadius: wrapRadius, overflow: "hidden",
                           border: bothActive ? `2px solid ${ORANGE}` : "2px solid transparent",
                           boxSizing: "border-box", cursor: ready ? "pointer" : "default", transition: "border 0.15s" }}>
                         <button
@@ -551,7 +574,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                             background: slotBg(group.s1!), border: "none",
                             borderBottom: `${HAIRLINE}px solid rgba(232,114,42,0.1)`,
                             outline: a1 && !a2 ? `2px solid ${ORANGE}` : "none", outlineOffset: "-2px",
-                            borderRadius: a1 && !a2 ? "8px 8px 0 0" : "0",
+                            borderRadius: a1 && !a2 ? rangeRadius(group.s1!) : "0",
                             cursor: "pointer", boxSizing: "border-box", textAlign: "left", transition: "background 0.3s" }}>
                           {startLabel(group.s1!)}
                           {endLabel(group.s1!)}
@@ -561,7 +584,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                           style={{ display: "flex", alignItems: "center", paddingLeft: "11px", width: "100%", height: `${SLOT_H}px`,
                             background: slotBg(group.s2!), border: "none",
                             outline: a2 && !a1 ? `2px solid ${ORANGE}` : "none", outlineOffset: "-2px",
-                            borderRadius: a2 && !a1 ? "0 0 8px 8px" : "0",
+                            borderRadius: a2 && !a1 ? rangeRadius(group.s2!) : "0",
                             cursor: "pointer", boxSizing: "border-box", textAlign: "left", transition: "background 0.3s" }}>
                           {endLabel(group.s2!)}
                           {startLabel(group.s2!)}
@@ -581,7 +604,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                       style={{ position: "absolute", top, left: 0, right: 0, height: `${SLOT_H}px`,
                         background: slotBg(slot),
                         border: active ? `2px solid ${ORANGE}` : "2px solid transparent",
-                        borderRadius: "8px", cursor: "pointer",
+                        borderRadius: active ? rangeRadius(slot) : "8px", cursor: "pointer",
                         display: "flex", alignItems: "center", paddingLeft: "11px",
                         boxSizing: "border-box", textAlign: "left", transition: "background 0.3s, border 0.15s" }}>
                       {startLabel(slot)}
