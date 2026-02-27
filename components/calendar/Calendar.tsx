@@ -310,7 +310,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
       const hi = Math.max(slotIdx(start!), slotIdx(s));
       setStart(ALL_SLOTS[lo]); setEnd(ALL_SLOTS[hi]); setPhase(S_SEEN);
       if (seenTimer.current) clearTimeout(seenTimer.current);
-      seenTimer.current = setTimeout(() => setPhase(S_READY), 700);
+      seenTimer.current = setTimeout(() => setPhase(S_READY), 500);
     }
   };
 
@@ -333,8 +333,15 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     if (slot !== start) return null;
     if (phase === S_PICKING || phase === S_SEEN)
       return <span style={{ fontSize: "11px", fontWeight: 600, color: ORANGE, fontFamily: SYS }}>From {fmtSlot(start)}</span>;
-    if (phase === S_READY)
-      return <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff", fontFamily: SYS }}>Book it?</span>;
+    if (phase === S_READY) {
+      const rangeStr = end && end !== start ? `${fmtSlot(start)} – ${fmtEndTime(end)}` : `${fmtSlot(start)} – ${fmtEndTime(start)}`;
+      return (
+        <div style={{ display: "flex", flexDirection: "column", gap: "1px", fontFamily: SYS }}>
+          <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff" }}>{rangeStr}</span>
+          <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff" }}>Book it?</span>
+        </div>
+      );
+    }
     return null;
   };
 
@@ -452,7 +459,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
       {/* Card */}
       <div style={{
-        height: "calc(100dvh - 72px)",
+        height: "calc(100dvh - 160px)",
         minHeight: "520px",
         background: "#fff",
         borderRadius: "24px",
