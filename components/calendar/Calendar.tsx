@@ -332,7 +332,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
       return (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", fontFamily: SYS }}>
           <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff" }}>{rangeStr}</span>
-          <span style={{ fontSize: "12px", fontWeight: 700, color: ORANGE, background: "#fff", borderRadius: "20px", padding: "3px 10px", flexShrink: 0 }}>Book it?</span>
+          <span style={{ fontSize: "12px", fontWeight: 700, color: ORANGE, background: "#fff", borderRadius: "20px", padding: "3px 10px", flexShrink: 0 }}>Book it</span>
         </div>
       );
     }
@@ -519,6 +519,28 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
               ))}
 
               <div style={{ position: "absolute", left: "40px", right: 0, top: 0 }}>
+
+                {/* ── Range fill: covers PILL_GAP between hour-pair groups during selection ── */}
+                {phase !== S_IDLE && start && (() => {
+                  const si = slotIdx(start);
+                  const ei = end ? slotIdx(end) : si;
+                  const lo = Math.min(si, ei);
+                  const hi = Math.max(si, ei);
+                  if (lo === hi) return null;
+                  return (
+                    <div style={{
+                      position: "absolute",
+                      top: slotY(lo),
+                      left: 0,
+                      right: 0,
+                      height: slotY(hi) + SLOT_H - slotY(lo),
+                      background: ORANGE_SOFT,
+                      borderRadius: "8px",
+                      pointerEvents: "none",
+                    }} />
+                  );
+                })()}
+
                 {groups.map((group, gi) => {
                   const top    = slotY(group.startIdx);
                   const height = groupH(group.startIdx, group.endIdx);
@@ -654,7 +676,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
                 <div style={{ display: "flex", gap: "10px" }}>
                   <button onClick={reset}
-                    style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "1.5px solid #ede9e3", background: "#fff", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#aaa", fontFamily: SYS }}>
+                    className="btn btn-secondary btn-sm"
+                    style={{ flex: 1 }}>
                     Not now
                   </button>
                   <button
@@ -685,10 +708,10 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                     }}
                     style={{
                       flex: 1, padding: "14px", borderRadius: "12px", border: "none",
-                      background: submitting ? "#f0ece6" : ORANGE,
+                      background: submitting ? "#fbe0cc" : ORANGE,
                       cursor: submitting ? "default" : "pointer",
                       fontSize: "14px", fontWeight: 600,
-                      color: submitting ? "#bbb" : "#fff",
+                      color: submitting ? "#e0824a" : "#fff",
                       fontFamily: SYS, transition: "all 0.15s",
                     }}>
                     {submitting ? "Booking…" : "Confirm"}
@@ -824,7 +847,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
             <div style={{ display: "flex", gap: "10px" }}>
               <button
                 onClick={() => setCancelTarget(null)}
-                style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "1.5px solid #ede9e3", background: "#fff", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#aaa", fontFamily: SYS }}>
+                className="btn btn-secondary btn-sm"
+                style={{ flex: 1 }}>
                 Keep it
               </button>
               <button
@@ -834,7 +858,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                   setCancelTarget(null);
                   router.refresh();
                 }}
-                style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "none", background: ORANGE, cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#fff", fontFamily: SYS }}>
+                className="btn btn-primary btn-sm"
+                style={{ flex: 1 }}>
                 Cancel it
               </button>
             </div>
