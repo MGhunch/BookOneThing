@@ -137,7 +137,7 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName }: Setu
               Enter your codeword
             </div>
             <div style={{ fontSize: 14, color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
-              Check your email. It expires in 15 minutes.
+              Pop in your codeword
             </div>
           </div>
           <div className={shake ? "setup-shake" : ""}>
@@ -182,7 +182,7 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName }: Setu
             </svg>
           </div>
           <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, marginBottom: 6 }}>
-            You're live.
+            You're live
           </div>
           <div style={{ fontSize: 14, color: GREY, fontFamily: SYS, marginBottom: 24 }}>
             Share this link and people can start booking.

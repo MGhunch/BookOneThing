@@ -290,7 +290,7 @@ export default function BookerGate({
         <>
           <div style={{ marginBottom: 20 }}>
             <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, lineHeight: 1.2 }}>
-              Enter your codeword.
+              Pop in your codeword
             </div>
           </div>
 
@@ -355,7 +355,7 @@ export default function BookerGate({
             </svg>
           </div>
           <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, marginBottom: 6 }}>
-            You're in.
+            You're in
           </div>
           <div style={{ fontSize: 14, color: GREY, fontFamily: SYS }}>{doneLabel}</div>
         </div>
