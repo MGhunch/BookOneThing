@@ -59,25 +59,27 @@ export async function createBooking({
     return { error: "Something went wrong. Please try again." };
   }
 
-  // Fetch thing + org name for the email (non-blocking)
+  // Fetch thing + org name + special instructions for the email (non-blocking)
   try {
     const { data: thing } = await supabase
       .from("things")
-      .select("name, timezone, profiles(org_name)")
+      .select("name, timezone, instructions, profiles(org_name)")
       .eq("id", thingId)
       .single();
 
     const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bookonething.com";
     await sendBookingConfirmation({
-      bookingId:   booking.id,
-      bookerName:  bookerName.trim(),
-      bookerEmail: bookerEmail.trim().toLowerCase(),
-      thingName:   thing?.name ?? "your booking",
-      orgName:     extractOrgName(thing?.profiles),
+      bookingId:            booking.id,
+      bookerName:           bookerName.trim(),
+      bookerEmail:          bookerEmail.trim().toLowerCase(),
+      thingName:            thing?.name ?? "your booking",
+      orgName:              extractOrgName(thing?.profiles),
       startsAt,
       endsAt,
-      timezone:    thing?.timezone ?? "UTC",
-      cancelUrl:   `${appUrl}/cancel?token=${booking.cancel_token}`,
+      timezone:             thing?.timezone ?? "UTC",
+      cancelUrl:            `${appUrl}/cancel?token=${booking.cancel_token}`,
+      specialInstructions:  thing?.instructions ?? undefined,
+      calBaseUrl:           appUrl,
     });
   } catch (emailErr) {
     console.error("Confirmation email failed:", emailErr);
