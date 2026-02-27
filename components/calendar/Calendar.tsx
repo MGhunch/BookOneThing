@@ -171,6 +171,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
   const [calH, setCalH] = useState(300);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const seenTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const hintTimer  = useRef<ReturnType<typeof setTimeout> | null>(null);
   const router     = useRouter();
 
   // ── Pending / activation state ────────────────────────────────────────────
@@ -272,6 +273,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
   const reset = () => {
     if (seenTimer.current) clearTimeout(seenTimer.current);
+    if (hintTimer.current) clearTimeout(hintTimer.current);
     setPhase(S_IDLE); setStart(null); setEnd(null); setConfirmed(false);
     setConfirmedBookingId(null); setReminderOptIn(false); setReminderNote(""); setReminderSaved(false);
   };
@@ -299,7 +301,10 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     if (YOURS.includes(s)) { showToast("Tap to cancel — coming soon."); return; }
 
     if (phase === S_IDLE || phase === S_READY) {
-      setStart(s); setEnd(null); setPhase(S_PICKING); return;
+      setStart(s); setEnd(null); setPhase(S_PICKING);
+      if (hintTimer.current) clearTimeout(hintTimer.current);
+      hintTimer.current = setTimeout(() => showToast("Choose the end of your session"), 4000);
+      return;
     }
     if (phase === S_PICKING) {
       if (hasConflict(start!, s)) {
@@ -336,9 +341,9 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     if (phase === S_READY) {
       const rangeStr = end && end !== start ? `${fmtSlot(start)} – ${fmtEndTime(end)}` : `${fmtSlot(start)} – ${fmtEndTime(start)}`;
       return (
-        <div style={{ display: "flex", flexDirection: "column", gap: "1px", fontFamily: SYS }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", fontFamily: SYS }}>
           <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff" }}>{rangeStr}</span>
-          <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff" }}>Book it?</span>
+          <span style={{ fontSize: "12px", fontWeight: 700, color: "#fff", background: "rgba(0,0,0,0.15)", borderRadius: "20px", padding: "3px 10px", flexShrink: 0 }}>Book it?</span>
         </div>
       );
     }
@@ -351,7 +356,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     if (phase === S_SEEN)
       return <span style={{ fontSize: "11px", fontWeight: 500, color: "rgba(232,114,42,0.8)", fontFamily: SYS }}>Until {untilStr}</span>;
     if (phase === S_READY)
-      return <span style={{ fontSize: "11px", fontWeight: 600, color: "rgba(255,255,255,0.9)", fontFamily: SYS }}>{fmtSlot(start!)} – {untilStr}</span>;
+      return null;
     return null;
   };
 
@@ -459,7 +464,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
       {/* Card */}
       <div style={{
-        height: "calc(100dvh - 160px)",
+        height: "calc(100dvh - 72px)",
         minHeight: "520px",
         background: "#fff",
         borderRadius: "24px",
