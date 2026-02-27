@@ -208,9 +208,9 @@ export default function SetupGate({ ownerSlug, thingSlug, ownerFirstName }: Setu
 
           <button
             onClick={() => window.location.reload()}
-            style={{ width: "100%", padding: 15, borderRadius: 13, border: "none", background: DARK, color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: SYS, cursor: "pointer" }}
+            style={{ width: "100%", padding: 15, borderRadius: 13, border: "none", background: ORANGE, color: "#fff", fontSize: 15, fontWeight: 700, fontFamily: SYS, cursor: "pointer" }}
           >
-            Go to my calendar →
+            Go to my calendar
           </button>
         </div>
       )}
