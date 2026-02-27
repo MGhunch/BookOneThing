@@ -120,6 +120,10 @@ export async function submitSetup(data: SetupFormData): Promise<SetupResult> {
   const emailPrefix = cleanEmail.split("@")[0];
 
   // 1. Get or create auth user
+  // Three possible states:
+  //   a) Brand new — createUser succeeds, get userId
+  //   b) Returning owner — createUser fails, find via profiles
+  //   c) In Auth but profiles wiped — createUser fails, find via Auth directly
   let userId: string | null = null;
 
   const { data: created } = await supabase.auth.admin.createUser({
@@ -131,13 +135,22 @@ export async function submitSetup(data: SetupFormData): Promise<SetupResult> {
   if (created?.user) {
     userId = created.user.id;
   } else {
-    // User already exists — look up via profiles
+    // Try profiles table first
     const { data: existingProfile } = await supabase
       .from("profiles")
       .select("id")
       .eq("email", cleanEmail)
       .single();
-    if (existingProfile) userId = existingProfile.id;
+
+    if (existingProfile) {
+      userId = existingProfile.id;
+    } else {
+      // Fall back to Auth directly — handles case where profiles were wiped
+      // but the Auth user still exists
+      const { data: { users } } = await supabase.auth.admin.listUsers();
+      const found = users.find(u => u.email === cleanEmail);
+      if (found) userId = found.id;
+    }
   }
 
   if (!userId) {
