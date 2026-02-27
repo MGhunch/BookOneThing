@@ -365,7 +365,7 @@ function AddThingCard({ hasThings }: { hasThings: boolean }) {
     >
       <div style={{
         width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-        background: hover ? ORANGE : "#f0ece6",
+        background: hover ? ORANGE : "#fbe0cc",
         display: "flex", alignItems: "center", justifyContent: "center",
         color: hover ? "#fff" : GREY_LIGHT,
         transition: "all 0.2s",
@@ -469,8 +469,8 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
           onClick={handleSend} disabled={!validEmail || loading}
           style={{
             width: "100%", padding: 16, borderRadius: 13, border: "none",
-            background: validEmail ? ORANGE : "#f0ece6",
-            color: validEmail ? "#fff" : "#bbb",
+            background: validEmail ? ORANGE : "#fbe0cc",
+            color: validEmail ? "#fff" : "#e0824a",
             fontSize: 15, fontWeight: 700, fontFamily: SYS,
             cursor: validEmail ? "pointer" : "default",
             letterSpacing: "-0.3px", transition: "all 0.2s",
@@ -518,8 +518,8 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
         onClick={handleVerify} disabled={!validCode || loading}
         style={{
           width: "100%", padding: 16, borderRadius: 13, border: "none",
-          background: validCode ? ORANGE : "#f0ece6",
-          color: validCode ? "#fff" : "#bbb",
+          background: validCode ? ORANGE : "#fbe0cc",
+          color: validCode ? "#fff" : "#e0824a",
           fontSize: 15, fontWeight: 700, fontFamily: SYS,
           cursor: validCode ? "pointer" : "default",
           letterSpacing: "-0.3px", transition: "all 0.2s",
