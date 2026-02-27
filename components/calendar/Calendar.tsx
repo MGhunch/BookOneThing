@@ -279,6 +279,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     return "0";
   };
 
+  const hasConflict = (a: string, b: string) => {
     const lo = Math.min(slotIdx(a), slotIdx(b));
     const hi = Math.max(slotIdx(a), slotIdx(b));
     return ALL_SLOTS.slice(lo, hi + 1).some((s) => bookingMap[s] && !YOURS.includes(s));
