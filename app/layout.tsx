@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Nav from "@/components/Nav";
+import "@/styles/buttons.css";
 
 export const metadata: Metadata = {
   title: "Book One Thing",
