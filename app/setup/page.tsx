@@ -150,17 +150,49 @@ function DetailsModal({ name, onSubmit, loading, error }: {
   const [firstName, setFirstName]   = useState("");
   const [emailFocus, setEmailFocus] = useState(false);
   const [nameFocus, setNameFocus]   = useState(false);
+  const [attempts, setAttempts]     = useState(0);
 
-  const canSubmit = email.trim().includes("@") && firstName.trim() && !loading;
+  const canSubmit  = email.trim().includes("@") && !!firstName.trim() && !loading;
+  const hasError   = !!error;
+  const isWobbly   = hasError && attempts >= 3;
+
+  const handleClick = () => {
+    if (!canSubmit && !hasError) return;
+    if (hasError) {
+      setAttempts(a => a + 1);
+      onSubmit(email, firstName);
+      return;
+    }
+    setAttempts(a => a + 1);
+    onSubmit(email, firstName);
+  };
+
+  const buttonActive = canSubmit || hasError;
 
   return (
     <ModalShell>
+      {/* X — only surfaces when truly stuck */}
+      {isWobbly && (
+        <button
+          onClick={() => { window.location.href = "/"; }}
+          style={{
+            position: "absolute", top: "20px", right: "20px",
+            background: "none", border: "none", cursor: "pointer",
+            padding: "4px", lineHeight: 1,
+          }}
+        >
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#bbb" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
+          </svg>
+        </button>
+      )}
+
       <div style={{ marginBottom: "28px" }}>
         <div style={{ fontSize: "22px", fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, marginBottom: "8px" }}>
           One more thing
         </div>
         <div style={{ fontSize: "14px", color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
-          We know all about your thing, but we don't know you.
+          We&rsquo;re nearly done, we just don&rsquo;t know you.
         </div>
       </div>
 
@@ -171,7 +203,8 @@ function DetailsModal({ name, onSubmit, loading, error }: {
             onChange={e => setEmail(e.target.value)}
             onFocus={() => setEmailFocus(true)}
             onBlur={() => setEmailFocus(false)}
-            placeholder="Email address"
+            placeholder="What's your email?"
+            autoFocus
             style={{
               width: "100%", padding: "13px 16px", borderRadius: "12px",
               border: `1.5px solid ${emailFocus || email ? ORANGE : BORDER}`,
@@ -180,7 +213,7 @@ function DetailsModal({ name, onSubmit, loading, error }: {
               outline: "none", transition: "all 0.15s", boxSizing: "border-box" as const,
             }}
           />
-          <div style={{ fontSize: "12px", color: GREY_LIGHT, marginTop: "5px", fontFamily: SYS }}>To keep you in the loop.</div>
+          <div style={{ fontSize: "12px", color: GREY_LIGHT, marginTop: "5px", fontFamily: SYS }}>So we can keep you in the loop.</div>
         </div>
 
         <div>
@@ -189,7 +222,7 @@ function DetailsModal({ name, onSubmit, loading, error }: {
             onChange={e => setFirstName(e.target.value)}
             onFocus={() => setNameFocus(true)}
             onBlur={() => setNameFocus(false)}
-            placeholder="First name"
+            placeholder="What's your first name?"
             style={{
               width: "100%", padding: "13px 16px", borderRadius: "12px",
               border: `1.5px solid ${nameFocus || firstName ? ORANGE : BORDER}`,
@@ -198,27 +231,31 @@ function DetailsModal({ name, onSubmit, loading, error }: {
               outline: "none", transition: "all 0.15s", boxSizing: "border-box" as const,
             }}
           />
-          <div style={{ fontSize: "12px", color: GREY_LIGHT, marginTop: "5px", fontFamily: SYS }}>So we know who's booking what.</div>
+          <div style={{ fontSize: "12px", color: GREY_LIGHT, marginTop: "5px", fontFamily: SYS }}>So we know who&rsquo;s who on the calendar.</div>
         </div>
       </div>
 
-      {error && (
-        <div style={{ fontSize: "13px", color: "#c0392b", marginBottom: "16px", fontFamily: SYS }}>{error}</div>
+      {hasError && (
+        <div style={{ fontSize: "13px", color: "#c0392b", marginBottom: "16px", fontFamily: SYS }}>
+          {isWobbly
+            ? "Something's gone wobbly. Hit the X and try later."
+            : error}
+        </div>
       )}
 
       <button
-        onClick={() => canSubmit && onSubmit(email, firstName)}
-        disabled={!canSubmit}
+        onClick={handleClick}
+        disabled={!buttonActive}
         style={{
           width: "100%", padding: "16px", borderRadius: "13px", border: "none",
-          background: canSubmit ? ORANGE : "#f0ece6",
-          color: canSubmit ? "#fff" : "#bbb",
+          background: buttonActive ? ORANGE : "#fbe0cc",
+          color: buttonActive ? "#fff" : "#e0824a",
           fontSize: "15px", fontWeight: 700, fontFamily: SYS,
-          cursor: canSubmit ? "pointer" : "default",
+          cursor: buttonActive ? "pointer" : "default",
           letterSpacing: "-0.3px", transition: "all 0.2s",
         }}
       >
-        {loading ? "Setting up your thing…" : canSubmit ? "Create my thing" : "Fill in your details"}
+        {loading ? "Setting up your thing…" : hasError ? "Try again" : "Make my thing"}
       </button>
     </ModalShell>
   );
