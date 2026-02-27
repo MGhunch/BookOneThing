@@ -218,7 +218,7 @@ function DetailsModal({ name, onSubmit, loading, error }: {
           letterSpacing: "-0.3px", transition: "all 0.2s",
         }}
       >
-        {loading ? "Sending your codeword…" : canSubmit ? "Get your codeword" : "Fill in your details"}
+        {loading ? "Setting up your thing…" : canSubmit ? "Create my thing" : "Fill in your details"}
       </button>
     </ModalShell>
   );
@@ -234,7 +234,7 @@ function SentModal({ name, onDiveIn }: { name: string; onDiveIn: () => void }) {
         Check your email
       </div>
       <div style={{ fontSize: "15px", color: GREY, fontFamily: SYS, lineHeight: 1.6, marginBottom: "28px" }}>
-        We've sent a codeword to activate &ldquo;{name}&rdquo;. Grab it then come back and enter it.
+        We&rsquo;ve sent your link to &ldquo;{name}&rdquo;. Keep that email — it&rsquo;s how you get back to your calendar.
       </div>
       <button
         onClick={onDiveIn}
@@ -245,7 +245,7 @@ function SentModal({ name, onDiveIn }: { name: string; onDiveIn: () => void }) {
           cursor: "pointer", letterSpacing: "-0.3px",
         }}
       >
-        I've got my codeword →
+        Go to my calendar →
       </button>
     </ModalShell>
   );
@@ -358,8 +358,6 @@ export default function SetupPage() {
   };
 
   const [calUrl, setCalUrl] = useState<string | null>(null);
-  const [submittedEmail, setSubmittedEmail] = useState<string>("");
-
   const handleSubmit = async (email: string, firstName: string) => {
     setLoading(true);
     setSubmitError(null);
@@ -379,7 +377,6 @@ export default function SetupPage() {
       return;
     }
 
-    setSubmittedEmail(email.trim().toLowerCase());
     setCalUrl(result.url);
     setModal("sent");
   };
@@ -413,12 +410,7 @@ export default function SetupPage() {
         />
       )}
       {modal === "sent" && <SentModal name={trimmed} onDiveIn={() => {
-        if (calUrl) {
-          if (typeof window !== "undefined") {
-            sessionStorage.setItem("setupEmail", submittedEmail);
-          }
-          window.location.href = calUrl;
-        }
+        if (calUrl) window.location.href = calUrl;
       }} />}
 
       {/* Form */}
