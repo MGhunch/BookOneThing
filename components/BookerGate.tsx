@@ -229,8 +229,8 @@ export default function BookerGate({
           <button className="gate-cta" onClick={handleSend} disabled={!validEmail || loading}
             style={{
               width: "100%", padding: 15, borderRadius: 13, border: "none",
-              background: validEmail ? ORANGE : "#f0ece6",
-              color: validEmail ? "#fff" : "#bbb",
+              background: validEmail ? ORANGE : "#fbe0cc",
+              color: validEmail ? "#fff" : "#e0824a",
               fontSize: 15, fontWeight: 700, fontFamily: SYS,
               cursor: validEmail ? "pointer" : "default", marginBottom: 14,
             }}
@@ -271,8 +271,8 @@ export default function BookerGate({
           <button className="gate-cta" onClick={handleName} disabled={!validName}
             style={{
               width: "100%", padding: 15, borderRadius: 13, border: "none",
-              background: validName ? ORANGE : "#f0ece6",
-              color: validName ? "#fff" : "#bbb",
+              background: validName ? ORANGE : "#fbe0cc",
+              color: validName ? "#fff" : "#e0824a",
               fontSize: 15, fontWeight: 700, fontFamily: SYS,
               cursor: validName ? "pointer" : "default", marginBottom: 14,
             }}
@@ -319,8 +319,8 @@ export default function BookerGate({
           <button className="gate-cta" onClick={handleVerify} disabled={!validCode || loading}
             style={{
               width: "100%", padding: 15, borderRadius: 13, border: "none",
-              background: validCode ? ORANGE : "#f0ece6",
-              color: validCode ? "#fff" : "#bbb",
+              background: validCode ? ORANGE : "#fbe0cc",
+              color: validCode ? "#fff" : "#e0824a",
               fontSize: 15, fontWeight: 700, fontFamily: SYS,
               cursor: validCode ? "pointer" : "default",
               transition: "all 0.15s", marginBottom: 14,
