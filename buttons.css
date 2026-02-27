@@ -1,0 +1,102 @@
+/* ============================================
+   BookOneThing — Global Button Styles
+   February 2026
+   ============================================
+
+   Three states. No exceptions.
+
+   .btn-primary     — orange, white text. The action.
+   .btn-inactive    — muted orange. Not ready yet.
+   .btn-secondary   — white, orange text. Escape / secondary.
+
+   Usage:
+   <button class="btn btn-primary">Make my thing</button>
+   <button class="btn btn-inactive" disabled>Make my thing</button>
+   <button class="btn btn-secondary">Back</button>
+
+   ============================================ */
+
+/* ── Base ── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 16px 24px;
+  border-radius: 14px;
+  border: none;
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: opacity 0.15s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active {
+  transform: scale(0.98);
+}
+
+
+/* ── 1. Primary active ── */
+/* Orange background, white text.
+   The main action. Book it. Confirm. Make my thing. Cancel it. */
+
+.btn-primary {
+  background: #e8722a;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  opacity: 0.92;
+}
+
+
+/* ── 2. Primary inactive ── */
+/* Muted orange. Form not yet filled. Not ready. */
+
+.btn-inactive {
+  background: #fbe0cc;
+  color: #e0824a;
+  cursor: default;
+  pointer-events: none;
+}
+
+
+/* ── 3. Secondary ── */
+/* White background, orange text, muted orange border.
+   Escape actions. Back. Keep it. */
+
+.btn-secondary {
+  background: #ffffff;
+  color: #e8722a;
+  border: 1.5px solid #fbe0cc;
+}
+
+.btn-secondary:hover {
+  border-color: #e8722a;
+}
+
+
+/* ── Pill variant ── */
+/* Smaller, inline. Used for Book it on the confirm bar. */
+
+.btn-pill {
+  width: auto;
+  padding: 0 18px;
+  border-radius: 10px;
+  font-size: 14px;
+  align-self: stretch;
+}
+
+
+/* ── Size modifier ── */
+/* For tighter contexts like modals on small screens */
+
+.btn-sm {
+  padding: 12px 20px;
+  font-size: 13px;
+  border-radius: 12px;
+}
