@@ -256,8 +256,8 @@ export default function BookerGate({
           </div>
           <input
             className="gate-input"
-            type="text" value={firstName} autoFocus
-            onChange={e => { setFirstName(e.target.value); setError(null); }}
+            type="text" value={firstName} autoFocus maxLength={20}
+            onChange={e => { setFirstName(e.target.value.slice(0, 20)); setError(null); }}
             onKeyDown={e => e.key === "Enter" && handleName()}
             placeholder="First name"
             style={{
