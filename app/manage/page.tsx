@@ -444,7 +444,7 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
         `}</style>
         <div style={{ marginBottom: 28 }}>
           <div style={{ fontSize: 28, fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.15, marginBottom: 8 }}>
-            Let's find your things.
+            Let's find your things
           </div>
           <div style={{ fontSize: 15, color: GREY, fontFamily: SYS, lineHeight: 1.65 }}>
             Just pop in your email.
@@ -488,7 +488,7 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
     <>
       <div style={{ marginBottom: 20 }}>
         <div style={{ fontSize: 28, fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.15 }}>
-          Enter your codeword.
+          Pop in your codeword
         </div>
       </div>
 
@@ -599,7 +599,7 @@ export default function ManagePage() {
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 40 }}>
           <div>
             <div style={{ fontSize: 32, fontWeight: 800, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, marginBottom: 6 }}>
-              Your things, {firstName}.
+              Here are all your things
             </div>
             <div style={{ fontSize: 15, color: GREY, fontWeight: 400, lineHeight: 1.65 }}>
               Share the link. People book. That's it.
