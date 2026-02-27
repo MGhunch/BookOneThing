@@ -100,3 +100,32 @@
   font-size: 13px;
   border-radius: 12px;
 }
+
+
+/* ── Selector pill ── */
+/* Used for preset option groups: availability, max time, buffer etc.
+   Two states: selected and unselected. */
+
+.btn-selector {
+  padding: 10px 22px;
+  border-radius: 999px;
+  border: 1.5px solid #ede9e3;
+  background: #f9f8f6;
+  color: #1a1a1a;
+  font-family: 'Poppins', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+  width: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.btn-selector.active {
+  border-color: #e8722a;
+  background: #fdf4ee;
+  color: #e8722a;
+}
