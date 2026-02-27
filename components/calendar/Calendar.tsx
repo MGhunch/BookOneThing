@@ -789,7 +789,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                         }}
                         style={{
                           width: "100%", padding: "12px", borderRadius: "12px", border: "none",
-                          background: reminderSaved ? "#1a9c5b" : DARK,
+                          background: reminderSaved ? "#1a9c5b" : ORANGE,
                           fontSize: "13px", fontWeight: 600, color: "#fff",
                           cursor: "pointer", fontFamily: SYS, transition: "background 0.2s",
                         }}
