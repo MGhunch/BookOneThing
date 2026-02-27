@@ -742,43 +742,56 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                   Check your email for a calendar invite.
                 </div>
 
-                {/* Reminder opt-in */}
-                <div style={{ borderTop: "1px solid #ede9e3", paddingTop: "20px", textAlign: "left" }}>
-                  <button
-                    onClick={async () => {
-                      const newOptIn = !reminderOptIn;
-                      setReminderOptIn(newOptIn);
-                      setReminderSaved(false);
-                      if (!newOptIn && confirmedBookingId) {
-                        await setReminderPreference({ bookingId: confirmedBookingId, optIn: false });
-                      }
-                    }}
-                    style={{ display: "flex", alignItems: "center", gap: "10px", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: SYS, width: "100%" }}
-                  >
-                    <div style={{
-                      width: "18px", height: "18px", borderRadius: "5px", flexShrink: 0,
-                      border: reminderOptIn ? "none" : "1.5px solid #ede9e3",
-                      background: reminderOptIn ? ORANGE : "#f9f8f6",
-                      display: "flex", alignItems: "center", justifyContent: "center",
-                      transition: "all 0.15s",
-                    }}>
-                      {reminderOptIn && <Check size={10} strokeWidth={3} color="#fff" />}
-                    </div>
-                    <span style={{ fontSize: "14px", fontWeight: 500, color: "#555" }}>Want a reminder?</span>
-                  </button>
+                {/* Reminder opt-in — YES / NO */}
+                <div style={{ borderTop: "1px solid #ede9e3", paddingTop: "20px" }}>
 
-                  {reminderOptIn && (
-                    <div style={{ marginTop: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {/* Default — show YES / NO */}
+                  {!reminderOptIn && !reminderSaved && (
+                    <>
+                      <div style={{ fontSize: "14px", fontWeight: 600, color: "#1a1a1a", textAlign: "center", marginBottom: "14px", fontFamily: SYS }}>
+                        Want a reminder?
+                      </div>
+                      <div style={{ display: "flex", gap: "10px" }}>
+                        <button
+                          onClick={reset}
+                          style={{
+                            flex: 1, padding: "12px", borderRadius: "12px",
+                            border: "1.5px solid #ede9e3", background: "#fff",
+                            color: "#bbb", fontFamily: SYS, fontSize: "13px", fontWeight: 600,
+                            cursor: "pointer",
+                          }}
+                        >
+                          No thanks
+                        </button>
+                        <button
+                          onClick={() => setReminderOptIn(true)}
+                          style={{
+                            flex: 1, padding: "12px", borderRadius: "12px",
+                            border: `1.5px solid ${ORANGE}`, background: ORANGE_AVAIL,
+                            color: ORANGE, fontFamily: SYS, fontSize: "13px", fontWeight: 700,
+                            cursor: "pointer",
+                          }}
+                        >
+                          Yes please
+                        </button>
+                      </div>
+                    </>
+                  )}
+
+                  {/* Yes — note field + save */}
+                  {reminderOptIn && !reminderSaved && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                       <input
+                        autoFocus
                         type="text"
-                        placeholder="Add a note (optional)"
+                        placeholder="What's it for? e.g. Meeting with Colin"
                         value={reminderNote}
-                        onChange={e => { setReminderNote(e.target.value); setReminderSaved(false); }}
+                        onChange={e => setReminderNote(e.target.value)}
                         style={{
-                          width: "100%", padding: "12px 14px", borderRadius: "12px",
-                          border: "1.5px solid #ede9e3", fontSize: "14px", fontWeight: 400,
-                          fontFamily: SYS, color: "#1a1a1a", outline: "none",
-                          boxSizing: "border-box" as const, background: "#f9f8f6",
+                          width: "100%", padding: "13px 16px", borderRadius: "12px",
+                          border: "1.5px solid #ede9e3", background: ORANGE_AVAIL,
+                          fontSize: "13px", fontWeight: 400, fontFamily: SYS,
+                          color: "#1a1a1a", outline: "none", boxSizing: "border-box" as const,
                         }}
                       />
                       <button
@@ -788,16 +801,39 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                           setReminderSaved(true);
                         }}
                         style={{
-                          width: "100%", padding: "12px", borderRadius: "12px", border: "none",
-                          background: reminderSaved ? "#1a9c5b" : ORANGE,
-                          fontSize: "13px", fontWeight: 600, color: "#fff",
-                          cursor: "pointer", fontFamily: SYS, transition: "background 0.2s",
+                          width: "100%", padding: "13px", borderRadius: "12px", border: "none",
+                          background: ORANGE, color: "#fff",
+                          fontFamily: SYS, fontSize: "13px", fontWeight: 700, cursor: "pointer",
                         }}
                       >
-                        {reminderSaved ? "Reminder saved ✓" : "Save reminder"}
+                        Save reminder
                       </button>
                     </div>
                   )}
+
+                  {/* Saved — in-place confirmation */}
+                  {reminderSaved && (
+                    <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", padding: "4px 0" }}>
+                      <div style={{
+                        width: "36px", height: "36px", borderRadius: "50%", background: ORANGE_AVAIL,
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                      }}>
+                        <Check size={16} strokeWidth={2.5} color={ORANGE} />
+                      </div>
+                      <div style={{ fontSize: "15px", fontWeight: 700, color: "#1a1a1a", fontFamily: SYS }}>
+                        Reminder set
+                      </div>
+                      {reminderNote && (
+                        <div style={{ fontSize: "13px", color: "#888", fontFamily: SYS }}>
+                          &ldquo;{reminderNote}&rdquo;
+                        </div>
+                      )}
+                      <div style={{ fontSize: "12px", color: "#bbb", fontFamily: SYS }}>
+                        We&rsquo;ll email you the morning before.
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               </div>
             )}
