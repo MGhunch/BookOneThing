@@ -138,11 +138,9 @@ interface CalendarProps {
   thingSlug:        string;
   bookings:         Booking[];
   bookerSession:    BookerSession | null;
-  isPending?:       boolean;
-  ownerFirstName?:  string;
 }
 
-export default function Calendar({ thing, orgName, ownerSlug, thingSlug, bookings, bookerSession, isPending = false, ownerFirstName }: CalendarProps) {
+export default function Calendar({ thing, orgName, ownerSlug, thingSlug, bookings, bookerSession }: CalendarProps) {
   const [weekOffset, setWeekOffset]   = useState(0);
   const [selectedDay, setSelectedDay] = useState(0);
 
@@ -175,29 +173,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
   const router     = useRouter();
 
   // ── Pending / activation state ────────────────────────────────────────────
-  const [showActivationModal, setShowActivationModal] = useState(false);
   const [showGate, setShowGate]                       = useState(false);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  useEffect(() => {
-    if (!isPending) return;
-    const check = async () => {
-      try {
-        const res = await fetch(`/api/check-active?ownerSlug=${ownerSlug}&thingSlug=${thingSlug}`);
-        const json = await res.json();
-        if (json.active) {
-          if (pollRef.current) clearInterval(pollRef.current);
-          setShowActivationModal(true);
-        }
-      } catch {
-        // Silently ignore — will retry on next interval
-      }
-    };
-    check(); // immediate first check
-    pollRef.current = setInterval(check, 3000);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [isPending, ownerSlug, thingSlug]);
-
   const ThingIcon = ICON_MAP[thing.icon] || Car;
   const dates     = getWeekDates(weekOffset);
   const selDate   = dates[selectedDay];
@@ -429,38 +405,6 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
           .cal-scroll { scrollbar-width: none; }
         }
       `}</style>
-
-      {/* Activation modal — fires when magic link is clicked */}
-      {showActivationModal && (
-        <ModalShell>
-          <div style={{
-            width: 64, height: 64, borderRadius: "50%", background: ORANGE,
-            display: "flex", alignItems: "center", justifyContent: "center",
-            margin: "0 auto 24px",
-          }}>
-            <svg width="28" height="28" viewBox="0 0 28 28" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="4,14 10,21 24,7"/>
-            </svg>
-          </div>
-          <div style={{ fontSize: "26px", fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.2, marginBottom: "10px" }}>
-            You&rsquo;re in{ownerFirstName ? `, ${ownerFirstName}` : ""}.
-          </div>
-          <div style={{ fontSize: "15px", color: "#888", fontFamily: SYS, lineHeight: 1.6, marginBottom: "28px" }}>
-            {thing.name} is all yours. Check your email for your permanent link to share.
-          </div>
-          <button
-            onClick={() => { setShowActivationModal(false); router.refresh(); }}
-            style={{
-              width: "100%", padding: "16px", borderRadius: "13px", border: "none",
-              background: ORANGE, color: "#fff",
-              fontSize: "15px", fontWeight: 700, fontFamily: SYS,
-              cursor: "pointer", letterSpacing: "-0.3px",
-            }}
-          >
-            Let&rsquo;s go
-          </button>
-        </ModalShell>
-      )}
 
       {/* Card */}
       <div style={{
