@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { cookies } from "next/headers";
 import { createServiceClient } from "@/lib/supabase";
 import Calendar from "@/components/calendar/Calendar";
-import SetupGate from "@/components/SetupGate";
 import type { Thing } from "@/types";
 
 
@@ -80,60 +79,17 @@ export default async function BookerPage({
         thingSlug={thingSlug}
         bookings={bookings ?? []}
         session={session}
-        isPending={false}
       />;
     }
   }
 
-  // ── Fall back to pending_things ───────────────────────────────────────────
-  // Thing exists in DB but owner hasn't clicked the magic link yet.
-
-  const { data: pending } = await supabase
-    .from("pending_things")
-    .select("*")
-    .eq("owner_slug", ownerSlug)
-    .eq("slug", thingSlug)
-    .gt("expires_at", new Date().toISOString())
-    .single();
-
-  if (!pending) notFound();
-
-  // Construct a Thing-like object from the pending row
-  const pendingThing: Thing = {
-    id:              pending.id,
-    owner_id:        "00000000-0000-0000-0000-000000000000",
-    name:            pending.name,
-    slug:            pending.slug,
-    icon:            pending.icon,
-    avail_start:     pending.avail_start,
-    avail_end:       pending.avail_end,
-    avail_weekends:  pending.avail_weekends,
-    timezone:        pending.timezone ?? "UTC",
-    max_length_mins: pending.max_length_mins,
-    book_ahead_days: pending.book_ahead_days,
-    max_concurrent:  pending.max_concurrent,
-    buffer_mins:     pending.buffer_mins,
-    instructions:    pending.instructions ?? null,
-    is_active:       true,
-    created_at:      pending.created_at,
-  };
-
-  return <CalendarPage
-    thing={pendingThing}
-    orgName=""
-    ownerSlug={ownerSlug}
-    thingSlug={thingSlug}
-    bookings={[]}
-    session={null}
-    isPending={true}
-    ownerFirstName={pending.first_name}
-  />;
+  notFound();
 }
 
 // ── Shared render component ───────────────────────────────────────────────────
 
 function CalendarPage({
-  thing, orgName, ownerSlug, thingSlug, bookings, session, isPending, ownerFirstName,
+  thing, orgName, ownerSlug, thingSlug, bookings, session,
 }: {
   thing:           Thing;
   orgName:         string;
@@ -141,8 +97,6 @@ function CalendarPage({
   thingSlug:       string;
   bookings:        import("@/types").Booking[];
   session:         BookerSession | null;
-  isPending:       boolean;
-  ownerFirstName?: string;
 }) {
   return (
     <>
@@ -201,8 +155,6 @@ function CalendarPage({
             thingSlug={thingSlug}
             bookings={bookings}
             bookerSession={session}
-            isPending={isPending}
-            ownerFirstName={ownerFirstName}
           />
         </div>
 
@@ -213,13 +165,6 @@ function CalendarPage({
         </a>
       </div>
 
-      {isPending && (
-        <SetupGate
-          ownerSlug={ownerSlug}
-          thingSlug={thingSlug}
-          ownerFirstName={ownerFirstName}
-        />
-      )}
     </>
   );
 }
