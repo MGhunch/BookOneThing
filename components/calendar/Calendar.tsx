@@ -654,7 +654,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
                 <div style={{ display: "flex", gap: "10px" }}>
                   <button onClick={reset}
-                    style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "1.5px solid #ede9e3", background: "#fff", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#aaa", fontFamily: SYS }}>
+                    className="btn btn-secondary btn-sm"
+                    style={{ flex: 1 }}>
                     Not now
                   </button>
                   <button
@@ -685,10 +686,10 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                     }}
                     style={{
                       flex: 1, padding: "14px", borderRadius: "12px", border: "none",
-                      background: submitting ? "#f0ece6" : ORANGE,
+                      background: submitting ? "#fbe0cc" : ORANGE,
                       cursor: submitting ? "default" : "pointer",
                       fontSize: "14px", fontWeight: 600,
-                      color: submitting ? "#bbb" : "#fff",
+                      color: submitting ? "#e0824a" : "#fff",
                       fontFamily: SYS, transition: "all 0.15s",
                     }}>
                     {submitting ? "Booking…" : "Confirm"}
@@ -824,7 +825,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
             <div style={{ display: "flex", gap: "10px" }}>
               <button
                 onClick={() => setCancelTarget(null)}
-                style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "1.5px solid #ede9e3", background: "#fff", cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#aaa", fontFamily: SYS }}>
+                className="btn btn-secondary btn-sm"
+                style={{ flex: 1 }}>
                 Keep it
               </button>
               <button
@@ -834,7 +836,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                   setCancelTarget(null);
                   router.refresh();
                 }}
-                style={{ flex: 1, padding: "14px", borderRadius: "12px", border: "none", background: ORANGE, cursor: "pointer", fontSize: "14px", fontWeight: 600, color: "#fff", fontFamily: SYS }}>
+                className="btn btn-primary btn-sm"
+                style={{ flex: 1 }}>
                 Cancel it
               </button>
             </div>
