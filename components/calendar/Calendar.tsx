@@ -452,7 +452,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
       {/* Card */}
       <div style={{
-        height: "calc(100dvh - 160px)",
+        height: "calc(100dvh - 72px)",
         minHeight: "520px",
         background: "#fff",
         borderRadius: "24px",
