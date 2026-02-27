@@ -79,7 +79,6 @@ export async function createBooking({
       timezone:             thing?.timezone ?? "UTC",
       cancelUrl:            `${appUrl}/cancel?token=${booking.cancel_token}`,
       specialInstructions:  thing?.instructions ?? undefined,
-      calBaseUrl:           appUrl,
     });
   } catch (emailErr) {
     console.error("Confirmation email failed:", emailErr);
