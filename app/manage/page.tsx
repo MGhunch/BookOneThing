@@ -518,7 +518,7 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
         onClick={handleVerify} disabled={!validCode || loading}
         style={{
           width: "100%", padding: 16, borderRadius: 13, border: "none",
-          background: validCode ? DARK : "#f0ece6",
+          background: validCode ? ORANGE : "#f0ece6",
           color: validCode ? "#fff" : "#bbb",
           fontSize: 15, fontWeight: 700, fontFamily: SYS,
           cursor: validCode ? "pointer" : "default",
