@@ -8,6 +8,47 @@ import { createBooking, cancelBooking, setReminderPreference } from "@/app/[owne
 import ModalShell from "@/components/ModalShell";
 import BookerGate from "@/components/BookerGate";
 
+// ── Fairness error → toast copy ────────────────────────────────────────────────
+import type { BookingResult } from "@/app/[owner-slug]/[thing-slug]/actions";
+
+function fmtMaxLength(mins: number): string {
+  if (mins === 30)  return "30 minutes";
+  if (mins === 60)  return "1 hour";
+  if (mins === 120) return "2 hours";
+  if (mins === 240) return "half a day";
+  if (mins === 480) return "one day";
+  if (mins % 60 === 0) return `${mins / 60} hours`;
+  return `${mins} minutes`;
+}
+
+function fmtTime(t: string): string {
+  const [h, m] = t.split(":").map(Number);
+  const suffix = h >= 12 ? "pm" : "am";
+  const hour   = h % 12 || 12;
+  return m === 0 ? `${hour}${suffix}` : `${hour}:${m.toString().padStart(2, "0")}${suffix}`;
+}
+
+function bookingErrorToToast(result: Extract<BookingResult, { error: string }>): string {
+  switch (result.error) {
+    case "MAX_LENGTH":
+      return `Sorry, you can't book longer than ${fmtMaxLength(result.maxLengthMins)}.`;
+    case "BOOK_AHEAD":
+      return "Sorry, you can't book that far ahead.";
+    case "AVAIL_HOURS":
+      return `Sorry, you can only book ${fmtTime(result.availStart)}–${fmtTime(result.availEnd)}.`;
+    case "AVAIL_WEEKENDS":
+      return "Sorry, you can only book weekdays.";
+    case "MAX_CONCURRENT":
+      return `Sorry, you have ${result.currentCount} booking${result.currentCount === 1 ? "" : "s"} already. You'll need to cancel one.`;
+    case "OVERLAP":
+      return "Sorry, someone's literally just booked this.";
+    case "GENERIC":
+    default:
+      return "Something's gone wobbly. Please try again.";
+  }
+}
+
+// ── Constants ──────────────────────────────────────────────────────────────────
 const ORANGE        = "#e8722a";
 const ORANGE_BOOKED = "#f2c9a8";
 const ORANGE_AVAIL  = "#fdf4ee";
@@ -702,7 +743,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                       });
                       setSubmitting(false);
                       if ("error" in result) {
-                        showToast(result.error);
+                        showToast(bookingErrorToToast(result));
                         reset();
                         return;
                       }
