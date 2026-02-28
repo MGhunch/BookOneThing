@@ -458,6 +458,7 @@ export async function sendBookingConfirmation({
   timezone = "UTC",
   cancelUrl,
   specialInstructions,
+  calBaseUrl,
 }: {
   bookingId:            string;
   bookerName:           string;
@@ -469,12 +470,13 @@ export async function sendBookingConfirmation({
   timezone?:            string;
   cancelUrl?:           string;
   specialInstructions?: string;
+  calBaseUrl?:          string;
 }) {
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
     subject: `You're booked in "${thingName}"`,
-    html:    buildConfirmationHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl, specialInstructions }),
+    html:    buildConfirmationHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl, specialInstructions, calBaseUrl }),
   });
 }
 
