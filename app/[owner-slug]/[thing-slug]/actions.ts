@@ -119,7 +119,7 @@ export async function cancelBooking(bookingId: string): Promise<{ ok: true } | {
     try {
       const { data: thing } = await supabase
         .from("things")
-        .select("name, slug, profiles(org_name, slug)")
+        .select("name, slug, timezone, profiles(org_name, slug)")
         .eq("id", booking.thing_id)
         .single();
 
@@ -136,6 +136,7 @@ export async function cancelBooking(bookingId: string): Promise<{ ok: true } | {
         orgName:     extractOrgName(thing?.profiles),
         startsAt:    booking.starts_at,
         endsAt:      booking.ends_at,
+        timezone:    thing?.timezone ?? "UTC",
         calendarUrl,
       });
     } catch (emailErr) {
