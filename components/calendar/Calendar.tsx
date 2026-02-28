@@ -329,7 +329,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     if (phase === S_READY) {
       const rangeStr = end && end !== start ? `${fmtSlot(start)} – ${fmtEndTime(end)}` : `${fmtSlot(start)} – ${fmtEndTime(start)}`;
       return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", fontFamily: SYS, paddingTop: "5px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", fontFamily: SYS }}>
           <span style={{ fontSize: "12px", fontWeight: 600, color: "#fff" }}>{rangeStr}</span>
           <span style={{ fontSize: "12px", fontWeight: 600, color: ORANGE, background: "#fff", borderRadius: "20px", padding: "3px 10px", flexShrink: 0 }}>Book it</span>
         </div>
@@ -591,7 +591,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                           transition: "border 0.15s", zIndex: 1 }}>
                         <button
                           onClick={ready ? handleSelectionTap : () => handleSlot(group.s1!)}
-                          style={{ display: "flex", alignItems: "center", paddingLeft: "11px", width: "100%", height: `${SLOT_H}px`,
+                          style={{ display: "flex", alignItems: "flex-start", paddingLeft: "11px", paddingTop: "8px", width: "100%", height: `${SLOT_H}px`,
                             background: slotBg(group.s1!), border: "none",
                             borderBottom: bothActive ? "none" : `${HAIRLINE}px solid rgba(232,114,42,0.1)`,
                             outline: a1 && !a2 ? `2px solid ${ORANGE}` : "none", outlineOffset: "-2px",
