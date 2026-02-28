@@ -135,6 +135,7 @@ export function buildConfirmationHTML({
   const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE`
     + `&text=${encodeURIComponent(thingName)}`
     + `&dates=${icsDate(startsAt)}/${icsDate(endsAt)}`
+    + `&ctz=${encodeURIComponent(timezone)}`
     + `&details=${encodeURIComponent(orgName ? `${thingName} · ${orgName}` : thingName)}`;
 
   // Hosted .ics URL for Apple / Outlook
