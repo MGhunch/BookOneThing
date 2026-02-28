@@ -77,20 +77,32 @@ function buildICS({
 
 // ─── FORMAT HELPERS ───────────────────────────────────────────────────────────
 
-function fmtTime(iso: string): string {
+function fmtTime(iso: string, timezone: string = "UTC"): string {
   const d = new Date(iso);
-  const h = d.getHours();
-  const m = d.getMinutes();
-  const suffix = h < 12 ? "am" : "pm";
-  const h12 = h === 0 ? 12 : h > 12 ? h - 12 : h;
-  return m === 0 ? `${h12}${suffix}` : `${h12}:${String(m).padStart(2, "0")}${suffix}`;
+  const parts = new Intl.DateTimeFormat("en-NZ", {
+    timeZone: timezone,
+    hour:     "numeric",
+    minute:   "2-digit",
+    hour12:   true,
+  }).formatToParts(d);
+  const hour   = parts.find(p => p.type === "hour")?.value ?? "12";
+  const minute = parts.find(p => p.type === "minute")?.value ?? "00";
+  const ampm   = (parts.find(p => p.type === "dayPeriod")?.value ?? "am").toLowerCase();
+  return minute === "00" ? `${hour}${ampm}` : `${hour}:${minute}${ampm}`;
 }
 
-function fmtDate(iso: string): string {
+function fmtDate(iso: string, timezone: string = "UTC"): string {
   const d = new Date(iso);
-  const days   = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-  const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-  return `${days[d.getDay()]} ${d.getDate()} ${months[d.getMonth()]}`;
+  const parts = new Intl.DateTimeFormat("en-NZ", {
+    timeZone: timezone,
+    weekday:  "long",
+    day:      "numeric",
+    month:    "long",
+  }).formatToParts(d);
+  const weekday = parts.find(p => p.type === "weekday")?.value ?? "";
+  const day     = parts.find(p => p.type === "day")?.value ?? "";
+  const month   = parts.find(p => p.type === "month")?.value ?? "";
+  return `${weekday} ${day} ${month}`;
 }
 
 // ─── EMAIL HTML ───────────────────────────────────────────────────────────────
@@ -101,6 +113,7 @@ export function buildConfirmationHTML({
   orgName,
   startsAt,
   endsAt,
+  timezone = "UTC",
   cancelUrl,
   specialInstructions,
   calBaseUrl = "https://bookonething.com",
@@ -110,12 +123,13 @@ export function buildConfirmationHTML({
   orgName:              string;
   startsAt:             string;
   endsAt:               string;
+  timezone?:            string;
   cancelUrl?:           string;
   specialInstructions?: string;
   calBaseUrl?:          string;
 }): string {
-  const timeRange = `${fmtTime(startsAt)} – ${fmtTime(endsAt)}`;
-  const dateStr   = fmtDate(startsAt);
+  const timeRange = `${fmtTime(startsAt, timezone)} – ${fmtTime(endsAt, timezone)}`;
+  const dateStr   = fmtDate(startsAt, timezone);
 
   // Google Calendar URL
   const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE`
@@ -279,6 +293,7 @@ export function buildCancellationHTML({
   orgName,
   startsAt,
   endsAt,
+  timezone = "UTC",
   calendarUrl,
 }: {
   bookerName:   string;
@@ -286,10 +301,11 @@ export function buildCancellationHTML({
   orgName:      string;
   startsAt:     string;
   endsAt:       string;
+  timezone?:    string;
   calendarUrl?: string;
 }): string {
-  const timeRange = `${fmtTime(startsAt)} – ${fmtTime(endsAt)}`;
-  const dateStr   = fmtDate(startsAt);
+  const timeRange = `${fmtTime(startsAt, timezone)} – ${fmtTime(endsAt, timezone)}`;
+  const dateStr   = fmtDate(startsAt, timezone);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -381,7 +397,7 @@ export async function sendBookingConfirmation({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
     subject: `Booking confirmation`,
-    html:    buildConfirmationHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl, specialInstructions, calBaseUrl }),
+    html:    buildConfirmationHTML({ bookerName, thingName, orgName, startsAt, endsAt, timezone, cancelUrl, specialInstructions, calBaseUrl }),
   });
 }
 
@@ -392,6 +408,7 @@ export async function sendCancellationConfirmation({
   orgName,
   startsAt,
   endsAt,
+  timezone = "UTC",
   calendarUrl,
 }: {
   bookerName:   string;
@@ -400,13 +417,14 @@ export async function sendCancellationConfirmation({
   orgName:      string;
   startsAt:     string;
   endsAt:       string;
+  timezone?:    string;
   calendarUrl?: string;
 }) {
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
     subject: `Cancellation`,
-    html:    buildCancellationHTML({ bookerName, thingName, orgName, startsAt, endsAt, calendarUrl }),
+    html:    buildCancellationHTML({ bookerName, thingName, orgName, startsAt, endsAt, timezone, calendarUrl }),
   });
 }
 
@@ -627,6 +645,7 @@ export function buildReminderHTML({
   orgName,
   startsAt,
   endsAt,
+  timezone = "UTC",
   cancelUrl,
   reminderNote,
 }: {
@@ -635,11 +654,12 @@ export function buildReminderHTML({
   orgName:       string;
   startsAt:      string;
   endsAt:        string;
+  timezone?:     string;
   cancelUrl:     string;
   reminderNote?: string;
 }): string {
-  const timeRange = `${fmtTime(startsAt)} – ${fmtTime(endsAt)}`;
-  const dateStr   = fmtDate(startsAt);
+  const timeRange = `${fmtTime(startsAt, timezone)} – ${fmtTime(endsAt, timezone)}`;
+  const dateStr   = fmtDate(startsAt, timezone);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -764,6 +784,7 @@ export async function sendReminderEmail({
   orgName,
   startsAt,
   endsAt,
+  timezone = "UTC",
   cancelUrl,
   reminderNote,
 }: {
@@ -773,15 +794,15 @@ export async function sendReminderEmail({
   orgName:       string;
   startsAt:      string;
   endsAt:        string;
+  timezone?:     string;
   cancelUrl:     string;
   reminderNote?: string;
 }) {
-  const timeStr  = fmtTime(startsAt);
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
     subject: `Reminder`,
-    html:    buildReminderHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl, reminderNote }),
+    html:    buildReminderHTML({ bookerName, thingName, orgName, startsAt, endsAt, timezone, cancelUrl, reminderNote }),
   });
 }
 
