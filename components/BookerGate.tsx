@@ -1,190 +1,230 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { sendCodeword, verifyCodeword, setBookerSessionCookie } from "@/app/codeword-actions";
 import ModalShell from "@/components/ModalShell";
 
 const ORANGE       = "#e8722a";
-const ORANGE_LIGHT = "#fdf4ee";
+const ORANGE_FAINT = "#fbe0cc";
 const DARK         = "#1a1a1a";
 const GREY         = "#888";
-const BORDER       = "#ede9e3";
+const GREY_LIGHT   = "#bbb";
+const BORDER       = "#ddd";
 const SYS          = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
 
-// ── Staged progress copy ───────────────────────────────────────────────────────
+// ── Domain scraping for org name ──────────────────────────────────────────────
+
+const CONSUMER_DOMAINS = new Set([
+  "gmail.com","googlemail.com","yahoo.com","yahoo.co.uk","yahoo.com.au",
+  "yahoo.co.nz","hotmail.com","hotmail.co.uk","hotmail.com.au",
+  "outlook.com","outlook.co.nz","outlook.com.au",
+  "icloud.com","me.com","mac.com",
+  "live.com","live.co.uk","live.com.au","msn.com",
+  "protonmail.com","proton.me","fastmail.com","fastmail.com.au",
+  "aol.com","ymail.com","zoho.com",
+]);
+
+function extractOrgName(email: string): string {
+  const domain = email.trim().toLowerCase().split("@")[1];
+  if (!domain || CONSUMER_DOMAINS.has(domain)) return "My Organisation";
+  const base = domain.split(".")[0].replace(/-/g, " ");
+  return base.split(" ").map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(" ");
+}
+
+// ── Progress stages ───────────────────────────────────────────────────────────
 
 const STAGES = [
-  { label: "Crafting email.",                    duration: 1800 },
-  { label: "Sending email.",                     duration: 1800 },
-  { label: "Watching it float through the web.", duration: 99999 },
+  { copy: "Writing your email."  },
+  { copy: "Sending your email."  },
+  { copy: "Watching your inbox." },
 ];
 
-function useStagedText(resetKey: number) {
-  const [stage, setStage] = useState(0);
-  useEffect(() => { setStage(0); }, [resetKey]);
-  useEffect(() => {
-    if (stage >= STAGES.length - 1) return;
-    const t = setTimeout(() => setStage(s => s + 1), STAGES[stage].duration);
-    return () => clearTimeout(t);
-  }, [stage]);
-  return { label: STAGES[stage].label, stage };
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export interface BookerGateProps {
+  thingId:   string;
+  thingName: string;
+  ownerSlug: string;
+  thingSlug: string;
+  /** Show organisation screen — for new owners in setup flow */
+  isOwner?:  boolean;
+  /** Server action context — defaults to "booker" */
+  context?:  "booker" | "manage" | "setup";
+  onClose?:  () => void;
+  /** Called after successful auth. orgName provided when isOwner = true */
+  onDone?:   (result?: { orgName?: string }) => void;
 }
 
-function useFadingLabel(label: string) {
-  const [display, setDisplay] = useState(label);
-  const [visible, setVisible] = useState(true);
-  useEffect(() => {
-    setVisible(false);
-    const t = setTimeout(() => { setDisplay(label); setVisible(true); }, 220);
-    return () => clearTimeout(t);
-  }, [label]);
-  return { display, visible };
-}
-
-// ── Steps progress bar ─────────────────────────────────────────────────────────
-// Third segment pulses on a loop — signals "we've done our bit,
-// the internet is doing its thing."
-
-function ProgressSteps({ resetKey }: { resetKey: number }) {
-  const { label, stage } = useStagedText(resetKey);
-  const { display, visible } = useFadingLabel(label);
-  const filled = stage + 1;
-
-  return (
-    <div style={{ marginBottom: 20 }}>
-      <style>{`
-        @keyframes segFill {
-          from { transform: scaleX(0); }
-          to   { transform: scaleX(1); }
-        }
-        @keyframes segPulse {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.4; }
-        }
-        .seg-fill  { transform-origin: left; animation: segFill 0.4s cubic-bezier(0.32,0.72,0,1); }
-        .seg-pulse { animation: segPulse 1.4s ease-in-out infinite; }
-      `}</style>
-      <div style={{
-        fontSize: 13, fontWeight: 500, color: GREY, fontFamily: SYS,
-        marginBottom: 10, minHeight: 22,
-        opacity: visible ? 1 : 0, transition: "opacity 0.2s ease",
-      }}>
-        {display}
-      </div>
-      <div style={{ display: "flex", gap: 5 }}>
-        {[0, 1, 2].map(i => {
-          const isFilled  = i < filled;
-          const isLooping = i === 2 && filled === 3;
-          return (
-            <div key={i} style={{ flex: 1, height: 4, borderRadius: 4, background: BORDER, overflow: "hidden" }}>
-              {isFilled && (
-                <div
-                  key={`seg-${i}-${filled}`}
-                  className={isLooping ? "seg-pulse" : "seg-fill"}
-                  style={{ height: "100%", width: "100%", background: ORANGE, borderRadius: 4 }}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ── BookerGate ─────────────────────────────────────────────────────────────────
-
-interface BookerGateProps {
-  thingId:    string;
-  thingName:  string;
-  ownerSlug:  string;
-  thingSlug:  string;
-  headline?:  string;
-  subline?:   string;
-  doneLabel?: string;
-  onClose?:   () => void;
-  onDone?:    () => void; // called after successful auth — lets caller resume action
-}
-
-type Screen = "email" | "name" | "code" | "done";
+type Screen   = "email" | "org" | "code";
+type BtnState = "idle" | "verifying" | "success" | "error";
 
 export default function BookerGate({
   thingId, thingName, ownerSlug, thingSlug,
-  headline  = "Ready to book.",
-  subline   = "Just pop in your email.",
-  doneLabel = "Go book your thing.",
+  isOwner = false,
+  context = "booker",
   onClose,
   onDone,
 }: BookerGateProps) {
   const router = useRouter();
 
-  const [screen, setScreen]       = useState<Screen>("email");
-  const [email, setEmail]         = useState("");
-  const [code, setCode]           = useState("");
-  const [firstName, setFirstName] = useState("");
-  const [loading, setLoading]     = useState(false);
-  const [error, setError]         = useState<string | null>(null);
-  const [shake, setShake]         = useState(false);
-  const [dismissed, setDismissed] = useState(false);
-  const [resetKey, setResetKey]   = useState(0);
+  const [screen, setScreen]               = useState<Screen>("email");
+  const [email, setEmail]                 = useState("");
+  const [firstName, setFirstName]         = useState("");
+  const [orgName, setOrgName]             = useState("My Organisation");
+  const [code, setCode]                   = useState("");
+  const [loading, setLoading]             = useState(false);
+  const [error, setError]                 = useState<string | null>(null);
+  const [shake, setShake]                 = useState(false);
+  const [btnState, setBtnState]           = useState<BtnState>("idle");
+  const [filledSegs, setFilledSegs]       = useState(0);
+  const [progressCopy, setProgressCopy]   = useState(STAGES[0].copy);
+  const [progressVisible, setProgressVisible] = useState(true);
+  const progressMounted = useRef(false);
 
-  // ── Read stored name on mount — skip name screen for returning bookers ────
+  // ── Read stored name on mount ─────────────────────────────────────────────
   useEffect(() => {
     const stored = typeof window !== "undefined" ? localStorage.getItem("bookerName") : null;
     if (stored) setFirstName(stored);
   }, []);
 
+  // ── Scrape org name from email domain ─────────────────────────────────────
+  useEffect(() => {
+    if (email.includes("@")) setOrgName(extractOrgName(email));
+  }, [email]);
+
+  // ── Progress animation — runs on codeword screen ──────────────────────────
+  // Segs 1 + 2 fill and stay. Seg 3 wipes and refills on loop.
+  useEffect(() => {
+    if (screen !== "code") return;
+    progressMounted.current = true;
+    let stage = 0;
+
+    function fadeCopy(text: string, cb: () => void) {
+      if (!progressMounted.current) return;
+      setProgressVisible(false);
+      setTimeout(() => {
+        if (!progressMounted.current) return;
+        setProgressCopy(text);
+        setProgressVisible(true);
+        cb();
+      }, 220);
+    }
+
+    function fillSeg(idx: number, cb: () => void) {
+      if (!progressMounted.current) return;
+      setFilledSegs(idx + 1);
+      setTimeout(cb, 600);
+    }
+
+    function loopSeg3() {
+      if (!progressMounted.current) return;
+      setFilledSegs(2); // reset seg 3 only — keep 1 + 2
+      setTimeout(() => {
+        if (!progressMounted.current) return;
+        fadeCopy(STAGES[2].copy, () =>
+          fillSeg(2, () => setTimeout(loopSeg3, 2200))
+        );
+      }, 400);
+    }
+
+    function run() {
+      if (!progressMounted.current || stage >= STAGES.length) {
+        setTimeout(loopSeg3, 2200);
+        return;
+      }
+      fadeCopy(STAGES[stage].copy, () =>
+        fillSeg(stage, () => { stage++; setTimeout(run, 400); })
+      );
+    }
+
+    const t = setTimeout(run, 400);
+    return () => {
+      progressMounted.current = false;
+      clearTimeout(t);
+    };
+  }, [screen]);
+
+  // ── Validation ────────────────────────────────────────────────────────────
   const validEmail = email.trim().includes("@") && email.trim().includes(".");
-  const validCode  = code.trim().length >= 3;
   const validName  = firstName.trim().length >= 1;
+  const validOrg   = orgName.trim().length >= 1;
+  const validCode  = code.trim().length >= 3;
 
   // ── Step 1: send codeword ─────────────────────────────────────────────────
   async function handleSend() {
-    if (!validEmail || loading) return;
+    if (!validEmail || !validName || loading) return;
     setLoading(true);
     setError(null);
-    const result = await sendCodeword({
-      context: "booker", email: email.trim(), thingId, thingName, ownerSlug, thingSlug,
-    });
+
+    const base = { email: email.trim(), firstName: firstName.trim() };
+    const result =
+      context === "booker"
+        ? await sendCodeword({ context: "booker", ...base, thingId, thingName, ownerSlug, thingSlug })
+      : context === "setup"
+        ? await sendCodeword({ context: "setup",  ...base, ownerSlug, thingSlug })
+        : await sendCodeword({ context: "manage", ...base });
+
     setLoading(false);
     if ("error" in result) { setError(result.error); return; }
-    setResetKey(k => k + 1);
-    setScreen(firstName ? "code" : "name");
+    setScreen(isOwner ? "org" : "code");
   }
 
-  // ── Step 2: collect name (skipped for returning bookers) ──────────────────
-  function handleName() {
-    if (!validName) return;
+  // ── Step 2 (owners only): proceed to codeword ─────────────────────────────
+  function handleOrg() {
+    if (!validOrg) return;
     setScreen("code");
   }
 
-  // ── Step 3: verify + set session ──────────────────────────────────────────
+  // ── Step 3: verify codeword ───────────────────────────────────────────────
   async function handleVerify() {
-    if (!validCode || loading) return;
-    setLoading(true);
+    if (!validCode || btnState !== "idle") return;
+    setBtnState("verifying");
     setError(null);
+
     const result = await verifyCodeword({
-      email: email.trim(), code: code.trim().toUpperCase(), context: "booker",
+      email:   email.trim(),
+      code:    code.trim().toUpperCase(),
+      context: context as "booker" | "manage" | "setup",
     });
+
     if ("error" in result) {
-      setLoading(false);
-      setError(result.error);
+      setBtnState("error");
       setShake(true);
-      setTimeout(() => setShake(false), 500);
+      setTimeout(() => { setShake(false); setBtnState("idle"); }, 1200);
       return;
     }
+
     await setBookerSessionCookie(email.trim(), firstName.trim(), ownerSlug, thingId);
     if (typeof window !== "undefined") {
       localStorage.setItem("bookerName",  firstName.trim());
       localStorage.setItem("bookerEmail", email.trim().toLowerCase());
     }
-    setLoading(false);
+
+    setBtnState("success");
     router.refresh();
-    setScreen("done");
+    setTimeout(() => onDone?.({ orgName: isOwner ? orgName.trim() : undefined }), 650);
   }
 
-  if (dismissed) return null;
+  // ── Step badge number ─────────────────────────────────────────────────────
+  const stepNumber = screen === "email" ? 1 : screen === "org" ? 2 : isOwner ? 3 : 2;
+
+  // ── Shared styles ─────────────────────────────────────────────────────────
+  const fieldStyle = {
+    width: "100%", padding: "12px 14px", borderRadius: 11,
+    border: `1.5px solid ${BORDER}`, background: "#fff",
+    fontSize: 13, fontWeight: 400, fontFamily: SYS,
+    color: GREY_LIGHT, fontStyle: "italic",
+    marginBottom: 10, boxSizing: "border-box" as const,
+  };
+
+  const primaryBtn = {
+    width: "100%", padding: 14, borderRadius: 12, border: "none",
+    background: ORANGE, color: "#fff",
+    fontSize: 14, fontWeight: 700, fontFamily: SYS,
+    cursor: "pointer", marginBottom: 12,
+    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+  } as const;
 
   return (
     <ModalShell onBackdropClick={onClose}>
@@ -194,171 +234,268 @@ export default function BookerGate({
           20%,60%  { transform: translateX(-6px); }
           40%,80%  { transform: translateX(6px); }
         }
+        @keyframes lockTick {
+          0%   { transform: scale(1); }
+          40%  { transform: scale(1.35); }
+          70%  { transform: scale(0.9); }
+          100% { transform: scale(1); }
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .gate-shake { animation: shake 0.4s ease; }
-        .gate-input:focus { outline: none; }
-        .gate-cta { transition: all 0.15s; }
-        .gate-cta:active { opacity: 0.88; transform: scale(0.99); }
+        .gate-input:focus { outline: none; border-color: ${ORANGE} !important; }
+        .gate-cta { transition: opacity 0.15s, transform 0.15s; }
+        .gate-cta:active { opacity: 0.88 !important; transform: scale(0.99); }
+        .seg-bar {
+          height: 100%; width: 100%; border-radius: 4px;
+          background: ${ORANGE}; transform-origin: left;
+          transition: transform 0.55s cubic-bezier(0.32,0.72,0,1);
+        }
       `}</style>
 
-      {/* ── Email ──────────────────────────────────────────────────────────── */}
+      {/* ── Step badge ── */}
+      <div style={{
+        width: 28, height: 28, borderRadius: 8,
+        background: ORANGE, color: "#fff",
+        fontSize: 13, fontWeight: 800, fontFamily: SYS,
+        display: "flex", alignItems: "center", justifyContent: "center",
+        marginBottom: 14, flexShrink: 0,
+      }}>
+        {stepNumber}
+      </div>
+
+      {/* ══════════ SCREEN 1 — EMAIL + NAME ══════════ */}
       {screen === "email" && (
         <>
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 8 }}>
-              {headline}
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
+              Quick security check
             </div>
-            <div style={{ fontSize: 14, color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
-              {subline}
+            <div style={{ fontSize: 13, color: GREY, fontFamily: SYS, lineHeight: 1.5 }}>
+              So we know you're really you.
             </div>
           </div>
+
           <input
             className="gate-input"
-            type="email" value={email} autoFocus
+            type="email" autoFocus
+            value={email}
             onChange={e => { setEmail(e.target.value); setError(null); }}
-            onKeyDown={e => e.key === "Enter" && handleSend()}
-            placeholder="your@email.com"
-            style={{
-              width: "100%", padding: "14px 16px", borderRadius: 12,
-              border: `1.5px solid ${email ? ORANGE : BORDER}`,
-              background: email ? ORANGE_LIGHT : "#f9f8f6",
-              fontSize: 15, fontWeight: 500, fontFamily: SYS, color: DARK,
-              transition: "all 0.15s", boxSizing: "border-box" as const, marginBottom: 10,
-            }}
+            onKeyDown={e => e.key === "Enter" && document.getElementById("gate-name")?.focus()}
+            placeholder="What's your email?"
+            style={fieldStyle}
           />
-          {error && <div style={{ fontSize: 12, color: "#c0392b", fontFamily: SYS, marginBottom: 10 }}>{error}</div>}
-          <button className="gate-cta" onClick={handleSend} disabled={!validEmail || loading}
+          <input
+            id="gate-name"
+            className="gate-input"
+            type="text" maxLength={20}
+            value={firstName}
+            onChange={e => { setFirstName(e.target.value.slice(0, 20)); setError(null); }}
+            onKeyDown={e => e.key === "Enter" && handleSend()}
+            placeholder="What's your first name?"
+            style={{ ...fieldStyle, marginBottom: 4 }}
+          />
+
+          {error && (
+            <div style={{ fontSize: 12, color: "#c0392b", fontFamily: SYS, marginBottom: 10, marginTop: 4 }}>
+              {error}
+            </div>
+          )}
+
+          <div style={{ flex: 1, minHeight: 20 }} />
+
+          <button
+            className="gate-cta"
+            onClick={handleSend}
+            disabled={!validEmail || !validName || loading}
             style={{
-              width: "100%", padding: 15, borderRadius: 13, border: "none",
-              background: validEmail ? ORANGE : "#fbe0cc",
-              color: validEmail ? "#fff" : "#e0824a",
-              fontSize: 15, fontWeight: 700, fontFamily: SYS,
-              cursor: validEmail ? "pointer" : "default", marginBottom: 14,
+              ...primaryBtn,
+              background: validEmail && validName ? ORANGE : ORANGE_FAINT,
+              color:      validEmail && validName ? "#fff" : "#e0824a",
+              cursor:     validEmail && validName ? "pointer" : "default",
             }}
           >
             {loading ? "Sending…" : "Get a codeword"}
           </button>
-          <div style={{ textAlign: "center" as const, fontSize: 12, color: "#ccc", fontFamily: SYS }}>
-            No pesky passwords.
+          <div style={{ textAlign: "center", fontSize: 12, color: "#ccc", fontFamily: SYS }}>
+            We won't spam you, promise.
           </div>
         </>
       )}
 
-      {/* ── Name ───────────────────────────────────────────────────────────── */}
-      {screen === "name" && (
-        <>
-          <div style={{ marginBottom: 24 }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 8 }}>
-              What's your name?
-            </div>
-            <div style={{ fontSize: 14, color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
-              So we can tell who's who.
-            </div>
-          </div>
-          <input
-            className="gate-input"
-            type="text" value={firstName} autoFocus maxLength={20}
-            onChange={e => { setFirstName(e.target.value.slice(0, 20)); setError(null); }}
-            onKeyDown={e => e.key === "Enter" && handleName()}
-            placeholder="First name"
-            style={{
-              width: "100%", padding: "14px 16px", borderRadius: 12,
-              border: `1.5px solid ${firstName ? ORANGE : BORDER}`,
-              background: firstName ? ORANGE_LIGHT : "#f9f8f6",
-              fontSize: 15, fontWeight: 500, fontFamily: SYS, color: DARK,
-              transition: "all 0.15s", boxSizing: "border-box" as const, marginBottom: 10,
-            }}
-          />
-          <button className="gate-cta" onClick={handleName} disabled={!validName}
-            style={{
-              width: "100%", padding: 15, borderRadius: 13, border: "none",
-              background: validName ? ORANGE : "#fbe0cc",
-              color: validName ? "#fff" : "#e0824a",
-              fontSize: 15, fontWeight: 700, fontFamily: SYS,
-              cursor: validName ? "pointer" : "default", marginBottom: 14,
-            }}
-          >
-            Say hello
-          </button>
-          <div style={{ textAlign: "center" as const, fontSize: 12, color: "#ccc", fontFamily: SYS }}>
-            Your first name is fine.
-          </div>
-        </>
-      )}
-
-      {/* ── Codeword ───────────────────────────────────────────────────────── */}
-      {screen === "code" && (
+      {/* ══════════ SCREEN 2 — ORG (owners only) ══════════ */}
+      {screen === "org" && (
         <>
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, lineHeight: 1.2 }}>
-              Pop in your codeword
+            <div style={{ fontSize: 20, fontWeight: 800, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
+              Whose calendar is it?
+            </div>
+            <div style={{ fontSize: 13, color: GREY, fontFamily: SYS, lineHeight: 1.5 }}>
+              So people can easily find you.
             </div>
           </div>
 
-          <ProgressSteps resetKey={resetKey} />
+          <input
+            className="gate-input"
+            type="text" autoFocus maxLength={40}
+            value={orgName}
+            onChange={e => setOrgName(e.target.value)}
+            onKeyDown={e => e.key === "Enter" && handleOrg()}
+            placeholder="eg: Hunch"
+            style={{
+              ...fieldStyle,
+              color:     orgName === "My Organisation" ? GREY_LIGHT : DARK,
+              fontStyle: orgName === "My Organisation" ? "italic" : "normal",
+              marginBottom: 20,
+            }}
+          />
 
+          <div>
+            <div style={{
+              fontSize: 9, fontWeight: 700, letterSpacing: "1px",
+              textTransform: "uppercase", color: ORANGE,
+              fontFamily: SYS, marginBottom: 5,
+            }}>
+              Remember
+            </div>
+            <div style={{ fontSize: 12, color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
+              Your things, your rules. We just handle the bookings.
+            </div>
+          </div>
+
+          <div style={{ flex: 1, minHeight: 20 }} />
+
+          <button className="gate-cta" onClick={handleOrg} style={primaryBtn}>
+            Nearly done
+          </button>
+          <div style={{ textAlign: "center", fontSize: 12, color: "#ccc", fontFamily: SYS }}>
+            You can change this any time.
+          </div>
+        </>
+      )}
+
+      {/* ══════════ SCREEN 3 — CODEWORD ══════════ */}
+      {screen === "code" && (
+        <>
+          <div style={{ marginBottom: 18 }}>
+            <div style={{ fontSize: 20, fontWeight: 800, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
+              Pop in your codeword
+            </div>
+            <div style={{ fontSize: 13, color: GREY, fontFamily: SYS }}>
+              We've sent it to your email.
+            </div>
+          </div>
+
+          {/* Input */}
           <div className={shake ? "gate-shake" : ""}>
             <input
               className="gate-input"
-              type="text" value={code} autoFocus maxLength={10}
-              onChange={e => { setCode(e.target.value.toUpperCase()); setError(null); }}
+              type="text" autoFocus maxLength={10}
+              value={code}
+              onChange={e => {
+                setCode(e.target.value.toUpperCase());
+                setError(null);
+                if (btnState === "error") setBtnState("idle");
+              }}
               onKeyDown={e => e.key === "Enter" && handleVerify()}
               placeholder="CODEWORD"
               style={{
-                width: "100%", padding: "16px", borderRadius: 12,
-                textAlign: "center" as const,
-                border: `2px solid ${error ? "#c0392b" : code ? ORANGE : BORDER}`,
-                background: error ? "#fdf0ee" : code ? ORANGE_LIGHT : "#f9f8f6",
-                fontSize: 24, fontWeight: 800, fontFamily: SYS,
+                width: "100%", padding: "14px 16px", borderRadius: 11,
+                border: `2px solid ${error ? "#e0824a" : BORDER}`,
+                background: error ? "#fdf4ee" : "#fff",
+                textAlign: "center",
+                fontSize: 22, fontWeight: 800, fontFamily: SYS,
                 color: error ? "#c0392b" : DARK,
-                letterSpacing: "4px", transition: "all 0.15s",
-                boxSizing: "border-box" as const, marginBottom: 10,
+                letterSpacing: "4px", marginBottom: 14,
+                boxSizing: "border-box",
               }}
             />
           </div>
-          {error && <div style={{ fontSize: 12, color: "#c0392b", fontFamily: SYS, marginBottom: 10, textAlign: "center" as const }}>{error}</div>}
-          <button className="gate-cta" onClick={handleVerify} disabled={!validCode || loading}
+
+          {/* Progress — below input */}
+          <div style={{ marginBottom: 4 }}>
+            <div style={{
+              fontSize: 10, fontWeight: 700, letterSpacing: "0.8px",
+              textTransform: "uppercase", color: GREY, fontFamily: SYS,
+              marginBottom: 7,
+              opacity: progressVisible ? 1 : 0,
+              transition: "opacity 0.22s ease",
+            }}>
+              {progressCopy}
+            </div>
+            <div style={{ display: "flex", gap: 4 }}>
+              {[0, 1, 2].map(i => (
+                <div key={i} style={{ flex: 1, height: 4, borderRadius: 4, background: "#e8e5e0", overflow: "hidden" }}>
+                  <div className="seg-bar" style={{ transform: filledSegs > i ? "scaleX(1)" : "scaleX(0)" }} />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {error && (
+            <div style={{ fontSize: 12, color: "#c0392b", fontFamily: SYS, marginTop: 8, textAlign: "center" }}>
+              {error}
+            </div>
+          )}
+
+          <div style={{ flex: 1, minHeight: 20 }} />
+
+          {/* Unlock button */}
+          <button
+            className="gate-cta"
+            onClick={handleVerify}
+            disabled={!validCode || btnState !== "idle"}
             style={{
-              width: "100%", padding: 15, borderRadius: 13, border: "none",
-              background: validCode ? ORANGE : "#fbe0cc",
-              color: validCode ? "#fff" : "#e0824a",
-              fontSize: 15, fontWeight: 700, fontFamily: SYS,
-              cursor: validCode ? "pointer" : "default",
-              transition: "all 0.15s", marginBottom: 14,
+              ...primaryBtn,
+              opacity: btnState === "verifying" ? 0.8 : 1,
+              cursor:  validCode && btnState === "idle" ? "pointer" : "default",
             }}
           >
-            {loading ? "Checking…" : "Unlock"}
+            {btnState === "idle" && (
+              <>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+                Unlock
+              </>
+            )}
+            {btnState === "verifying" && (
+              <>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+                  style={{ animation: "spin 0.9s linear infinite" }}>
+                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                </svg>
+                Verifying…
+              </>
+            )}
+            {btnState === "success" && (
+              <>
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"
+                  style={{ animation: "lockTick 0.4s cubic-bezier(0.32,0.72,0,1) forwards" }}>
+                  <polyline points="20 6 9 17 4 12"/>
+                </svg>
+                You're in
+              </>
+            )}
+            {btnState === "error" && (
+              <>
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+                </svg>
+                Try again
+              </>
+            )}
           </button>
-          <div style={{ textAlign: "center" as const, fontSize: 12, color: "#ccc", fontFamily: SYS }}>
+
+          <div style={{ textAlign: "center", fontSize: 12, color: "#ccc", fontFamily: SYS }}>
             Didn't get it?{" "}
-            <span onClick={() => { setScreen("email"); setCode(""); setError(null); }}
-              style={{ color: ORANGE, fontWeight: 600, cursor: "pointer" }}>
+            <span
+              onClick={() => { setScreen("email"); setCode(""); setError(null); setBtnState("idle"); setFilledSegs(0); }}
+              style={{ color: ORANGE, fontWeight: 600, cursor: "pointer" }}
+            >
               Send another
             </span>
           </div>
         </>
-      )}
-
-      {/* ── Done ───────────────────────────────────────────────────────────── */}
-      {screen === "done" && (
-        <div style={{ textAlign: "center" as const, padding: "8px 0", position: "relative" as const }}>
-          <button
-            onClick={() => { setDismissed(true); onDone?.(); }}
-            style={{ position: "absolute" as const, top: -8, right: -4, background: "none", border: "none", cursor: "pointer", color: "#ccc", padding: 4 }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-            </svg>
-          </button>
-          <div style={{ width: 52, height: 52, borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="3,11 8,17 19,5"/>
-            </svg>
-          </div>
-          <div style={{ fontSize: 22, fontWeight: 800, color: DARK, letterSpacing: "-0.5px", fontFamily: SYS, marginBottom: 6 }}>
-            You're in
-          </div>
-          <div style={{ fontSize: 14, color: GREY, fontFamily: SYS }}>{doneLabel}</div>
-        </div>
       )}
     </ModalShell>
   );
