@@ -279,12 +279,14 @@ export function buildCancellationHTML({
   orgName,
   startsAt,
   endsAt,
+  calendarUrl,
 }: {
-  bookerName: string;
-  thingName:  string;
-  orgName:    string;
-  startsAt:   string;
-  endsAt:     string;
+  bookerName:   string;
+  thingName:    string;
+  orgName:      string;
+  startsAt:     string;
+  endsAt:       string;
+  calendarUrl?: string;
 }): string {
   const timeRange = `${fmtTime(startsAt)} – ${fmtTime(endsAt)}`;
   const dateStr   = fmtDate(startsAt);
@@ -315,7 +317,7 @@ export function buildCancellationHTML({
             <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
               <p style="margin:0 0 6px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
-                Booking cancelled.
+                Booking cancelled
               </p>
               ${orgName ? `<p style="margin:0 0 24px;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;">${orgName}</p>` : `<div style="margin-bottom:24px;"></div>`}
 
@@ -323,11 +325,12 @@ export function buildCancellationHTML({
               <table width="100%" cellpadding="0" cellspacing="0"
                 style="background:#f9f8f6;border-radius:14px;padding:18px 20px;margin-bottom:28px;border:1.5px solid #ede9e3;">
                 <tr><td style="font-size:15px;font-weight:700;color:${DARK};padding-bottom:4px;">${thingName}</td></tr>
-                <tr><td style="font-size:14px;color:#888;">${timeRange} · ${dateStr}</td></tr>
+                <tr><td style="font-size:14px;color:#888;padding-bottom:14px;">${timeRange} · ${dateStr}</td></tr>
+                <tr><td style="border-top:1px solid #ede9e3;padding-top:12px;font-size:12px;color:#bbb;line-height:1.6;">Don't forget to cancel it in your diary too.</td></tr>
               </table>
 
               <p style="margin:0;font-size:13px;color:#999;line-height:1.6;">
-                The slot is now free for someone else to book. If this was a mistake, just head back and rebook.
+                The slot is now free for someone else to book. Thanks.${calendarUrl ? ` If this was a mistake, just <a href="${calendarUrl}" style="color:${DARK};font-weight:600;">head back and rebook</a>.` : ""}
               </p>
             </td>
           </tr>
@@ -335,7 +338,7 @@ export function buildCancellationHTML({
           <!-- Footer -->
           <tr>
             <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
-              Book One Thing · The easy way to share anything with anyone.
+              Book One Thing | The easy way to share anything with anyone.
             </td>
           </tr>
 
@@ -482,19 +485,21 @@ export async function sendCancellationConfirmation({
   orgName,
   startsAt,
   endsAt,
+  calendarUrl,
 }: {
-  bookerName:  string;
-  bookerEmail: string;
-  thingName:   string;
-  orgName:     string;
-  startsAt:    string;
-  endsAt:      string;
+  bookerName:   string;
+  bookerEmail:  string;
+  thingName:    string;
+  orgName:      string;
+  startsAt:     string;
+  endsAt:       string;
+  calendarUrl?: string;
 }) {
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
-    subject: `Booking cancelled — ${thingName}`,
-    html:    buildCancellationHTML({ bookerName, thingName, orgName, startsAt, endsAt }),
+    subject: `Booking cancelled in "${thingName}"`,
+    html:    buildCancellationHTML({ bookerName, thingName, orgName, startsAt, endsAt, calendarUrl }),
   });
 }
 
