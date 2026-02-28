@@ -757,13 +757,13 @@ export function buildReminderHTML({
             <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
               <p style="margin:0 0 6px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
-                See you tomorrow, ${bookerName}.
+                See you tomorrow, ${bookerName}
               </p>
               ${orgName ? `<p style="margin:0 0 24px;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;">${orgName}</p>` : `<div style="margin-bottom:24px;"></div>`}
 
               <!-- Detail block -->
               <table width="100%" cellpadding="0" cellspacing="0"
-                style="background:#fdf4ee;border-radius:14px;padding:18px 20px;margin-bottom:28px;">
+                style="background:#fdf4ee;border-radius:14px;padding:18px 20px;margin-bottom:16px;">
                 <tr>
                   <td style="padding:0 0 10px;">
                     <table cellpadding="0" cellspacing="0"><tr>
@@ -785,7 +785,7 @@ export function buildReminderHTML({
                   </td>
                 </tr>
                 <tr>
-                  <td${reminderNote ? ' style="padding:0 0 10px;"' : ""}>
+                  <td>
                     <table cellpadding="0" cellspacing="0"><tr>
                       <td style="width:20px;height:20px;background:${ORANGE};border-radius:50%;text-align:center;vertical-align:middle;">
                         <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="3"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
@@ -794,44 +794,39 @@ export function buildReminderHTML({
                     </tr></table>
                   </td>
                 </tr>
-                ${reminderNote ? `
-                <tr>
-                  <td>
-                    <table cellpadding="0" cellspacing="0"><tr>
-                      <td style="width:20px;height:20px;"></td>
-                      <td style="padding-left:10px;font-size:13px;color:#888;font-style:italic;">${reminderNote}</td>
-                    </tr></table>
-                  </td>
-                </tr>` : ""}
               </table>
 
-              <!-- Body -->
-              <p style="margin:0 0 24px;font-size:15px;color:#555;line-height:1.7;">
-                It's all ready, unless you're not...
+              ${reminderNote ? `
+              <!-- Things to remember -->
+              <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;">Things to remember</p>
+              <table width="100%" cellpadding="0" cellspacing="0"
+                style="background:#f9f8f6;border-radius:12px;padding:14px 18px;margin-bottom:28px;border:1.5px solid #ede9e3;">
+                <tr>
+                  <td style="font-size:13px;color:#888;font-style:italic;line-height:1.6;">${reminderNote}</td>
+                </tr>
+              </table>` : `<div style="margin-bottom:28px;"></div>`}
+
+              <!-- Change of plans -->
+              <p style="margin:0 0 8px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;">Change of plans?</p>
+              <p style="margin:0 0 20px;font-size:15px;color:#555;line-height:1.7;">
+                Please let us know. Someone else can jump in.
               </p>
 
               <!-- Cancel CTA -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:16px;">
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
                 <tr>
-                  <td align="center">
+                  <td>
                     <a href="${cancelUrl}"
-                       style="display:inline-block;background:${DARK};color:#fff;text-decoration:none;font-size:15px;font-weight:700;padding:16px 40px;border-radius:14px;letter-spacing:-0.2px;">
-                      Cancel my booking
+                       style="display:inline-block;background:${ORANGE};color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:13px 28px;border-radius:12px;letter-spacing:-0.2px;">
+                      Don't need it, thanks
                     </a>
                   </td>
                 </tr>
               </table>
 
-              <p style="margin:0 0 24px;font-size:12px;color:#bbb;text-align:center;line-height:1.6;">
-                Please cancel if you don't need it. Someone else can jump in.
-              </p>
-
-              <!-- Footer note -->
-              <p style="margin:0 0 16px;font-size:12px;color:#bbb;line-height:1.6;">
-                Got questions? <a href="https://bookonething.com/faq" style="color:#888;">Check the FAQs.</a>
-              </p>
-              <p style="margin:0;font-size:13px;font-weight:700;color:${DARK};">
-                All set. Let's book some things.
+              <!-- FAQ -->
+              <p style="margin:0;font-size:12px;color:#bbb;line-height:1.6;">
+                Got questions? <a href="https://bookonething.com/faq" style="color:#888;">Check the FAQs</a>
               </p>
 
             </td>
@@ -872,12 +867,10 @@ export async function sendReminderEmail({
   reminderNote?: string;
 }) {
   const timeStr  = fmtTime(startsAt);
-  const noteTag  = reminderNote ? ` — ${reminderNote}` : "";
-
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
-    subject: `Reminder: ${thingName}${noteTag} — tomorrow at ${timeStr}`,
+    subject: `Reminder: "${thingName}" booked tomorrow at ${timeStr}`,
     html:    buildReminderHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl, reminderNote }),
   });
 }
