@@ -21,9 +21,12 @@ function extractOwnerSlug(profiles: unknown): string {
   return (profiles as { slug?: string | null })?.slug ?? "";
 }
 
-export async function GET(request: NextRequest) {
-  const { searchParams, origin } = new URL(request.url);
-  const token = searchParams.get("token");
+// POST only — GET requests hit page.tsx which shows the confirmation UI.
+// Email scanners follow GET links but never POST, so bookings are safe.
+export async function POST(request: NextRequest) {
+  const { origin } = new URL(request.url);
+  const formData = await request.formData();
+  const token    = formData.get("token")?.toString();
 
   if (!token) {
     return NextResponse.redirect(`${origin}/?error=invalid_link`);
