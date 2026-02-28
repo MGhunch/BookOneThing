@@ -261,7 +261,7 @@ export function buildConfirmationHTML({
           <!-- Footer -->
           <tr>
             <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
-              Book One Thing · The easy way to share anything with anyone.
+              BookOneThing | The easy way to share anything with anyone.
             </td>
           </tr>
 
@@ -338,7 +338,7 @@ export function buildCancellationHTML({
           <!-- Footer -->
           <tr>
             <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
-              Book One Thing | The easy way to share anything with anyone.
+              BookOneThing | The easy way to share anything with anyone.
             </td>
           </tr>
 
@@ -414,7 +414,7 @@ export function buildMagicLinkHTML({
           <!-- Footer -->
           <tr>
             <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
-              Book One Thing · The easy way to share anything with anyone.
+              BookOneThing | The easy way to share anything with anyone.
             </td>
           </tr>
 
