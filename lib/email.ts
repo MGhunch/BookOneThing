@@ -143,7 +143,7 @@ export function buildConfirmationHTML({
           <!-- Logo -->
           <tr>
             <td style="padding-bottom:28px;">
-              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+              <img src="https://bookonething.com/logo2.png" alt="BookOneThing" width="160" style="display:block;border:0;"/>
             </td>
           </tr>
 
@@ -308,7 +308,7 @@ export function buildCancellationHTML({
           <!-- Logo -->
           <tr>
             <td style="padding-bottom:28px;">
-              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+              <img src="https://bookonething.com/logo2.png" alt="BookOneThing" width="160" style="display:block;border:0;"/>
             </td>
           </tr>
 
@@ -350,101 +350,6 @@ export function buildCancellationHTML({
 </html>`;
 }
 
-// ─── BOOKER MAGIC LINK ───────────────────────────────────────────────────────
-
-export function buildMagicLinkHTML({
-  firstName,
-  thingName,
-  magicLink,
-}: {
-  firstName: string;
-  thingName: string;
-  magicLink: string;
-}): string {
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-<title>Activate ${thingName}</title>
-</head>
-<body style="margin:0;padding:0;background:#e8e5e0;font-family:${SYS};">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background:#e8e5e0;padding:48px 24px;">
-    <tr>
-      <td align="center">
-        <table width="100%" cellpadding="0" cellspacing="0" style="max-width:480px;">
-
-          <!-- Logo -->
-          <tr>
-            <td style="padding-bottom:28px;">
-              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
-            </td>
-          </tr>
-
-          <!-- Card -->
-          <tr>
-            <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
-
-              <p style="margin:0 0 8px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
-                One tap, ${firstName}.
-              </p>
-              <p style="margin:0 0 28px;font-size:15px;color:#888;line-height:1.6;">
-                ${thingName} is ready and waiting. Tap the button below — it'll pop up right where you left off.
-              </p>
-
-              <!-- CTA -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
-                <tr>
-                  <td align="center">
-                    <a href="${magicLink}"
-                       style="display:inline-block;background:${ORANGE};color:#fff;text-decoration:none;font-size:15px;font-weight:700;padding:16px 40px;border-radius:14px;letter-spacing:-0.2px;">
-                      Activate ${thingName} →
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <p style="margin:0;font-size:12px;color:#bbb;line-height:1.6;text-align:center;">
-                Keep this email — it's your permanent link back to your calendar.
-              </p>
-            </td>
-          </tr>
-
-          <!-- Footer -->
-          <tr>
-            <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
-              BookOneThing | The easy way to share anything with anyone.
-            </td>
-          </tr>
-
-        </table>
-      </td>
-    </tr>
-  </table>
-</body>
-</html>`;
-}
-
-export async function sendBookerMagicLink({
-  firstName,
-  toEmail,
-  thingName,
-  magicLink,
-}: {
-  firstName:  string;
-  toEmail:    string;
-  thingName:  string;
-  magicLink:  string;
-}) {
-  await resend.emails.send({
-    from:    "BookOneThing <bookings@bookonething.com>",
-    to:      toEmail,
-    subject: `Your link to ${thingName}`,
-    html:    buildMagicLinkHTML({ firstName, thingName, magicLink }),
-  });
-}
-
 // ─── PUBLIC API ───────────────────────────────────────────────────────────────
 
 export async function sendBookingConfirmation({
@@ -475,7 +380,7 @@ export async function sendBookingConfirmation({
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
-    subject: `You're booked in "${thingName}"`,
+    subject: `Booking confirmation`,
     html:    buildConfirmationHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl, specialInstructions, calBaseUrl }),
   });
 }
@@ -500,7 +405,7 @@ export async function sendCancellationConfirmation({
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
-    subject: `Booking cancelled in "${thingName}"`,
+    subject: `Cancellation`,
     html:    buildCancellationHTML({ bookerName, thingName, orgName, startsAt, endsAt, calendarUrl }),
   });
 }
@@ -539,6 +444,7 @@ function fmtBookAhead(days: number): string {
 export function buildOwnerWelcomeHTML({
   firstName,
   thingName,
+  orgName,
   shareUrl,
   availStart,
   availEnd,
@@ -549,6 +455,7 @@ export function buildOwnerWelcomeHTML({
 }: {
   firstName:     string;
   thingName:     string;
+  orgName:       string;
   shareUrl:      string;
   availStart:    string;
   availEnd:      string;
@@ -597,7 +504,7 @@ export function buildOwnerWelcomeHTML({
           <!-- Logo -->
           <tr>
             <td style="padding-bottom:28px;">
-              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+              <img src="https://bookonething.com/logo2.png" alt="BookOneThing" width="160" style="display:block;border:0;"/>
             </td>
           </tr>
 
@@ -606,9 +513,10 @@ export function buildOwnerWelcomeHTML({
             <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
               <!-- Headline -->
-              <p style="margin:0 0 28px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
-                &ldquo;${thingName}&rdquo; is live. Yay
+              <p style="margin:0 0 6px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
+                &ldquo;${thingName}&rdquo; is live. Yay.
               </p>
+              ${orgName ? `<p style="margin:0 0 28px;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;">${orgName}</p>` : `<div style="margin-bottom:28px;"></div>`}
 
               <!-- Share link hero -->
               <table width="100%" cellpadding="0" cellspacing="0"
@@ -678,6 +586,7 @@ export async function sendOwnerWelcome({
   firstName,
   toEmail,
   thingName,
+  orgName,
   shareUrl,
   availStart,
   availEnd,
@@ -689,6 +598,7 @@ export async function sendOwnerWelcome({
   firstName:     string;
   toEmail:       string;
   thingName:     string;
+  orgName:       string;
   shareUrl:      string;
   availStart:    string;
   availEnd:      string;
@@ -700,9 +610,9 @@ export async function sendOwnerWelcome({
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      toEmail,
-    subject: `"${thingName}" is ready to book`,
+    subject: `Setup confirmation`,
     html:    buildOwnerWelcomeHTML({
-      firstName, thingName, shareUrl,
+      firstName, thingName, orgName, shareUrl,
       availStart, availEnd, availWeekends,
       maxLengthMins, bookAheadDays, maxConcurrent,
     }),
@@ -748,7 +658,7 @@ export function buildReminderHTML({
           <!-- Logo -->
           <tr>
             <td style="padding-bottom:28px;">
-              <img src="https://bookonething.com/logo2.png" alt="Book One Thing" width="160" style="display:block;border:0;"/>
+              <img src="https://bookonething.com/logo2.png" alt="BookOneThing" width="160" style="display:block;border:0;"/>
             </td>
           </tr>
 
@@ -757,7 +667,7 @@ export function buildReminderHTML({
             <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
               <p style="margin:0 0 6px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
-                See you tomorrow, ${bookerName}
+                See you tomorrow, ${bookerName}.
               </p>
               ${orgName ? `<p style="margin:0 0 24px;font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;">${orgName}</p>` : `<div style="margin-bottom:24px;"></div>`}
 
@@ -870,34 +780,12 @@ export async function sendReminderEmail({
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
-    subject: `Reminder: "${thingName}" booked tomorrow at ${timeStr}`,
+    subject: `Reminder`,
     html:    buildReminderHTML({ bookerName, thingName, orgName, startsAt, endsAt, cancelUrl, reminderNote }),
   });
 }
 
-// ─── OWNER MAGIC LINK ────────────────────────────────────────────────────────
-
-export async function sendOwnerMagicLink({
-  firstName,
-  toEmail,
-  thingName,
-  magicLink,
-}: {
-  firstName: string;
-  toEmail:   string;
-  thingName: string;
-  magicLink: string;
-}) {
-  await resend.emails.send({
-    from:    "BookOneThing <bookings@bookonething.com>",
-    to:      toEmail,
-    subject: `Your link to set up ${thingName}`,
-    html:    buildMagicLinkHTML({ firstName, thingName, magicLink }),
-  });
-}
-
 // ─── CODEWORD EMAILS ─────────────────────────────────────────────────────────
-// Replaces all magic link auth emails.
 // Three contexts: booker (unlock calendar), owner setup, owner manage.
 
 export function buildCodewordHTML({
@@ -967,7 +855,7 @@ export function buildCodewordHTML({
           <!-- Footer -->
           <tr>
             <td style="padding-top:24px;text-align:center;font-size:11px;color:#aaa;">
-              BookOneThing · The easy way to share anything with anyone.
+              BookOneThing | The easy way to share anything with anyone.
             </td>
           </tr>
 
@@ -992,9 +880,7 @@ export async function sendCodewordEmail({
   context:    "booker" | "manage" | "setup";
   thingName?: string;
 }) {
-  const subject =
-    context === "booker" && thingName ? `Your codeword for ${thingName}` :
-                                        "Your BookOneThing codeword";
+  const subject = "Your BookOneThing codeword";
 
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
