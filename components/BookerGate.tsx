@@ -35,9 +35,9 @@ function extractOrgName(email: string): string {
 // ── Progress stages ───────────────────────────────────────────────────────────
 
 const STAGES = [
-  { copy: "Writing your email."  },
-  { copy: "Sending your email."  },
-  { copy: "Watching your inbox." },
+  { copy: "Writing your email"  },
+  { copy: "Sending your email"  },
+  { copy: "Watching your inbox" },
 ];
 
 // ── Component ─────────────────────────────────────────────────────────────────
