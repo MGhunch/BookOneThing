@@ -591,7 +591,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                           transition: "border 0.15s", zIndex: 1 }}>
                         <button
                           onClick={ready ? handleSelectionTap : () => handleSlot(group.s1!)}
-                          style={{ display: "flex", alignItems: "flex-start", paddingLeft: "11px", paddingTop: "8px", width: "100%", height: `${SLOT_H}px`,
+                          style={{ display: "flex", alignItems: "flex-start", paddingLeft: "11px", paddingTop: "14px", width: "100%", height: `${SLOT_H}px`,
                             background: slotBg(group.s1!), border: "none",
                             borderBottom: bothActive ? "none" : `${HAIRLINE}px solid rgba(232,114,42,0.1)`,
                             outline: a1 && !a2 ? `2px solid ${ORANGE}` : "none", outlineOffset: "-2px",
