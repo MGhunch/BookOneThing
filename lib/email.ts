@@ -108,7 +108,9 @@ function fmtDate(iso: string, timezone: string = "UTC"): string {
 // ─── EMAIL HTML ───────────────────────────────────────────────────────────────
 
 export function buildConfirmationHTML({
+  bookingId,
   bookerName,
+  bookerEmail,
   thingName,
   orgName,
   startsAt,
@@ -118,7 +120,9 @@ export function buildConfirmationHTML({
   specialInstructions,
   calBaseUrl = "https://bookonething.com",
 }: {
+  bookingId:            string;
   bookerName:           string;
+  bookerEmail:          string;
   thingName:            string;
   orgName:              string;
   startsAt:             string;
@@ -139,7 +143,14 @@ export function buildConfirmationHTML({
     + `&details=${encodeURIComponent(orgName ? `${thingName} · ${orgName}` : thingName)}`;
 
   // Hosted .ics URL for Apple / Outlook
-  const icsUrl = `${calBaseUrl}/api/ics?starts=${encodeURIComponent(startsAt)}&ends=${encodeURIComponent(endsAt)}&name=${encodeURIComponent(thingName)}`;
+  const icsUrl = `${calBaseUrl}/api/ics`
+    + `?uid=${encodeURIComponent(bookingId)}`
+    + `&starts=${encodeURIComponent(startsAt)}`
+    + `&ends=${encodeURIComponent(endsAt)}`
+    + `&name=${encodeURIComponent(thingName)}`
+    + `&timezone=${encodeURIComponent(timezone)}`
+    + `&bookerName=${encodeURIComponent(bookerName)}`
+    + `&bookerEmail=${encodeURIComponent(bookerEmail)}`;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -398,7 +409,7 @@ export async function sendBookingConfirmation({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      bookerEmail,
     subject: `Booking confirmation`,
-    html:    buildConfirmationHTML({ bookerName, thingName, orgName, startsAt, endsAt, timezone, cancelUrl, specialInstructions, calBaseUrl }),
+    html:    buildConfirmationHTML({ bookingId, bookerName, bookerEmail, thingName, orgName, startsAt, endsAt, timezone, cancelUrl, specialInstructions, calBaseUrl }),
   });
 }
 
