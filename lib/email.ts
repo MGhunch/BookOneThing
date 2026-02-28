@@ -562,8 +562,8 @@ export function buildOwnerWelcomeHTML({
   const bookAhead    = fmtBookAhead(bookAheadDays);
 
   // mailto for the pre-popped share button
-  const mailSubject = encodeURIComponent(`Book ${thingName} here.`);
-  const mailBody    = encodeURIComponent(`Hey there,\n\n${firstName} has set up ${thingName} ready to book.\n\n> ${shareUrl}\n\nJust pop in your email. Click the link. And you're in.\nNo passwords. No fuss.\n\nTry it. Go book some things.`);
+  const mailSubject = encodeURIComponent(`Book "${thingName}" here`);
+  const mailBody    = encodeURIComponent(`${firstName} has set up "${thingName}" ready to book.\n\nHere's how it works:\n* Dive in to start booking\n* Get a codeword to prove you're you\n* Then go for gold\n\n${shareUrl}\n\nWhy not try it now? Go book some things.`);
   const mailtoHref  = `mailto:?subject=${mailSubject}&body=${mailBody}`;
 
   const faqUrl = "https://bookonething.com/faq";
@@ -574,13 +574,19 @@ export function buildOwnerWelcomeHTML({
       <td style="padding:9px 0;border-bottom:1px solid #ede9e3;font-size:13px;color:#666;">${value}</td>
     </tr>`;
 
+  const lastRow = (label: string, value: string) => `
+    <tr>
+      <td style="padding:9px 0;font-size:13px;font-weight:600;color:#1a1a1a;width:50%;">${label}</td>
+      <td style="padding:9px 0;font-size:13px;color:#666;">${value}</td>
+    </tr>`;
+
   return `<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet"/>
-<title>Here's your link to share</title>
+<title>"${thingName}" is live</title>
 </head>
 <body style="margin:0;padding:0;background:#e8e5e0;font-family:${SYS};">
   <table width="100%" cellpadding="0" cellspacing="0" style="background:#e8e5e0;padding:48px 24px;">
@@ -600,24 +606,33 @@ export function buildOwnerWelcomeHTML({
             <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
               <!-- Headline -->
-              <p style="margin:0 0 6px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
-                ${thingName} is live.
-              </p>
-              <p style="margin:0 0 28px;font-size:15px;color:#888;line-height:1.6;">
-                Hey ${firstName} — you're all set up. Nice.
+              <p style="margin:0 0 28px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
+                &ldquo;${thingName}&rdquo; is live. Yay
               </p>
 
               <!-- Share link hero -->
               <table width="100%" cellpadding="0" cellspacing="0"
-                style="background:#fdf4ee;border-radius:14px;padding:20px 22px;margin-bottom:10px;">
+                style="background:#fdf4ee;border-radius:14px;padding:20px 22px;margin-bottom:12px;">
                 <tr>
                   <td>
                     <p style="margin:0 0 8px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:${ORANGE};">
                       Share the link
                     </p>
-                    <p style="margin:0 0 18px;font-size:14px;font-weight:700;color:${DARK};word-break:break-all;">
+                    <p style="margin:0 0 16px;font-size:14px;font-weight:700;color:${DARK};word-break:break-all;">
                       ${shareUrl}
                     </p>
+                    <a href="${mailtoHref}"
+                       style="font-size:13px;color:#888;font-weight:600;text-decoration:underline;">
+                      ✉︎ &nbsp;Share with your team
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- CTA -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+                <tr>
+                  <td style="padding-top:4px;">
                     <a href="${shareUrl}"
                        style="display:inline-block;background:${ORANGE};color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:13px 28px;border-radius:12px;letter-spacing:-0.2px;">
                       Go book some things
@@ -626,34 +641,19 @@ export function buildOwnerWelcomeHTML({
                 </tr>
               </table>
 
-              <!-- Pre-popped share email -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
-                <tr>
-                  <td align="center" style="padding-top:8px;">
-                    <a href="${mailtoHref}"
-                       style="font-size:13px;color:#888;text-decoration:none;font-weight:600;">
-                      ✉︎ &nbsp;Share with your team
-                    </a>
-                  </td>
-                </tr>
-              </table>
-
-              <!-- Setup summary — icon + name header -->
-              <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+              <!-- Setup summary -->
+              <p style="margin:0 0 10px;font-size:10px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:#bbb;">Here's your set up</p>
+              <table width="100%" cellpadding="0" cellspacing="0"
+                style="background:#f9f8f6;border-radius:12px;padding:6px 16px;margin-bottom:28px;border:1.5px solid #ede9e3;">
                 ${row("Available", availability)}
                 ${row("Max booking length", maxLen)}
                 ${row("Book ahead", bookAhead)}
-                ${row("Bookings per person", `Up to ${maxConcurrent} at a time`)}
+                ${lastRow("Bookings per person", `Up to ${maxConcurrent} at a time`)}
               </table>
 
-              <!-- Footer note -->
-              <p style="margin:0 0 16px;font-size:12px;color:#bbb;line-height:1.6;">
-                Got questions? <a href="${faqUrl}" style="color:#888;">Check the FAQs.</a>
-              </p>
-
-              <!-- Sign-off -->
-              <p style="margin:0;font-size:13px;font-weight:700;color:${DARK};">
-                All set. Let's book some things.
+              <!-- FAQ -->
+              <p style="margin:0;font-size:12px;color:#bbb;line-height:1.6;">
+                Got questions? <a href="${faqUrl}" style="color:#888;">Check the FAQs</a>
               </p>
 
             </td>
@@ -700,7 +700,7 @@ export async function sendOwnerWelcome({
   await resend.emails.send({
     from:    "BookOneThing <bookings@bookonething.com>",
     to:      toEmail,
-    subject: `${thingName} is ready to book.`,
+    subject: `"${thingName}" is ready to book`,
     html:    buildOwnerWelcomeHTML({
       firstName, thingName, shareUrl,
       availStart, availEnd, availWeekends,
