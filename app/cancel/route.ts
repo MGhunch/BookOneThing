@@ -67,6 +67,8 @@ export async function GET(request: NextRequest) {
         .eq("id", booking.thing_id)
         .single();
 
+      const ownerSlug = extractOwnerSlug(thing?.profiles);
+
       await sendCancellationConfirmation({
         bookerName:  booking.booker_name,
         bookerEmail: booking.booker_email,
@@ -79,7 +81,6 @@ export async function GET(request: NextRequest) {
 
       // Redirect back to the thing's calendar
       if (thing?.slug) {
-        const ownerSlug = extractOwnerSlug(thing?.profiles);
         if (ownerSlug) {
           return NextResponse.redirect(`${origin}/${ownerSlug}/${thing.slug}?cancelled=1`);
         }
