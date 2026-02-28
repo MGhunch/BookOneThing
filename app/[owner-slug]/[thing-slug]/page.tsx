@@ -112,7 +112,7 @@ function ThingNavSlot({
   t?: NavThing; ownerSlug: string; side: "left" | "right"; isAdd?: boolean;
 }) {
   const IconComp = t ? (ICON_MAP[t.icon] || Car) : Plus;
-  const label    = t ? t.name : "Add another thing";
+  const label    = t ? t.name : "Book more things";
   const href     = t ? `/${ownerSlug}/${t.slug}` : "/setup";
   const isRight  = side === "right";
 
@@ -209,7 +209,7 @@ function CalendarPage({
         }
       `}</style>
 
-      <div className="page-wrap">
+      <div className="page-wrap" style={{ gap: "24px" }}>
         {/* Left — previous thing */}
         <ThingNavSlot t={prev} ownerSlug={ownerSlug} side="left" />
 
