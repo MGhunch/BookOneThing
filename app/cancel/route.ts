@@ -74,6 +74,7 @@ export async function GET(request: NextRequest) {
         orgName:     extractOrgName(thing?.profiles),
         startsAt:    booking.starts_at,
         endsAt:      booking.ends_at,
+        calendarUrl: ownerSlug && thing?.slug ? `${origin}/${ownerSlug}/${thing.slug}` : undefined,
       });
 
       // Redirect back to the thing's calendar
