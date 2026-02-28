@@ -121,7 +121,7 @@ export default async function CancelConfirmPage({
       </div>
 
       {/* POST form — email scanners follow GET links but never POST */}
-      <form method="POST" action="/cancel" style={{ display: "flex", gap: 10 }}>
+        <form method="POST" action="/cancel/confirm" style={{ display: "flex", gap: 10 }}>
         <input type="hidden" name="token" value={token} />
         <a
           href="/"
