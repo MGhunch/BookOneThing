@@ -455,7 +455,7 @@ export function buildOwnerWelcomeHTML({
 }: {
   firstName:     string;
   thingName:     string;
-  orgName:       string;
+  orgName?:       string;
   shareUrl:      string;
   availStart:    string;
   availEnd:      string;
@@ -598,7 +598,7 @@ export async function sendOwnerWelcome({
   firstName:     string;
   toEmail:       string;
   thingName:     string;
-  orgName:       string;
+  orgName?:       string;
   shareUrl:      string;
   availStart:    string;
   availEnd:      string;
