@@ -122,13 +122,13 @@ function ThingNavSlot({
       flexDirection: "column",
       alignItems: "center",
       gap: "10px",
-      width: "88px",
+      width: "96px",
       flexShrink: 0,
       textDecoration: "none",
       opacity: t || isAdd ? 0.28 : 0,
       pointerEvents: t || isAdd ? "auto" : "none",
       transition: "opacity 0.2s ease",
-      padding: "8px 4px",
+      padding: "8px 12px",
     }}
     className={`cal-side cal-side-${side}`}
     >
@@ -148,6 +148,10 @@ function ThingNavSlot({
         lineHeight: 1.3,
         width: "100%",
         textAlign: "center",
+        display: "-webkit-box",
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: "vertical",
+        overflow: "hidden",
       }}>
         {label}
       </div>
