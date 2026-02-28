@@ -1,8 +1,6 @@
 "use server";
 
 import { createClient } from "@supabase/supabase-js";
-const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bookonething.com";
-
 import { sendBookingConfirmation, sendCancellationConfirmation } from "@/lib/email";
 
 function adminClient() {
@@ -75,6 +73,7 @@ export async function createBooking({
       .eq("id", thingId)
       .single();
 
+    const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://bookonething.com";
     await sendBookingConfirmation({
       bookingId:            booking.id,
       bookerName:           bookerName.trim(),
@@ -124,6 +123,7 @@ export async function cancelBooking(bookingId: string): Promise<{ ok: true } | {
         .eq("id", booking.thing_id)
         .single();
 
+      const appUrl       = process.env.NEXT_PUBLIC_APP_URL ?? "https://bookonething.com";
       const ownerSlug    = extractOwnerSlug(thing?.profiles);
       const calendarUrl  = ownerSlug && thing?.slug
         ? `${appUrl}/${ownerSlug}/${thing.slug}`
