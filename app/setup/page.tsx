@@ -475,7 +475,7 @@ export default function SetupPage() {
                       onFocus={() => setNameFocus(true)}
                       onBlur={() => setNameFocus(false)}
                       placeholder="The Car Park"
-                      maxLength={60}
+                      maxLength={40}
                       style={{
                         width: "100%", padding: "14px 18px", borderRadius: "14px",
                         border: `1.5px solid ${trimmed ? ORANGE : nameFocus ? ORANGE : BORDER}`,
