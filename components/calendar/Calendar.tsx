@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useRef, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Check, Car, Users, Coffee, Sun, X, Trash2, ChevronLeft, ChevronRight, Lock } from "lucide-react";
 import type { Thing, Booking } from "@/types";
@@ -192,18 +192,20 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     return d.toISOString();
   }
 
-  const bookingMap: Record<string, string> = {};
-  const bookingIdMap: Record<string, string> = {};
-  bookings.forEach((b) => {
-    bookingToSlots(b, dateStr).forEach((slot) => {
-      bookingMap[slot] = b.booker_name;
-      bookingIdMap[slot] = b.id;
+  const { bookingMap, bookingIdMap, YOURS } = useMemo(() => {
+    const bookingMap: Record<string, string> = {};
+    const bookingIdMap: Record<string, string> = {};
+    bookings.forEach((b) => {
+      bookingToSlots(b, dateStr).forEach((slot) => {
+        bookingMap[slot] = b.booker_name;
+        bookingIdMap[slot] = b.id;
+      });
     });
-  });
-
-  const YOURS: string[] = Object.entries(bookingMap)
-    .filter(([, name]) => name === bookerName && bookerName !== "")
-    .map(([slot]) => slot);
+    const YOURS: string[] = Object.entries(bookingMap)
+      .filter(([, name]) => name === bookerName && bookerName !== "")
+      .map(([slot]) => slot);
+    return { bookingMap, bookingIdMap, YOURS };
+  }, [bookings, dateStr, bookerName]);
 
   const dateLabel = `${FULL_DAYS[selectedDay]} ${selDate.getDate()} ${MONTHS[selDate.getMonth()]}`;
 
@@ -287,7 +289,12 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
   const handleSlot = (s: string) => {
     if (bookingMap[s] && !YOURS.includes(s)) { showToast("Sorry, not available."); return; }
-    if (YOURS.includes(s)) { showToast("Tap to cancel — coming soon."); return; }
+    if (YOURS.includes(s)) {
+      const id = bookingIdMap[s];
+      const slotTimeStr = `${fmtSlot(s)} – ${fmtEndTime(s)}`;
+      setCancelTarget({ id, timeStr: slotTimeStr });
+      return;
+    }
 
     if (phase === S_IDLE || phase === S_READY) {
       setStart(s); setEnd(null); setPhase(S_PICKING);
@@ -360,7 +367,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     s1?: string; s2?: string; slot?: string;
   };
 
-  function buildGroups(): Group[] {
+  const groups = useMemo<Group[]>(() => {
     const groups: Group[] = [];
     let i = 0;
     while (i < ALL_SLOTS.length) {
@@ -394,9 +401,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
       }
     }
     return groups;
-  }
-
-  const groups = buildGroups();
+  }, [bookingMap, bookingIdMap, YOURS]);
   const groupH = (si: number, ei: number) => slotY(ei) + SLOT_H - slotY(si);
 
   return (
