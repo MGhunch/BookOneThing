@@ -329,7 +329,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     if (phase === S_READY) {
       const rangeStr = end && end !== start ? `${fmtSlot(start)} – ${fmtEndTime(end)}` : `${fmtSlot(start)} – ${fmtEndTime(start)}`;
       return (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", fontFamily: SYS }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", fontFamily: SYS, paddingTop: "5px" }}>
           <span style={{ fontSize: "12px", fontWeight: 600, color: "#fff" }}>{rangeStr}</span>
           <span style={{ fontSize: "12px", fontWeight: 600, color: ORANGE, background: "#fff", borderRadius: "20px", padding: "3px 10px", flexShrink: 0 }}>Book it</span>
         </div>
