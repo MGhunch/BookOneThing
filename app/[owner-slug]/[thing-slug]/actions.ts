@@ -20,6 +20,12 @@ function extractOrgName(profiles: unknown): string {
   return (profiles as { org_name?: string | null })?.org_name ?? "";
 }
 
+function extractOwnerSlug(profiles: unknown): string {
+  if (!profiles) return "";
+  if (Array.isArray(profiles)) return (profiles[0] as { slug?: string | null })?.slug ?? "";
+  return (profiles as { slug?: string | null })?.slug ?? "";
+}
+
 export type BookingResult =
   | { ok: true; bookingId: string; cancelToken: string }
   | { error: string };
@@ -79,6 +85,7 @@ export async function createBooking({
       timezone:             thing?.timezone ?? "UTC",
       cancelUrl:            `${appUrl}/cancel?token=${booking.cancel_token}`,
       specialInstructions:  thing?.instructions ?? undefined,
+      calBaseUrl:           appUrl,
     });
   } catch (emailErr) {
     console.error("Confirmation email failed:", emailErr);
@@ -112,9 +119,14 @@ export async function cancelBooking(bookingId: string): Promise<{ ok: true } | {
     try {
       const { data: thing } = await supabase
         .from("things")
-        .select("name, profiles(org_name)")
+        .select("name, slug, profiles(org_name, slug)")
         .eq("id", booking.thing_id)
         .single();
+
+      const ownerSlug    = extractOwnerSlug(thing?.profiles);
+      const calendarUrl  = ownerSlug && thing?.slug
+        ? `${appUrl}/${ownerSlug}/${thing.slug}`
+        : undefined;
 
       await sendCancellationConfirmation({
         bookerName:  booking.booker_name,
@@ -123,6 +135,7 @@ export async function cancelBooking(bookingId: string): Promise<{ ok: true } | {
         orgName:     extractOrgName(thing?.profiles),
         startsAt:    booking.starts_at,
         endsAt:      booking.ends_at,
+        calendarUrl,
       });
     } catch (emailErr) {
       console.error("Cancellation email failed:", emailErr);
