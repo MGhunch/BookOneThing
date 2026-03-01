@@ -142,17 +142,17 @@ function DoneModal({ name, calUrl }: { name: string; calUrl: string }) {
         <Check size={14} strokeWidth={2.5} color={WHITE} />
       </div>
       <div style={{ fontSize: "26px", fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.2, marginBottom: "8px" }}>
-        {name} is live
+        "{name}" is live
       </div>
       <div style={{ fontSize: "14px", color: GREY, fontFamily: SYS, lineHeight: 1.6, marginBottom: "24px" }}>
-        Share the link below. Anyone with it can book.
+        Share the link below. Anyone can use it to book.
       </div>
       <div style={{ background: ORANGE_LIGHT, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
-        <div style={{ flex: 1, fontSize: SIZE_SM, fontWeight: W_MEDIUM, color: DARK, fontFamily: SYS, wordBreak: "break-all" as const }}>{calUrl}</div>
+        <div style={{ flex: 1, fontSize: SIZE_SM, fontWeight: W_MEDIUM, color: GREY, fontFamily: SYS, wordBreak: "break-all" as const, maxWidth: "calc(100% - 80px)" }}>{calUrl}</div>
         <button
           onClick={handleCopy}
           style={{
-            background: copied ? ORANGE : ORANGE, border: "none", cursor: "pointer",
+            background: ORANGE, border: "none", cursor: "pointer",
             borderRadius: "8px", padding: "8px 12px", color: WHITE,
             fontSize: "12px", fontWeight: W_BOLD, fontFamily: SYS, flexShrink: 0, transition: "background 0.2s",
           }}
@@ -166,7 +166,7 @@ function DoneModal({ name, calUrl }: { name: string; calUrl: string }) {
           fontFamily: SYS, cursor: "pointer", letterSpacing: "-0.3px",
         }}
       >
-        Go to your calendar
+        Go book some things
       </button>
     </ModalShell>
   );
