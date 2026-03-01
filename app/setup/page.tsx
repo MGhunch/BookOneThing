@@ -2,11 +2,11 @@
 
 import { useState, useRef } from "react";
 import {
-  Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check, Clock,
+  Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Clock,
 } from "lucide-react";
 import { createThing } from "./actions";
 import { sendCodeword } from "@/app/codeword-actions";
-import BookerGate from "@/components/BookerGate";
+import AuthGate from "@/components/AuthGate";
 
 // ─── TIMEZONE HELPERS ─────────────────────────────────────────────────────────
 
@@ -50,7 +50,6 @@ function tzFriendly(iana: string): string {
 function detectTimezone(): string {
   try { return Intl.DateTimeFormat().resolvedOptions().timeZone; } catch { return "UTC"; }
 }
-import ModalShell from "@/components/ModalShell";
 
 import { ORANGE, ORANGE_MID, ORANGE_LIGHT, GREY, GREY_LIGHT, DARK, WHITE, BORDER, BACKGROUND, SYS, SIZE_SM, SIZE_BASE, SIZE_XL, W_REGULAR, W_MEDIUM, W_BOLD } from "@/lib/constants";
 
@@ -127,50 +126,6 @@ function OrangeBlock({ label }: { label: string }) {
 }
 
 // ─── MODALS ──────────────────────────────────────────────────────────────────
-
-// DoneModal — thing is live, show the share link
-function DoneModal({ name, calUrl }: { name: string; calUrl: string }) {
-  const [copied, setCopied] = useState(false);
-  const handleCopy = async () => {
-    try { await navigator.clipboard.writeText(calUrl); } catch {}
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-  return (
-    <ModalShell>
-      <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: ORANGE, borderRadius: "8px", padding: "0 10px", height: "32px", marginBottom: "16px" }}>
-        <Check size={14} strokeWidth={2.5} color={WHITE} />
-      </div>
-      <div style={{ fontSize: "26px", fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.2, marginBottom: "8px" }}>
-        "{name}" is live
-      </div>
-      <div style={{ fontSize: "14px", color: GREY, fontFamily: SYS, lineHeight: 1.6, marginBottom: "24px" }}>
-        Share the link below. Anyone can use it to book.
-      </div>
-      <div style={{ background: ORANGE_LIGHT, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
-        <div style={{ flex: 1, fontSize: SIZE_SM, fontWeight: W_MEDIUM, color: GREY, fontFamily: SYS, wordBreak: "break-all" as const, maxWidth: "calc(100% - 80px)" }}>{calUrl}</div>
-        <button
-          onClick={handleCopy}
-          style={{
-            background: ORANGE, border: "none", cursor: "pointer",
-            borderRadius: "8px", padding: "8px 12px", color: WHITE,
-            fontSize: "12px", fontWeight: W_BOLD, fontFamily: SYS, flexShrink: 0, transition: "background 0.2s",
-          }}
-        >{copied ? "Copied!" : "Copy"}</button>
-      </div>
-      <button
-        onClick={() => { window.location.href = calUrl; }}
-        style={{
-          width: "100%", padding: "16px", borderRadius: "13px", border: "none",
-          background: ORANGE, color: WHITE, fontSize: SIZE_BASE, fontWeight: W_BOLD,
-          fontFamily: SYS, cursor: "pointer", letterSpacing: "-0.3px",
-        }}
-      >
-        Go book some things
-      </button>
-    </ModalShell>
-  );
-}
 
 // ─── MOCK CALENDAR ───────────────────────────────────────────────────────────
 
@@ -249,7 +204,6 @@ export default function SetupPage() {
   const [side, setSide]             = useState<"front" | "back">("front");
   const [flipping, setFlipping]     = useState(false);
   const [showGate, setShowGate] = useState(false);
-  const [calUrl, setCalUrl]     = useState<string | null>(null);
   const [nameFocus, setNameFocus]   = useState(false);
   const [notesFocus, setNotesFocus] = useState(false);
 
@@ -280,7 +234,7 @@ export default function SetupPage() {
     background: WHITE, cursor: "pointer", outline: "none",
   };
 
-  // Called by BookerGate after email + name collected — sends the codeword email.
+  // Called by AuthGate after email + name collected — sends the codeword email.
   const handleBeforeSend = async (email: string, firstName: string) => {
     pendingRef.current = { email: email.trim().toLowerCase(), firstName: firstName.trim() };
     const result = await sendCodeword({
@@ -291,7 +245,7 @@ export default function SetupPage() {
     return { ownerSlug: "", thingSlug: "" };
   };
 
-  // Called by BookerGate after codeword verified — creates the thing.
+  // Called by AuthGate after codeword verified — creates the thing.
   const handleDone = async (result?: { orgName?: string }) => {
     const p = pendingRef.current;
     if (!p) return;
@@ -308,8 +262,7 @@ export default function SetupPage() {
       console.error("createThing failed:", outcome.error);
       return;
     }
-    setCalUrl(outcome.url);
-    setShowGate(false);
+    return { doneUrl: outcome.url };
   };
 
   return (
@@ -322,8 +275,8 @@ export default function SetupPage() {
         .flip-in  { animation: flipIn  0.4s cubic-bezier(0.4,0,0.2,1) forwards; }
       `}</style>
 
-      {/* Calendar backdrop — visible during BookerGate and done state */}
-      {(showGate || !!calUrl) && (
+      {/* Calendar backdrop — visible during AuthGate */}
+      {showGate && (
         <div style={{ position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "90px 24px 60px" }}>
           <div style={{ width: "100%", maxWidth: "390px", height: "100%", maxHeight: "700px", background: WHITE, borderRadius: "24px", overflow: "hidden", boxShadow: "0 8px 48px rgba(0,0,0,0.09)" }}>
             <MockCalendar name={trimmed} iconKey={icon} />
@@ -331,25 +284,21 @@ export default function SetupPage() {
         </div>
       )}
 
-      {/* BookerGate — email + name + org + codeword */}
+      {/* AuthGate — email + name + org + codeword + done */}
       {showGate && (
-        <BookerGate
+        <AuthGate
           thingName={trimmed}
           isOwner={true}
           context="setup"
           onBeforeSend={handleBeforeSend}
           onDone={handleDone}
           onClose={() => setShowGate(false)}
+          doneName={trimmed}
         />
       )}
 
-      {/* Done — thing is live */}
-      {!showGate && calUrl && (
-        <DoneModal name={trimmed} calUrl={calUrl} />
-      )}
-
       {/* Form */}
-      {!showGate && !calUrl && (
+      {!showGate && (
         <div style={{ maxWidth: "640px", margin: "0 auto", padding: "100px 24px 140px" }}>
           <style>{`.setup-icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; } @media (max-width: 600px) { .setup-icon-grid { grid-template-columns: repeat(4, 1fr); } .setup-card { padding: 28px 24px 28px !important; } }`}</style>
 
