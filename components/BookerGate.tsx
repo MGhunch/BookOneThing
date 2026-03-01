@@ -123,9 +123,7 @@ export default function BookerGate({
       setFilledSegs(2); // reset seg 3 only — keep 1 + 2
       setTimeout(() => {
         if (!progressMounted.current) return;
-        fadeCopy(STAGES[2].copy, () =>
-          fillSeg(2, () => setTimeout(loopSeg3, 2200))
-        );
+        fillSeg(2, () => setTimeout(loopSeg3, 2200));
       }, 400);
     }
 
@@ -254,6 +252,7 @@ export default function BookerGate({
         @keyframes spin { to { transform: rotate(360deg); } }
         .gate-shake { animation: shake 0.4s ease; }
         .gate-input:focus { outline: none; border-color: ${ORANGE} !important; }
+        .gate-input::placeholder { font-style: normal; }
         .gate-input::placeholder { font-style: normal; }
         .gate-cta { transition: opacity 0.15s, transform 0.15s; }
         .gate-cta:active { opacity: 0.88 !important; transform: scale(0.99); }
@@ -476,7 +475,7 @@ export default function BookerGate({
                   style={{ animation: "spin 0.9s linear infinite" }}>
                   <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
                 </svg>
-                Verifying…
+                Double checking…
               </>
             )}
             {btnState === "success" && (
