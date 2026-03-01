@@ -118,10 +118,10 @@ function Field({ label, explainer, children }: { label: string; explainer?: stri
   );
 }
 
-function OrangeBlock({ n }: { n: number }) {
+function OrangeBlock({ label }: { label: string }) {
   return (
-    <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: ORANGE, borderRadius: "8px", width: "32px", height: "32px", marginBottom: "16px" }}>
-      <span style={{ fontSize: SIZE_SM, fontWeight: W_MEDIUM, color: WHITE, fontFamily: SYS, letterSpacing: "-0.5px" }}>0{n}</span>
+    <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: ORANGE, borderRadius: "8px", padding: "0 10px", height: "32px", marginBottom: "16px" }}>
+      <span style={{ fontSize: SIZE_SM, fontWeight: W_MEDIUM, color: WHITE, fontFamily: SYS, letterSpacing: "-0.5px" }}>{label}</span>
     </div>
   );
 }
@@ -138,8 +138,8 @@ function DoneModal({ name, calUrl }: { name: string; calUrl: string }) {
   };
   return (
     <ModalShell>
-      <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
-        <Check size={24} strokeWidth={2.5} color={WHITE} />
+      <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: ORANGE, borderRadius: "8px", padding: "0 10px", height: "32px", marginBottom: "16px" }}>
+        <Check size={14} strokeWidth={2.5} color={WHITE} />
       </div>
       <div style={{ fontSize: "26px", fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.2, marginBottom: "8px" }}>
         {name} is live
@@ -162,11 +162,11 @@ function DoneModal({ name, calUrl }: { name: string; calUrl: string }) {
         onClick={() => { window.location.href = calUrl; }}
         style={{
           width: "100%", padding: "16px", borderRadius: "13px", border: "none",
-          background: DARK, color: WHITE, fontSize: SIZE_BASE, fontWeight: W_BOLD,
+          background: ORANGE, color: WHITE, fontSize: SIZE_BASE, fontWeight: W_BOLD,
           fontFamily: SYS, cursor: "pointer", letterSpacing: "-0.3px",
         }}
       >
-        Go to my calendar →
+        Go to your calendar
       </button>
     </ModalShell>
   );
@@ -361,7 +361,7 @@ export default function SetupPage() {
             {/* ── WHITE 1 ── */}
             {side === "front" && (
               <>
-                <OrangeBlock n={1} />
+                <OrangeBlock label="Set up" />
                 <div style={{ fontSize: SIZE_XL, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, fontFamily: SYS, marginBottom: "8px" }}>
                   What are you sharing
                 </div>
@@ -550,7 +550,7 @@ export default function SetupPage() {
             {/* ── WHITE 2 ── */}
             {side === "back" && (
               <>
-                <OrangeBlock n={2} />
+                <OrangeBlock label="Rules" />
                 <div style={{ fontSize: SIZE_XL, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, fontFamily: SYS, marginBottom: "8px" }}>
                   How will you share it
                 </div>
@@ -568,7 +568,7 @@ export default function SetupPage() {
                     </div>
                   </Field>
 
-                  <Field label="How far ahead?" explainer="So your people can plan.">
+                  <Field label="How far ahead?" explainer="So people can plan.">
                     <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
                       {AHEAD_PRESETS.map(({ key, label }) => (
                         <Pill key={key} label={label} active={ahead === key} onClick={() => setAhead(key)} />
@@ -604,7 +604,7 @@ export default function SetupPage() {
                     cursor: "pointer", letterSpacing: "-0.3px",
                   }}
                 >
-                  Lock it in →
+                  Lock it in
                 </button>
 
 
