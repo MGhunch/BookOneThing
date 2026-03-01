@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check, Clock,
 } from "lucide-react";
@@ -184,14 +184,18 @@ function DoneModal({ name, calUrl }: { name: string; calUrl: string }) {
 
 function MockCalendar({ name, iconKey }: { name: string; iconKey: string | null }) {
   const IconComp = ICONS.find(i => i.key === iconKey)?.Icon || Car;
-  const today = new Date();
-  const day = today.getDay();
-  const monday = new Date(today);
-  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
-  const weekDates = Array.from({ length: 7 }, (_, i) => {
-    const d = new Date(monday); d.setDate(monday.getDate() + i); return d;
-  });
-  const todayIdx = day === 0 ? 6 : day - 1;
+  const [weekDates, setWeekDates] = useState<Date[]>([]);
+  const [todayIdx, setTodayIdx]   = useState(0);
+  useEffect(() => {
+    const today  = new Date();
+    const day    = today.getDay();
+    const monday = new Date(today);
+    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+    setWeekDates(Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(monday); d.setDate(monday.getDate() + i); return d;
+    }));
+    setTodayIdx(day === 0 ? 6 : day - 1);
+  }, []);
   const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
   const hours = [8,9,10,11,12,13,14,15,16,17];
   const fmtH = (h: number) => h === 12 ? "12pm" : h < 12 ? `${h}am` : `${h-12}pm`;
@@ -246,7 +250,8 @@ export default function SetupPage() {
   const [fromH, setFromH]           = useState(9);
   const [toH, setToH]               = useState(17);
   const [weekends, setWeekends]     = useState(false);
-  const [timezone, setTimezone]     = useState(() => detectTimezone());
+  const [timezone, setTimezone]     = useState("UTC");
+  useEffect(() => { setTimezone(detectTimezone()); }, []);
   const [tzSearch, setTzSearch]     = useState("");
   const [tzOpen, setTzOpen]         = useState(false);
   const [notes, setNotes]           = useState("");
