@@ -326,6 +326,10 @@ export default function AuthGate({
             onKeyDown={e => e.key === "Enter" && document.getElementById("gate-name")?.focus()}
             placeholder="What's your email?"
             style={{ ...fieldStyle, color: email ? DARK : GREY_LIGHT }}
+          />
+          <input
+            id="gate-name"
+            className="gate-input"
             type="text" maxLength={20}
             value={firstName}
             onChange={e => { setFirstName(e.target.value.slice(0, 20)); setError(null); }}
