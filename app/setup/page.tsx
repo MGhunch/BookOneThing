@@ -312,7 +312,7 @@ export default function SetupPage() {
               <>
                 <OrangeBlock label="Set up" />
                 <div style={{ fontSize: SIZE_XL, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, fontFamily: SYS, marginBottom: "8px" }}>
-                  What are you sharing
+                  What are you sharing?
                 </div>
                 <div style={{ fontSize: SIZE_BASE, color: GREY, fontFamily: SYS, fontWeight: W_REGULAR, marginBottom: "36px" }}>
                   It only takes a minute to set up your thing.
@@ -471,14 +471,14 @@ export default function SetupPage() {
                       maxLength={300}
                       style={{
                         width: "100%", padding: "14px 18px", borderRadius: "14px",
-                        border: `1.5px solid ${notesFocus ? ORANGE : BORDER}`,
+                        border: `2px solid ${notesFocus ? ORANGE : BORDER}`,
                         background: WHITE, fontSize: "14px", fontWeight: W_REGULAR,
                         fontFamily: SYS, color: DARK, outline: "none",
                         resize: "none" as const, lineHeight: 1.7, boxSizing: "border-box" as const,
                         transition: "border 0.15s",
                       }}
                     />
-                    <div style={{ fontSize: "12px", color: GREY_LIGHT, marginTop: "6px", fontFamily: SYS }}>
+                    <div style={{ fontSize: "12px", color: GREY_LIGHT, marginTop: "12px", fontFamily: SYS }}>
                       Keep it short and practical. No access codes or private information.
                     </div>
                   </Field>
@@ -491,7 +491,7 @@ export default function SetupPage() {
                   className={`btn ${canFlip ? "btn-primary" : "btn-inactive"}`}
                   style={{ marginTop: "40px", fontSize: "16px", letterSpacing: "-0.3px" }}
                 >
-                  Let's set some rules
+                  Set your rules
                 </button>
               </>
             )}
@@ -501,7 +501,7 @@ export default function SetupPage() {
               <>
                 <OrangeBlock label="Rules" />
                 <div style={{ fontSize: SIZE_XL, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, fontFamily: SYS, marginBottom: "8px" }}>
-                  How will you share it
+                  How will you share it?
                 </div>
                 <div style={{ fontSize: SIZE_BASE, color: GREY, fontFamily: SYS, fontWeight: W_REGULAR, marginBottom: "36px" }}>
                   Simple rules to make it fair for everyone.
