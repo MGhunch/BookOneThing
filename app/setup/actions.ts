@@ -213,7 +213,7 @@ export async function createThing(data: CreateThingData): Promise<CreateThingRes
   const shareUrl = `${siteUrl}/${ownerSlug}/${thingSlug}`;
 
   try {
-    await sendOwnerWelcome({
+    sendOwnerWelcome({
       firstName,
       toEmail:       cleanEmail,
       thingName:     data.name.trim(),
