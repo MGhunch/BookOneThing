@@ -225,7 +225,7 @@ export default function BookerGate({
     width: "100%", padding: "12px 14px", borderRadius: 11,
     border: `1.5px solid ${BORDER}`, background: WHITE,
     fontSize: SIZE_SM, fontWeight: W_REGULAR, fontFamily: SYS,
-    color: GREY_LIGHT, fontStyle: "italic",
+    color: GREY_LIGHT,
     marginBottom: 10, boxSizing: "border-box" as const,
   };
 
@@ -355,7 +355,7 @@ export default function BookerGate({
             style={{
               ...fieldStyle,
               color:     orgName === "My Organisation" ? GREY_LIGHT : DARK,
-              fontStyle: orgName === "My Organisation" ? "italic" : "normal",
+              fontStyle: "normal",
               marginBottom: 20,
             }}
           />
