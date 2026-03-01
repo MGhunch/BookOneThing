@@ -218,7 +218,7 @@ function MockCalendar({ name, iconKey }: { name: string; iconKey: string | null 
             return (
               <div key={d} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", padding: "5px 2px", borderRadius: "7px", background: sel ? ORANGE_LIGHT : "transparent" }}>
                 <span style={{ fontSize: "7px", fontWeight: 700, letterSpacing: "0.3px", textTransform: "uppercase" as const, color: sel ? ORANGE : "#ccc", fontFamily: SYS }}>{d}</span>
-                <span style={{ fontSize: "13px", fontWeight: sel ? 700 : 400, color: sel ? ORANGE : "#ccc", fontFamily: SYS }}>{weekDates[i].getDate()}</span>
+                <span style={{ fontSize: "13px", fontWeight: sel ? 700 : 400, color: sel ? ORANGE : "#ccc", fontFamily: SYS }}>{weekDates[i]?.getDate() ?? ""}</span>
               </div>
             );
           })}
