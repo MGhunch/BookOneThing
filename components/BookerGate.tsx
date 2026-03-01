@@ -254,6 +254,7 @@ export default function BookerGate({
         @keyframes spin { to { transform: rotate(360deg); } }
         .gate-shake { animation: shake 0.4s ease; }
         .gate-input:focus { outline: none; border-color: ${ORANGE} !important; }
+        .gate-input::placeholder { font-style: normal; }
         .gate-cta { transition: opacity 0.15s, transform 0.15s; }
         .gate-cta:active { opacity: 0.88 !important; transform: scale(0.99); }
         .seg-bar {
