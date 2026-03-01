@@ -98,7 +98,7 @@ export default async function BookerPage({
 // ── Shared render component ───────────────────────────────────────────────────
 
 import { Car, Users, Coffee, Sun, Plus, Wrench, Monitor, Home } from "lucide-react";
-import { ORANGE, DARK, WHITE, W_MEDIUM } from "@/lib/constants";
+import { ORANGE, ORANGE_LIGHT, DARK, WHITE, BORDER, W_MEDIUM } from "@/lib/constants";
 
 const ICON_MAP: Record<string, React.ComponentType<{ size: number; strokeWidth: number; color: string }>> = {
   car: Car, users: Users, coffee: Coffee, sun: Sun,

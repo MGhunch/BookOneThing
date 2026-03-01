@@ -1,4 +1,4 @@
-import { ORANGE, DARK, WHITE, SYS, W_BOLD, W_REGULAR } from "@/lib/constants";
+import { ORANGE, DARK, WHITE, SYS, SIZE_XS, SIZE_BASE, W_MEDIUM, W_BOLD, W_REGULAR } from "@/lib/constants";
 
 const PARAS = [
   { text: "Small team. Twelve people. One meeting room.",                                                                                                          bold: true  },
