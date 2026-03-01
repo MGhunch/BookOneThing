@@ -1,6 +1,4 @@
-const ORANGE = "#e8722a";
-const DARK   = "#1a1a1a";
-const SYS    = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+import { ORANGE, GREY, DARK, WHITE, BORDER, SYS, SIZE_SM, SIZE_BASE, SIZE_XL, W_REGULAR, W_MEDIUM, W_BOLD } from "@/lib/constants";
 
 export default function NotFound() {
   return (
@@ -21,7 +19,7 @@ export default function NotFound() {
         margin: "0 auto 28px",
       }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-          stroke="#fff" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+          stroke=WHITE strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
           <line x1="11" y1="8" x2="11" y2="12" />
@@ -31,8 +29,8 @@ export default function NotFound() {
 
       {/* Headline */}
       <h1 style={{
-        fontSize: "28px",
-        fontWeight: 800,
+        fontSize: SIZE_XL,
+        fontWeight: W_BOLD,
         letterSpacing: "-0.6px",
         color: DARK,
         margin: "0 0 10px",
@@ -42,21 +40,21 @@ export default function NotFound() {
       </h1>
 
       <p style={{
-        fontSize: "15px",
-        color: "#888",
+        fontSize: SIZE_BASE,
+        color: GREY,
         lineHeight: 1.65,
         margin: "0 0 32px",
-        fontWeight: 400,
+        fontWeight: W_REGULAR,
       }}>
         Well, not things exactly, just this page.<br />
         Try lifting a different rock.
       </p>
 
-      <div style={{ height: 1, background: "#d8d5d0", margin: "0 0 32px" }} />
+      <div style={{ height: 1, background: BORDER, margin: "0 0 32px" }} />
 
       <a href="/" style={{
-        fontSize: "13px",
-        fontWeight: 600,
+        fontSize: SIZE_SM,
+        fontWeight: W_MEDIUM,
         color: ORANGE,
         textDecoration: "none",
       }}>

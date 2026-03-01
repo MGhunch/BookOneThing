@@ -5,13 +5,7 @@ import { useRouter } from "next/navigation";
 import { sendCodeword, verifyCodeword, setBookerSessionCookie } from "@/app/codeword-actions";
 import ModalShell from "@/components/ModalShell";
 
-const ORANGE       = "#e8722a";
-const ORANGE_FAINT = "#fbe0cc";
-const DARK         = "#1a1a1a";
-const GREY         = "#888";
-const GREY_LIGHT   = "#bbb";
-const BORDER       = "#ddd";
-const SYS          = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+import { ORANGE, ORANGE_MID, ORANGE_LIGHT, GREY, GREY_LIGHT, DARK, WHITE, BORDER, BACKGROUND, RED_ERRORTOAST, SYS, SIZE_XS, SIZE_SM, SIZE_LG, W_REGULAR, W_MEDIUM, W_BOLD } from "@/lib/constants";
 
 // ── Domain scraping for org name ──────────────────────────────────────────────
 
@@ -54,6 +48,12 @@ export interface BookerGateProps {
   onClose?:  () => void;
   /** Called after successful auth. orgName provided when isOwner = true */
   onDone?:   (result?: { orgName?: string }) => void;
+  /**
+   * Setup flow only. Called after email + name collected, before codeword screen.
+   * Runs submitSetup (writes pending_things, sends codeword). BookerGate skips
+   * its own sendCodeword call and proceeds straight to org/codeword screen.
+   */
+  onBeforeSend?: (email: string, firstName: string) => Promise<{ ownerSlug: string; thingSlug: string } | { error: string }>;
 }
 
 type Screen   = "email" | "org" | "code";
@@ -65,6 +65,7 @@ export default function BookerGate({
   context = "booker",
   onClose,
   onDone,
+  onBeforeSend,
 }: BookerGateProps) {
   const router = useRouter();
 
@@ -157,16 +158,24 @@ export default function BookerGate({
     setLoading(true);
     setError(null);
 
-    const base = { email: email.trim(), firstName: firstName.trim() };
-    const result =
-      context === "booker"
-        ? await sendCodeword({ context: "booker", ...base, thingId: thingId!, thingName: thingName!, ownerSlug: ownerSlug!, thingSlug: thingSlug! })
-      : context === "setup"
-        ? await sendCodeword({ context: "setup",  ...base, ownerSlug: "", thingSlug: "" })
-      : await sendCodeword({ context: "manage", ...base });
+    if (onBeforeSend) {
+      // Setup flow — submitSetup writes pending_things and fires the codeword itself
+      const result = await onBeforeSend(email.trim(), firstName.trim());
+      setLoading(false);
+      if ("error" in result) { setError(result.error); return; }
+    } else {
+      const base = { email: email.trim(), firstName: firstName.trim() };
+      const result =
+        context === "booker"
+          ? await sendCodeword({ context: "booker", ...base, thingId: thingId!, thingName: thingName!, ownerSlug: ownerSlug!, thingSlug: thingSlug! })
+        : context === "setup"
+          ? await sendCodeword({ context: "setup",  ...base, ownerSlug: ownerSlug!, thingSlug: thingSlug! })
+          : await sendCodeword({ context: "manage", ...base });
 
-    setLoading(false);
-    if ("error" in result) { setError(result.error); return; }
+      setLoading(false);
+      if ("error" in result) { setError(result.error); return; }
+    }
+
     setScreen(isOwner ? "org" : "code");
   }
 
@@ -214,16 +223,16 @@ export default function BookerGate({
   // ── Shared styles ─────────────────────────────────────────────────────────
   const fieldStyle = {
     width: "100%", padding: "12px 14px", borderRadius: 11,
-    border: `1.5px solid ${BORDER}`, background: "#fff",
-    fontSize: 13, fontWeight: 400, fontFamily: SYS,
+    border: `1.5px solid ${BORDER}`, background: WHITE,
+    fontSize: SIZE_SM, fontWeight: W_REGULAR, fontFamily: SYS,
     color: GREY_LIGHT, fontStyle: "italic",
     marginBottom: 10, boxSizing: "border-box" as const,
   };
 
   const primaryBtn = {
     width: "100%", padding: 14, borderRadius: 12, border: "none",
-    background: ORANGE, color: "#fff",
-    fontSize: 14, fontWeight: 700, fontFamily: SYS,
+    background: ORANGE, color: WHITE,
+    fontSize: 14, fontWeight: W_BOLD, fontFamily: SYS,
     cursor: "pointer", marginBottom: 12,
     display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
   } as const;
@@ -257,8 +266,8 @@ export default function BookerGate({
       {/* ── Step badge ── */}
       <div style={{
         width: 28, height: 28, borderRadius: 8,
-        background: ORANGE, color: "#fff",
-        fontSize: 13, fontWeight: 800, fontFamily: SYS,
+        background: ORANGE, color: WHITE,
+        fontSize: SIZE_SM, fontWeight: W_BOLD, fontFamily: SYS,
         display: "flex", alignItems: "center", justifyContent: "center",
         marginBottom: 14, flexShrink: 0,
       }}>
@@ -269,10 +278,10 @@ export default function BookerGate({
       {screen === "email" && (
         <>
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
+            <div style={{ fontSize: SIZE_LG, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
               Quick security check
             </div>
-            <div style={{ fontSize: 13, color: GREY, fontFamily: SYS, lineHeight: 1.5 }}>
+            <div style={{ fontSize: SIZE_SM, color: GREY, fontFamily: SYS, lineHeight: 1.5 }}>
               So we know you're really you.
             </div>
           </div>
@@ -298,7 +307,7 @@ export default function BookerGate({
           />
 
           {error && (
-            <div style={{ fontSize: 12, color: "#c0392b", fontFamily: SYS, marginBottom: 10, marginTop: 4 }}>
+            <div style={{ fontSize: 12, color: RED_ERRORTOAST, fontFamily: SYS, marginBottom: 10, marginTop: 4 }}>
               {error}
             </div>
           )}
@@ -311,8 +320,8 @@ export default function BookerGate({
             disabled={!validEmail || !validName || loading}
             style={{
               ...primaryBtn,
-              background: validEmail && validName ? ORANGE : ORANGE_FAINT,
-              color:      validEmail && validName ? "#fff" : "#e0824a",
+              background: validEmail && validName ? ORANGE : ORANGE_MID,
+              color:      validEmail && validName ? WHITE : ORANGE,
               cursor:     validEmail && validName ? "pointer" : "default",
             }}
           >
@@ -328,10 +337,10 @@ export default function BookerGate({
       {screen === "org" && (
         <>
           <div style={{ marginBottom: 20 }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
+            <div style={{ fontSize: SIZE_LG, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
               Whose calendar is it?
             </div>
-            <div style={{ fontSize: 13, color: GREY, fontFamily: SYS, lineHeight: 1.5 }}>
+            <div style={{ fontSize: SIZE_SM, color: GREY, fontFamily: SYS, lineHeight: 1.5 }}>
               So people can easily find you.
             </div>
           </div>
@@ -353,7 +362,7 @@ export default function BookerGate({
 
           <div>
             <div style={{
-              fontSize: 9, fontWeight: 700, letterSpacing: "1px",
+              fontSize: 9, fontWeight: W_BOLD, letterSpacing: "1px",
               textTransform: "uppercase", color: ORANGE,
               fontFamily: SYS, marginBottom: 5,
             }}>
@@ -379,10 +388,10 @@ export default function BookerGate({
       {screen === "code" && (
         <>
           <div style={{ marginBottom: 18 }}>
-            <div style={{ fontSize: 20, fontWeight: 800, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
+            <div style={{ fontSize: SIZE_LG, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
               Pop in your codeword
             </div>
-            <div style={{ fontSize: 13, color: GREY, fontFamily: SYS }}>
+            <div style={{ fontSize: SIZE_SM, color: GREY, fontFamily: SYS }}>
               We've sent it to your email.
             </div>
           </div>
@@ -402,11 +411,11 @@ export default function BookerGate({
               placeholder="CODEWORD"
               style={{
                 width: "100%", padding: "14px 16px", borderRadius: 11,
-                border: `2px solid ${error ? "#e0824a" : BORDER}`,
-                background: error ? "#fdf4ee" : "#fff",
+                border: `2px solid ${error ? ORANGE : BORDER}`,
+                background: error ? ORANGE_LIGHT : WHITE,
                 textAlign: "center",
-                fontSize: 22, fontWeight: 800, fontFamily: SYS,
-                color: error ? "#c0392b" : DARK,
+                fontSize: 22, fontWeight: W_BOLD, fontFamily: SYS,
+                color: error ? RED_ERRORTOAST : DARK,
                 letterSpacing: "4px", marginBottom: 14,
                 boxSizing: "border-box",
               }}
@@ -416,7 +425,7 @@ export default function BookerGate({
           {/* Progress — below input */}
           <div style={{ marginBottom: 4 }}>
             <div style={{
-              fontSize: 10, fontWeight: 700, letterSpacing: "0.8px",
+              fontSize: SIZE_XS, fontWeight: W_BOLD, letterSpacing: "0.8px",
               textTransform: "uppercase", color: GREY, fontFamily: SYS,
               marginBottom: 7,
               opacity: progressVisible ? 1 : 0,
@@ -426,7 +435,7 @@ export default function BookerGate({
             </div>
             <div style={{ display: "flex", gap: 4 }}>
               {[0, 1, 2].map(i => (
-                <div key={i} style={{ flex: 1, height: 4, borderRadius: 4, background: "#e8e5e0", overflow: "hidden" }}>
+                <div key={i} style={{ flex: 1, height: 4, borderRadius: 4, background: BACKGROUND, overflow: "hidden" }}>
                   <div className="seg-bar" style={{ transform: filledSegs > i ? "scaleX(1)" : "scaleX(0)" }} />
                 </div>
               ))}
@@ -434,7 +443,7 @@ export default function BookerGate({
           </div>
 
           {error && (
-            <div style={{ fontSize: 12, color: "#c0392b", fontFamily: SYS, marginTop: 8, textAlign: "center" }}>
+            <div style={{ fontSize: 12, color: RED_ERRORTOAST, fontFamily: SYS, marginTop: 8, textAlign: "center" }}>
               {error}
             </div>
           )}
@@ -492,7 +501,7 @@ export default function BookerGate({
             Didn't get it?{" "}
             <span
               onClick={() => { setScreen("email"); setCode(""); setError(null); setBtnState("idle"); setFilledSegs(0); }}
-              style={{ color: ORANGE, fontWeight: 600, cursor: "pointer" }}
+              style={{ color: ORANGE, fontWeight: W_MEDIUM, cursor: "pointer" }}
             >
               Send another
             </span>

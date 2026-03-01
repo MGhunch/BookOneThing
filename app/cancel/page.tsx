@@ -1,9 +1,7 @@
 import { createServiceClient } from "@/lib/supabase";
 import { notFound } from "next/navigation";
 
-const ORANGE = "#e8722a";
-const DARK   = "#1a1a1a";
-const SYS    = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+import { ORANGE, ORANGE_LIGHT, GREY, GREY_LIGHT, DARK, WHITE, BORDER, SYS, SIZE_SM, SIZE_BASE, SIZE_XL, W_MEDIUM, W_BOLD } from "@/lib/constants";
 
 function fmtTime(iso: string, timezone: string = "UTC"): string {
   const d = new Date(iso);
@@ -54,8 +52,8 @@ export default async function CancelConfirmPage({
   if (booking.cancelled_at) {
     return (
       <div style={{ maxWidth: "400px", margin: "0 auto", padding: "120px 24px 100px", fontFamily: SYS, textAlign: "center" }}>
-        <h1 style={{ fontSize: "28px", fontWeight: 800, color: DARK, margin: "0 0 12px" }}>Already cancelled</h1>
-        <p style={{ fontSize: "15px", color: "#888", margin: 0 }}>This booking was already cancelled.</p>
+        <h1 style={{ fontSize: SIZE_XL, fontWeight: W_BOLD, color: DARK, margin: "0 0 12px" }}>Already cancelled</h1>
+        <p style={{ fontSize: SIZE_BASE, color: GREY, margin: 0 }}>This booking was already cancelled.</p>
       </div>
     );
   }
@@ -83,25 +81,25 @@ export default async function CancelConfirmPage({
         margin: "0 auto 24px",
       }}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-          stroke="#fff" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          stroke=WHITE strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"/>
           <line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
       </div>
 
       <h1 style={{
-        fontSize: "26px", fontWeight: 800, letterSpacing: "-0.6px",
+        fontSize: "26px", fontWeight: W_BOLD, letterSpacing: "-0.6px",
         color: DARK, margin: "0 0 6px", lineHeight: 1.15,
       }}>
         Cancel your booking?
       </h1>
-      <p style={{ fontSize: "13px", color: "#bbb", fontWeight: 600, margin: "0 0 24px" }}>
+      <p style={{ fontSize: SIZE_SM, color: GREY_LIGHT, fontWeight: W_MEDIUM, margin: "0 0 24px" }}>
         {booking.booker_name}
       </p>
 
       {/* Detail block */}
       <div style={{
-        background: "#fdf4ee", borderRadius: 14,
+        background: ORANGE_LIGHT, borderRadius: 14,
         padding: "18px 20px", marginBottom: 28,
         textAlign: "left", display: "flex", flexDirection: "column", gap: 10,
       }}>
@@ -111,11 +109,11 @@ export default async function CancelConfirmPage({
               width: 20, height: 20, borderRadius: "50%", background: ORANGE,
               display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             }}>
-              <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" strokeWidth="3">
+              <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke=WHITE strokeWidth="3">
                 <polyline points="1.5,5 4,7.5 8.5,2.5"/>
               </svg>
             </div>
-            <span style={{ fontSize: 15, fontWeight: 700, color: DARK }}>{label}</span>
+            <span style={{ fontSize: SIZE_BASE, fontWeight: W_BOLD, color: DARK }}>{label}</span>
           </div>
         ))}
       </div>
@@ -127,8 +125,8 @@ export default async function CancelConfirmPage({
           href="/"
           style={{
             flex: 1, padding: "14px", borderRadius: 12,
-            border: "1.5px solid #ede9e3", background: "#fff",
-            color: "#bbb", fontFamily: SYS, fontSize: 14, fontWeight: 600,
+            border: `1.5px solid ${BORDER}`, background: WHITE,
+            color: GREY_LIGHT, fontFamily: SYS, fontSize: 14, fontWeight: W_MEDIUM,
             textDecoration: "none", textAlign: "center",
             display: "flex", alignItems: "center", justifyContent: "center",
           }}
@@ -140,7 +138,7 @@ export default async function CancelConfirmPage({
           style={{
             flex: 1, padding: "14px", borderRadius: 12,
             border: "none", background: ORANGE,
-            color: "#fff", fontFamily: SYS, fontSize: 14, fontWeight: 700,
+            color: WHITE, fontFamily: SYS, fontSize: 14, fontWeight: W_BOLD,
             cursor: "pointer",
           }}
         >

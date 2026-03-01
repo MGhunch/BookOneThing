@@ -3,6 +3,7 @@ import { cookies } from "next/headers";
 import { createServiceClient } from "@/lib/supabase";
 import Calendar from "@/components/calendar/Calendar";
 import type { Thing } from "@/types";
+import { DARK } from "@/lib/constants";
 
 
 interface BookerSession {
@@ -143,7 +144,7 @@ function CalendarPage({
       <div className="page-wrap">
         <a href={`/${ownerSlug}`} className="cal-arrow">
           <svg width="32" height="56" viewBox="0 0 32 56" fill="none">
-            <path d="M28 4L4 28L28 52" stroke="#1a1a1a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M28 4L4 28L28 52" stroke=DARK strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </a>
 
@@ -160,7 +161,7 @@ function CalendarPage({
 
         <a href={`/${ownerSlug}`} className="cal-arrow">
           <svg width="32" height="56" viewBox="0 0 32 56" fill="none">
-            <path d="M4 4L28 28L4 52" stroke="#1a1a1a" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+            <path d="M4 4L28 28L4 52" stroke=DARK strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
           </svg>
         </a>
       </div>

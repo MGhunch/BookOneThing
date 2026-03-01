@@ -2,8 +2,7 @@
 
 import { useState, useEffect } from "react";
 
-const ORANGE  = "#e8722a";
-const BORDER  = "#ede9e3";
+import { ORANGE, GREY, BORDER, SIZE_SM, W_MEDIUM } from "@/lib/constants";
 
 const STAGES = [
   { label: "Crafting email.",                    duration: 1800 },
@@ -58,7 +57,7 @@ export function CodewordProgressBar({ resetKey }: { resetKey: number }) {
         .bot-seg-pulse { animation: bot-seg-pulse 1.4s ease-in-out infinite; }
       `}</style>
       <div style={{
-        fontSize: 13, fontWeight: 500, color: "#888", fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif",
+        fontSize: SIZE_SM, fontWeight: W_MEDIUM, color: GREY, fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif",
         marginBottom: 10, minHeight: 22,
         opacity: visible ? 1 : 0, transition: "opacity 0.2s ease",
       }}>

@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useRef } from "react";
 import {
   Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check, Clock,
 } from "lucide-react";
-import { createThing } from "./actions";
+import { submitSetup, activatePendingThing } from "./actions";
 import BookerGate from "@/components/BookerGate";
 
 // ─── TIMEZONE HELPERS ─────────────────────────────────────────────────────────
@@ -51,16 +51,7 @@ function detectTimezone(): string {
 }
 import ModalShell from "@/components/ModalShell";
 
-const ORANGE       = "#e8722a";
-const ORANGE_LIGHT = "#fdf4ee";
-const ORANGE_MID   = "#fbe0cc";
-const DARK         = "#1a1a1a";
-const GREY         = "#888";
-const GREY_LIGHT   = "#bbb";
-const BORDER       = "#ede9e3";
-const BG           = "#e8e5e0";
-const CARD         = "#ffffff";
-const SYS          = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+import { ORANGE, ORANGE_MID, ORANGE_LIGHT, GREY, GREY_LIGHT, DARK, WHITE, BORDER, BACKGROUND, SYS, SIZE_SM, SIZE_BASE, SIZE_XL, W_REGULAR, W_MEDIUM, W_BOLD } from "@/lib/constants";
 
 const ICONS = [
   { key: "car",     Icon: Car     },
@@ -118,8 +109,8 @@ function Field({ label, explainer, children }: { label: string; explainer?: stri
   return (
     <div>
       <div style={{ marginBottom: "12px" }}>
-        <div style={{ fontSize: "14px", fontWeight: 700, color: DARK, fontFamily: SYS, marginBottom: "2px" }}>{label}</div>
-        {explainer && <div style={{ fontSize: "13px", fontWeight: 400, color: GREY, fontFamily: SYS }}>{explainer}</div>}
+        <div style={{ fontSize: "14px", fontWeight: W_BOLD, color: DARK, fontFamily: SYS, marginBottom: "2px" }}>{label}</div>
+        {explainer && <div style={{ fontSize: SIZE_SM, fontWeight: W_REGULAR, color: GREY, fontFamily: SYS }}>{explainer}</div>}
       </div>
       {children}
     </div>
@@ -129,7 +120,7 @@ function Field({ label, explainer, children }: { label: string; explainer?: stri
 function OrangeBlock({ n }: { n: number }) {
   return (
     <div style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", background: ORANGE, borderRadius: "8px", width: "32px", height: "32px", marginBottom: "16px" }}>
-      <span style={{ fontSize: "13px", fontWeight: 500, color: "#fff", fontFamily: SYS, letterSpacing: "-0.5px" }}>0{n}</span>
+      <span style={{ fontSize: SIZE_SM, fontWeight: W_MEDIUM, color: WHITE, fontFamily: SYS, letterSpacing: "-0.5px" }}>0{n}</span>
     </div>
   );
 }
@@ -147,22 +138,22 @@ function DoneModal({ name, calUrl }: { name: string; calUrl: string }) {
   return (
     <ModalShell>
       <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
-        <Check size={24} strokeWidth={2.5} color="#fff" />
+        <Check size={24} strokeWidth={2.5} color=WHITE />
       </div>
-      <div style={{ fontSize: "26px", fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.2, marginBottom: "8px" }}>
+      <div style={{ fontSize: "26px", fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.2, marginBottom: "8px" }}>
         {name} is live
       </div>
       <div style={{ fontSize: "14px", color: GREY, fontFamily: SYS, lineHeight: 1.6, marginBottom: "24px" }}>
         Share the link below. Anyone with it can book.
       </div>
       <div style={{ background: ORANGE_LIGHT, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
-        <div style={{ flex: 1, fontSize: "13px", fontWeight: 600, color: DARK, fontFamily: SYS, wordBreak: "break-all" as const }}>{calUrl}</div>
+        <div style={{ flex: 1, fontSize: SIZE_SM, fontWeight: W_MEDIUM, color: DARK, fontFamily: SYS, wordBreak: "break-all" as const }}>{calUrl}</div>
         <button
           onClick={handleCopy}
           style={{
-            background: copied ? "#1a9c5b" : ORANGE, border: "none", cursor: "pointer",
-            borderRadius: "8px", padding: "8px 12px", color: "#fff",
-            fontSize: "12px", fontWeight: 700, fontFamily: SYS, flexShrink: 0, transition: "background 0.2s",
+            background: copied ? ORANGE : ORANGE, border: "none", cursor: "pointer",
+            borderRadius: "8px", padding: "8px 12px", color: WHITE,
+            fontSize: "12px", fontWeight: W_BOLD, fontFamily: SYS, flexShrink: 0, transition: "background 0.2s",
           }}
         >{copied ? "Copied!" : "Copy"}</button>
       </div>
@@ -170,7 +161,7 @@ function DoneModal({ name, calUrl }: { name: string; calUrl: string }) {
         onClick={() => { window.location.href = calUrl; }}
         style={{
           width: "100%", padding: "16px", borderRadius: "13px", border: "none",
-          background: DARK, color: "#fff", fontSize: "15px", fontWeight: 700,
+          background: DARK, color: WHITE, fontSize: SIZE_BASE, fontWeight: W_BOLD,
           fontFamily: SYS, cursor: "pointer", letterSpacing: "-0.3px",
         }}
       >
@@ -184,32 +175,28 @@ function DoneModal({ name, calUrl }: { name: string; calUrl: string }) {
 
 function MockCalendar({ name, iconKey }: { name: string; iconKey: string | null }) {
   const IconComp = ICONS.find(i => i.key === iconKey)?.Icon || Car;
-  const [weekDates, setWeekDates] = useState<Date[]>([]);
-  const [todayIdx, setTodayIdx]   = useState(0);
-  useEffect(() => {
-    const today  = new Date();
-    const day    = today.getDay();
-    const monday = new Date(today);
-    monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
-    setWeekDates(Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(monday); d.setDate(monday.getDate() + i); return d;
-    }));
-    setTodayIdx(day === 0 ? 6 : day - 1);
-  }, []);
+  const today = new Date();
+  const day = today.getDay();
+  const monday = new Date(today);
+  monday.setDate(today.getDate() - (day === 0 ? 6 : day - 1));
+  const weekDates = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date(monday); d.setDate(monday.getDate() + i); return d;
+  });
+  const todayIdx = day === 0 ? 6 : day - 1;
   const days = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
   const hours = [8,9,10,11,12,13,14,15,16,17];
   const fmtH = (h: number) => h === 12 ? "12pm" : h < 12 ? `${h}am` : `${h-12}pm`;
 
   return (
-    <div style={{ height: "100%", background: "#fff", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+    <div style={{ height: "100%", background: WHITE, display: "flex", flexDirection: "column", overflow: "hidden" }}>
       <div style={{ padding: "18px 18px 0", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
           <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <IconComp size={15} strokeWidth={1.75} color="#fff" />
+            <IconComp size={15} strokeWidth={1.75} color=WHITE />
           </div>
           <div>
-            <div style={{ fontSize: "16px", fontWeight: 700, color: DARK, letterSpacing: "-0.3px", fontFamily: SYS }}>{name}</div>
-            <div style={{ fontSize: "9px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase" as const, color: "#bbb", fontFamily: SYS }}>Harbour Works</div>
+            <div style={{ fontSize: "16px", fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.3px", fontFamily: SYS }}>{name}</div>
+            <div style={{ fontSize: "9px", fontWeight: W_BOLD, letterSpacing: "1px", textTransform: "uppercase" as const, color: GREY_LIGHT, fontFamily: SYS }}>Harbour Works</div>
           </div>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", gap: "2px", margin: "14px 0 10px" }}>
@@ -217,18 +204,18 @@ function MockCalendar({ name, iconKey }: { name: string; iconKey: string | null 
             const sel = i === todayIdx;
             return (
               <div key={d} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", padding: "5px 2px", borderRadius: "7px", background: sel ? ORANGE_LIGHT : "transparent" }}>
-                <span style={{ fontSize: "7px", fontWeight: 700, letterSpacing: "0.3px", textTransform: "uppercase" as const, color: sel ? ORANGE : "#ccc", fontFamily: SYS }}>{d}</span>
-                <span style={{ fontSize: "13px", fontWeight: sel ? 700 : 400, color: sel ? ORANGE : "#ccc", fontFamily: SYS }}>{weekDates[i]?.getDate() ?? ""}</span>
+                <span style={{ fontSize: "7px", fontWeight: W_BOLD, letterSpacing: "0.3px", textTransform: "uppercase" as const, color: sel ? ORANGE : "#ccc", fontFamily: SYS }}>{d}</span>
+                <span style={{ fontSize: SIZE_SM, fontWeight: sel ? W_BOLD : W_REGULAR, color: sel ? ORANGE : "#ccc", fontFamily: SYS }}>{weekDates[i].getDate()}</span>
               </div>
             );
           })}
         </div>
-        <div style={{ height: "1px", background: "#f4f0eb", marginBottom: "10px" }} />
+        <div style={{ height: "1px", background: BORDER, marginBottom: "10px" }} />
       </div>
       <div style={{ flex: 1, overflowY: "auto", padding: "4px 18px 16px" }}>
         {hours.map(h => (
           <div key={h} style={{ display: "flex", gap: "8px", marginBottom: "3px" }}>
-            <div style={{ width: "32px", fontSize: "9px", color: "#ccc", fontWeight: 500, fontFamily: SYS, paddingTop: "10px", textAlign: "right" as const, flexShrink: 0 }}>{fmtH(h)}</div>
+            <div style={{ width: "32px", fontSize: "9px", color: "#ccc", fontWeight: W_MEDIUM, fontFamily: SYS, paddingTop: "10px", textAlign: "right" as const, flexShrink: 0 }}>{fmtH(h)}</div>
             <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "2px" }}>
               <div style={{ height: "26px", background: ORANGE_LIGHT, borderRadius: "6px" }} />
               <div style={{ height: "26px", background: ORANGE_LIGHT, borderRadius: "6px" }} />
@@ -250,8 +237,7 @@ export default function SetupPage() {
   const [fromH, setFromH]           = useState(9);
   const [toH, setToH]               = useState(17);
   const [weekends, setWeekends]     = useState(false);
-  const [timezone, setTimezone]     = useState("UTC");
-  useEffect(() => { setTimezone(detectTimezone()); }, []);
+  const [timezone, setTimezone]     = useState(() => detectTimezone());
   const [tzSearch, setTzSearch]     = useState("");
   const [tzOpen, setTzOpen]         = useState(false);
   const [notes, setNotes]           = useState("");
@@ -265,6 +251,9 @@ export default function SetupPage() {
   const [calUrl, setCalUrl]     = useState<string | null>(null);
   const [nameFocus, setNameFocus]   = useState(false);
   const [notesFocus, setNotesFocus] = useState(false);
+
+  // Passed from onBeforeSend → used by onDone to activate the thing
+  const pendingRef = useRef<{ email: string; ownerSlug: string; thingSlug: string } | null>(null);
 
   const trimmed   = name.trim();
   const canFlip   = !!trimmed;
@@ -286,22 +275,31 @@ export default function SetupPage() {
   const selectStyle = {
     padding: "10px 14px", borderRadius: "10px",
     border: `1.5px solid ${BORDER}`, fontFamily: SYS,
-    fontSize: "14px", fontWeight: 600, color: DARK,
-    background: CARD, cursor: "pointer", outline: "none",
+    fontSize: "14px", fontWeight: W_MEDIUM, color: DARK,
+    background: WHITE, cursor: "pointer", outline: "none",
   };
 
-  // Called by BookerGate after codeword verified — create everything now.
-  const handleDone = async (gateResult?: { orgName?: string }) => {
-    const result = await createThing({
+  // Called by BookerGate after email + name collected — runs submitSetup,
+  // which writes to pending_things and fires the codeword email.
+  const handleBeforeSend = async (email: string, firstName: string) => {
+    const result = await submitSetup({
       name: trimmed, icon: icon || "car",
       avail, fromH, toH, weekends, notes,
-      maxLen, ahead, concurrent, buffer, timezone,
-      email:     typeof window !== "undefined" ? (localStorage.getItem("bookerEmail") ?? "") : "",
-      firstName: typeof window !== "undefined" ? (localStorage.getItem("bookerName")  ?? "") : "",
-      orgName:   gateResult?.orgName ?? "",
+      maxLen, ahead, concurrent, buffer,
+      timezone, email, firstName,
     });
+    if ("error" in result) return { error: result.error };
+    pendingRef.current = { email: email.trim().toLowerCase(), ownerSlug: result.ownerSlug, thingSlug: result.thingSlug };
+    return { ownerSlug: result.ownerSlug, thingSlug: result.thingSlug };
+  };
+
+  // Called by BookerGate after codeword verified — activates the thing.
+  const handleDone = async () => {
+    const p = pendingRef.current;
+    if (!p) return;
+    const result = await activatePendingThing(p.email, p.ownerSlug, p.thingSlug);
     if ("error" in result) {
-      console.error("createThing failed:", result.error);
+      console.error("Activation failed:", result.error);
       return;
     }
     setCalUrl(result.url);
@@ -309,7 +307,7 @@ export default function SetupPage() {
   };
 
   return (
-    <div style={{ background: BG, minHeight: "100vh", fontFamily: SYS, position: "relative", zIndex: 0 }}>
+    <div style={{ background: BACKGROUND, minHeight: "100vh", fontFamily: SYS, position: "relative", zIndex: 0 }}>
       <style>{`
         @keyframes flipOut { 0% { transform: rotateY(0deg); opacity: 1; } 100% { transform: rotateY(-90deg); opacity: 0; } }
         @keyframes flipIn  { 0% { transform: rotateY(90deg); opacity: 0; } 100% { transform: rotateY(0deg); opacity: 1; } }
@@ -321,7 +319,7 @@ export default function SetupPage() {
       {/* Calendar backdrop — visible during BookerGate and done state */}
       {(showGate || !!calUrl) && (
         <div style={{ position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "90px 24px 60px" }}>
-          <div style={{ width: "100%", maxWidth: "390px", height: "100%", maxHeight: "700px", background: "#fff", borderRadius: "24px", overflow: "hidden", boxShadow: "0 8px 48px rgba(0,0,0,0.09)" }}>
+          <div style={{ width: "100%", maxWidth: "390px", height: "100%", maxHeight: "700px", background: WHITE, borderRadius: "24px", overflow: "hidden", boxShadow: "0 8px 48px rgba(0,0,0,0.09)" }}>
             <MockCalendar name={trimmed} iconKey={icon} />
           </div>
         </div>
@@ -333,6 +331,7 @@ export default function SetupPage() {
           thingName={trimmed}
           isOwner={true}
           context="setup"
+          onBeforeSend={handleBeforeSend}
           onDone={handleDone}
           onClose={() => setShowGate(false)}
         />
@@ -350,17 +349,17 @@ export default function SetupPage() {
 
           <div
             className={`setup-card ${flipping ? (side === "front" ? "flip-out" : "flip-in") : ""}`}
-            style={{ background: CARD, borderRadius: "24px", padding: "44px 44px 40px", boxShadow: "0 4px 32px rgba(0,0,0,0.07)" }}
+            style={{ background: WHITE, borderRadius: "24px", padding: "44px 44px 40px", boxShadow: "0 4px 32px rgba(0,0,0,0.07)" }}
           >
 
-            {/* ── CARD 1 ── */}
+            {/* ── WHITE 1 ── */}
             {side === "front" && (
               <>
                 <OrangeBlock n={1} />
-                <div style={{ fontSize: "28px", fontWeight: 800, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, fontFamily: SYS, marginBottom: "8px" }}>
+                <div style={{ fontSize: SIZE_XL, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, fontFamily: SYS, marginBottom: "8px" }}>
                   What are you sharing
                 </div>
-                <div style={{ fontSize: "15px", color: GREY, fontFamily: SYS, fontWeight: 400, marginBottom: "36px" }}>
+                <div style={{ fontSize: SIZE_BASE, color: GREY, fontFamily: SYS, fontWeight: W_REGULAR, marginBottom: "36px" }}>
                   It only takes a minute to set up your thing.
                 </div>
 
@@ -377,8 +376,8 @@ export default function SetupPage() {
                       style={{
                         width: "100%", padding: "14px 18px", borderRadius: "14px",
                         border: `1.5px solid ${trimmed ? ORANGE : nameFocus ? ORANGE : BORDER}`,
-                        background: trimmed ? ORANGE_LIGHT : "#f9f8f6",
-                        fontSize: "18px", fontWeight: 600, fontFamily: SYS, color: DARK,
+                        background: trimmed ? ORANGE_LIGHT : WHITE,
+                        fontSize: "18px", fontWeight: W_MEDIUM, fontFamily: SYS, color: DARK,
                         outline: "none", transition: "all 0.15s", boxSizing: "border-box" as const,
                       }}
                     />
@@ -392,7 +391,7 @@ export default function SetupPage() {
                           <button key={key} onClick={() => setIcon(key)} style={{
                             padding: "14px 8px", borderRadius: "12px",
                             border: active ? `1.5px solid ${ORANGE}` : `1.5px solid ${BORDER}`,
-                            background: active ? ORANGE_LIGHT : "#f9f8f6",
+                            background: active ? ORANGE_LIGHT : WHITE,
                             cursor: "pointer", display: "flex", alignItems: "center",
                             justifyContent: "center", transition: "all 0.15s",
                           }}>
@@ -411,7 +410,7 @@ export default function SetupPage() {
                         style={{
                           marginTop: "12px", width: "220px", padding: "10px 14px",
                           borderRadius: "10px", border: `1.5px solid ${ORANGE}`,
-                          background: ORANGE_LIGHT, fontSize: "14px", fontWeight: 600,
+                          background: ORANGE_LIGHT, fontSize: "14px", fontWeight: W_MEDIUM,
                           fontFamily: SYS, color: DARK, outline: "none", boxSizing: "border-box" as const,
                         }}
                       />
@@ -429,7 +428,7 @@ export default function SetupPage() {
                         <select value={fromH} onChange={e => setFromH(parseInt(e.target.value))} style={selectStyle}>
                           {hours.map(h => <option key={h} value={h}>{fmtH(h)}</option>)}
                         </select>
-                        <span style={{ fontSize: "14px", color: GREY_LIGHT, fontWeight: 500 }}>to</span>
+                        <span style={{ fontSize: "14px", color: GREY_LIGHT, fontWeight: W_MEDIUM }}>to</span>
                         <select value={toH} onChange={e => setToH(parseInt(e.target.value))} style={selectStyle}>
                           {hours.map(h => <option key={h} value={h}>{fmtH(h)}</option>)}
                         </select>
@@ -444,13 +443,13 @@ export default function SetupPage() {
                           <div style={{
                             width: "18px", height: "18px", borderRadius: "5px",
                             border: weekends ? "none" : `1.5px solid ${BORDER}`,
-                            background: weekends ? ORANGE : "#f9f8f6",
+                            background: weekends ? ORANGE : WHITE,
                             display: "flex", alignItems: "center", justifyContent: "center",
                             flexShrink: 0, transition: "all 0.15s",
                           }}>
-                            {weekends && <Check size={10} strokeWidth={3} color="#fff" />}
+                            {weekends && <Check size={10} strokeWidth={3} color=WHITE />}
                           </div>
-                          <span style={{ fontSize: "14px", fontWeight: 500, color: "#555" }}>Include weekends</span>
+                          <span style={{ fontSize: "14px", fontWeight: W_MEDIUM, color: "#555" }}>Include weekends</span>
                         </button>
 
                         {/* Timezone */}
@@ -458,13 +457,13 @@ export default function SetupPage() {
                           <button onClick={() => { setTzOpen(!tzOpen); setTzSearch(""); }}
                             style={{ display: "flex", alignItems: "center", gap: "6px", background: "none", border: "none", cursor: "pointer", padding: 0, fontFamily: SYS }}>
                             <Clock size={18} color={"#555"} strokeWidth={1.75} />
-                            <span style={{ fontSize: "14px", fontWeight: 500, color: "#555" }}>{tzFriendly(timezone)} time</span>
+                            <span style={{ fontSize: "14px", fontWeight: W_MEDIUM, color: "#555" }}>{tzFriendly(timezone)} time</span>
                           </button>
 
                           {tzOpen && (
                             <div style={{
                               position: "absolute", right: 0, top: "calc(100% + 8px)",
-                              background: CARD, borderRadius: "14px", padding: "10px 0",
+                              background: WHITE, borderRadius: "14px", padding: "10px 0",
                               boxShadow: "0 4px 24px rgba(0,0,0,0.12)", zIndex: 100,
                               minWidth: "200px",
                             }}>
@@ -476,8 +475,8 @@ export default function SetupPage() {
                                   placeholder="Search..."
                                   style={{
                                     width: "100%", padding: "8px 10px", borderRadius: "8px",
-                                    border: `1.5px solid ${BORDER}`, background: "#f9f8f6",
-                                    fontSize: "13px", fontFamily: SYS, outline: "none",
+                                    border: `1.5px solid ${BORDER}`, background: WHITE,
+                                    fontSize: SIZE_SM, fontFamily: SYS, outline: "none",
                                     boxSizing: "border-box" as const,
                                   }}
                                 />
@@ -492,7 +491,7 @@ export default function SetupPage() {
                                         display: "block", width: "100%", textAlign: "left",
                                         padding: "9px 16px", background: tz.iana === timezone ? ORANGE_LIGHT : "none",
                                         border: "none", cursor: "pointer", fontFamily: SYS,
-                                        fontSize: "13px", fontWeight: tz.iana === timezone ? 700 : 400,
+                                        fontSize: SIZE_SM, fontWeight: tz.iana === timezone ? W_BOLD : W_REGULAR,
                                         color: tz.iana === timezone ? ORANGE : DARK,
                                       }}>
                                       {tz.label}
@@ -518,7 +517,7 @@ export default function SetupPage() {
                       style={{
                         width: "100%", padding: "14px 18px", borderRadius: "14px",
                         border: `1.5px solid ${notesFocus ? ORANGE : BORDER}`,
-                        background: "#f9f8f6", fontSize: "14px", fontWeight: 400,
+                        background: WHITE, fontSize: "14px", fontWeight: W_REGULAR,
                         fontFamily: SYS, color: DARK, outline: "none",
                         resize: "none" as const, lineHeight: 1.7, boxSizing: "border-box" as const,
                         transition: "border 0.15s",
@@ -542,14 +541,14 @@ export default function SetupPage() {
               </>
             )}
 
-            {/* ── CARD 2 ── */}
+            {/* ── WHITE 2 ── */}
             {side === "back" && (
               <>
                 <OrangeBlock n={2} />
-                <div style={{ fontSize: "28px", fontWeight: 800, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, fontFamily: SYS, marginBottom: "8px" }}>
+                <div style={{ fontSize: SIZE_XL, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, fontFamily: SYS, marginBottom: "8px" }}>
                   How will you share it
                 </div>
-                <div style={{ fontSize: "15px", color: GREY, fontFamily: SYS, fontWeight: 400, marginBottom: "36px" }}>
+                <div style={{ fontSize: SIZE_BASE, color: GREY, fontFamily: SYS, fontWeight: W_REGULAR, marginBottom: "36px" }}>
                   Simple rules to make it fair for everyone.
                 </div>
 
@@ -594,8 +593,8 @@ export default function SetupPage() {
                   style={{
                     width: "100%", marginTop: "40px", padding: "18px",
                     borderRadius: "14px", border: "none",
-                    background: ORANGE, color: "#fff",
-                    fontSize: "16px", fontWeight: 700, fontFamily: SYS,
+                    background: ORANGE, color: WHITE,
+                    fontSize: "16px", fontWeight: W_BOLD, fontFamily: SYS,
                     cursor: "pointer", letterSpacing: "-0.3px",
                   }}
                 >
@@ -605,7 +604,7 @@ export default function SetupPage() {
 
                 <button
                   onClick={() => flip("front")}
-                  style={{ display: "block", margin: "16px auto 0", background: "none", border: "none", cursor: "pointer", fontSize: "13px", color: GREY_LIGHT, fontFamily: SYS, fontWeight: 500 }}
+                  style={{ display: "block", margin: "16px auto 0", background: "none", border: "none", cursor: "pointer", fontSize: SIZE_SM, color: GREY_LIGHT, fontFamily: SYS, fontWeight: W_MEDIUM }}
                 >
                   ← Back
                 </button>

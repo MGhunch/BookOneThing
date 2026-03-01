@@ -11,15 +11,7 @@ import { CodewordProgressBar } from "@/components/CodewordProgressBar";
 
 // ─── CONSTANTS ────────────────────────────────────────────────────────────────
 
-const ORANGE       = "#e8722a";
-const ORANGE_LIGHT = "#fdf4ee";
-const DARK         = "#1a1a1a";
-const GREY         = "#888";
-const GREY_LIGHT   = "#bbb";
-const BORDER       = "#ede9e3";
-const BG           = "#e8e5e0";
-const CARD         = "#ffffff";
-const SYS          = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+import { ORANGE, ORANGE_MID, ORANGE_LIGHT, GREY, GREY_LIGHT, DARK, WHITE, BORDER, BACKGROUND, RED_ERRORTOAST, SYS, SIZE_SM, SIZE_BASE, SIZE_XL, W_REGULAR, W_MEDIUM, W_BOLD } from "@/lib/constants";
 
 const ICONS: Record<string, React.ElementType> = {
   car: Car, users: Users, coffee: Coffee, sun: Sun,
@@ -116,9 +108,9 @@ function CopyButton({ text }: { text: string }) {
         display: "flex", alignItems: "center", gap: 6,
         padding: "8px 14px", borderRadius: 8, flexShrink: 0,
         border: `1.5px solid ${copied ? ORANGE : BORDER}`,
-        background: copied ? ORANGE_LIGHT : "#f9f8f6",
+        background: copied ? ORANGE_LIGHT : WHITE,
         color: copied ? ORANGE : GREY,
-        fontSize: 12, fontWeight: 600, fontFamily: SYS,
+        fontSize: 12, fontWeight: W_MEDIUM, fontFamily: SYS,
         cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap" as const,
       }}
     >
@@ -144,12 +136,12 @@ function SharerRow({ sharer, onRevoke }: { sharer: Sharer; onRevoke: (id: string
         width: 32, height: 32, borderRadius: "50%",
         background: ORANGE_LIGHT, flexShrink: 0,
         display: "flex", alignItems: "center", justifyContent: "center",
-        fontSize: 12, fontWeight: 700, color: ORANGE, fontFamily: SYS,
+        fontSize: 12, fontWeight: W_BOLD, color: ORANGE, fontFamily: SYS,
       }}>
         {initials}
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 13, fontWeight: 600, color: DARK, fontFamily: SYS }}>{sharer.first_name}</div>
+        <div style={{ fontSize: SIZE_SM, fontWeight: W_MEDIUM, color: DARK, fontFamily: SYS }}>{sharer.first_name}</div>
         <div style={{ fontSize: 11, color: GREY_LIGHT, fontFamily: SYS, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>{sharer.email}</div>
       </div>
       <button
@@ -159,10 +151,10 @@ function SharerRow({ sharer, onRevoke }: { sharer: Sharer; onRevoke: (id: string
         style={{
           display: "flex", alignItems: "center", gap: 5,
           padding: "5px 10px", borderRadius: 6, flexShrink: 0,
-          border: `1.5px solid ${hover ? "#c0392b" : BORDER}`,
+          border: `1.5px solid ${hover ? RED_ERRORTOAST : BORDER}`,
           background: hover ? "#fdf0ee" : "transparent",
-          color: hover ? "#c0392b" : GREY_LIGHT,
-          fontSize: 11, fontWeight: 600, fontFamily: SYS,
+          color: hover ? RED_ERRORTOAST : GREY_LIGHT,
+          fontSize: 11, fontWeight: W_MEDIUM, fontFamily: SYS,
           cursor: "pointer", transition: "all 0.15s",
         }}
       >
@@ -180,12 +172,12 @@ function SettingsPanel({ thing, sharers, onRevoke }: {
   onRevoke: (id: string) => void;
 }) {
   return (
-    <div style={{ borderTop: `1px solid ${BORDER}`, background: "#faf9f7", padding: "20px 24px 24px" }}>
+    <div style={{ borderTop: `1px solid ${BORDER}`, background: WHITE, padding: "20px 24px 24px" }}>
 
       {/* Fairness Rules */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-          <div style={{ fontSize: 11, fontWeight: 600, color: GREY_LIGHT, fontFamily: SYS, textTransform: "uppercase" as const, letterSpacing: "0.8px" }}>
+          <div style={{ fontSize: 11, fontWeight: W_MEDIUM, color: GREY_LIGHT, fontFamily: SYS, textTransform: "uppercase" as const, letterSpacing: "0.8px" }}>
             Fairness Rules
           </div>
           <a
@@ -194,8 +186,8 @@ function SettingsPanel({ thing, sharers, onRevoke }: {
               display: "flex", alignItems: "center", gap: 5,
               padding: "5px 12px", borderRadius: 7,
               border: `1.5px solid ${BORDER}`,
-              background: CARD, color: DARK, textDecoration: "none",
-              fontSize: 11, fontWeight: 600, fontFamily: SYS,
+              background: WHITE, color: DARK, textDecoration: "none",
+              fontSize: 11, fontWeight: W_MEDIUM, fontFamily: SYS,
             }}
           >
             <Edit2 size={10} strokeWidth={2.5} /> Edit
@@ -208,9 +200,9 @@ function SettingsPanel({ thing, sharers, onRevoke }: {
             { label: "Book ahead",     value: fmtAhead(thing.book_ahead_days)     },
             { label: "Max per person", value: thing.max_concurrent >= 99999 ? "Unlimited" : String(thing.max_concurrent) },
           ].map(({ label, value }) => (
-            <div key={label} style={{ background: CARD, borderRadius: 10, padding: "10px 12px", border: `1px solid ${BORDER}` }}>
-              <div style={{ fontSize: 9, fontWeight: 600, color: GREY_LIGHT, fontFamily: SYS, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 3 }}>{label}</div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: DARK, fontFamily: SYS }}>{value}</div>
+            <div key={label} style={{ background: WHITE, borderRadius: 10, padding: "10px 12px", border: `1px solid ${BORDER}` }}>
+              <div style={{ fontSize: 9, fontWeight: W_MEDIUM, color: GREY_LIGHT, fontFamily: SYS, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 3 }}>{label}</div>
+              <div style={{ fontSize: SIZE_SM, fontWeight: W_MEDIUM, color: DARK, fontFamily: SYS }}>{value}</div>
             </div>
           ))}
         </div>
@@ -218,7 +210,7 @@ function SettingsPanel({ thing, sharers, onRevoke }: {
 
       {/* Your Sharers */}
       <div>
-        <div style={{ fontSize: 11, fontWeight: 600, color: GREY_LIGHT, fontFamily: SYS, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 4 }}>
+        <div style={{ fontSize: 11, fontWeight: W_MEDIUM, color: GREY_LIGHT, fontFamily: SYS, textTransform: "uppercase" as const, letterSpacing: "0.8px", marginBottom: 4 }}>
           Your sharers
         </div>
         <div style={{ fontSize: 12, color: GREY_LIGHT, fontFamily: SYS, marginBottom: 12 }}>
@@ -226,7 +218,7 @@ function SettingsPanel({ thing, sharers, onRevoke }: {
         </div>
 
         {sharers.length === 0 ? (
-          <div style={{ fontSize: 13, color: GREY_LIGHT, fontFamily: SYS, padding: "12px 0" }}>
+          <div style={{ fontSize: SIZE_SM, color: GREY_LIGHT, fontFamily: SYS, padding: "12px 0" }}>
             No bookings yet.
           </div>
         ) : (
@@ -243,7 +235,7 @@ function SettingsPanel({ thing, sharers, onRevoke }: {
   );
 }
 
-// ─── THING CARD ───────────────────────────────────────────────────────────────
+// ─── THING WHITE ───────────────────────────────────────────────────────────────
 
 function ThingCard({ thing, ownerSlug }: { thing: Thing; ownerSlug: string }) {
   const [open, setOpen]         = useState(false);
@@ -275,15 +267,15 @@ function ThingCard({ thing, ownerSlug }: { thing: Thing; ownerSlug: string }) {
   };
 
   return (
-    <div style={{ background: CARD, borderRadius: 20, boxShadow: "0 2px 16px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+    <div style={{ background: WHITE, borderRadius: 20, boxShadow: "0 2px 16px rgba(0,0,0,0.06)", overflow: "hidden" }}>
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: 14, padding: "22px 24px 18px", borderBottom: `1px solid ${BORDER}` }}>
-        <div style={{ width: 44, height: 44, borderRadius: 14, background: DARK, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#fff" }}>
+        <div style={{ width: 44, height: 44, borderRadius: 14, background: DARK, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: WHITE }}>
           <IconComp size={20} strokeWidth={1.75} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 17, fontWeight: 600, color: DARK, letterSpacing: "-0.3px", fontFamily: SYS, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
+          <div style={{ fontSize: 17, fontWeight: W_MEDIUM, color: DARK, letterSpacing: "-0.3px", fontFamily: SYS, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
             {thing.name}
           </div>
           <div style={{ fontSize: 12, color: GREY_LIGHT, fontFamily: SYS, marginTop: 2 }}>{availLabel}</div>
@@ -294,9 +286,9 @@ function ThingCard({ thing, ownerSlug }: { thing: Thing; ownerSlug: string }) {
             display: "flex", alignItems: "center", gap: 5,
             padding: "7px 12px", borderRadius: 10, flexShrink: 0,
             border: `1.5px solid ${open ? ORANGE : BORDER}`,
-            background: open ? ORANGE_LIGHT : "#f9f8f6",
+            background: open ? ORANGE_LIGHT : WHITE,
             color: open ? ORANGE : GREY_LIGHT,
-            fontSize: 12, fontWeight: 600, fontFamily: SYS,
+            fontSize: 12, fontWeight: W_MEDIUM, fontFamily: SYS,
             cursor: "pointer", transition: "all 0.15s",
           }}
         >
@@ -316,12 +308,12 @@ function ThingCard({ thing, ownerSlug }: { thing: Thing; ownerSlug: string }) {
             style={{
               flex: 1, minWidth: 0, display: "flex", alignItems: "center", gap: 6,
               padding: "8px 12px", borderRadius: 8,
-              background: ORANGE_LIGHT, border: `1.5px solid #f2dcc8`,
+              background: ORANGE_LIGHT, border: `1.5px solid ${ORANGE_MID}`,
               textDecoration: "none", overflow: "hidden",
             }}
           >
             <ExternalLink size={11} strokeWidth={2} color={ORANGE} style={{ flexShrink: 0 }} />
-            <span style={{ fontSize: 12, fontWeight: 600, color: ORANGE, fontFamily: SYS, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
+            <span style={{ fontSize: 12, fontWeight: W_MEDIUM, color: ORANGE, fontFamily: SYS, whiteSpace: "nowrap" as const, overflow: "hidden", textOverflow: "ellipsis" }}>
               {shareUrl.replace("https://", "")}
             </span>
           </a>
@@ -341,7 +333,7 @@ function ThingCard({ thing, ownerSlug }: { thing: Thing; ownerSlug: string }) {
   );
 }
 
-// ─── ADD THING CARD ───────────────────────────────────────────────────────────
+// ─── ADD THING WHITE ───────────────────────────────────────────────────────────
 
 function AddThingCard({ hasThings }: { hasThings: boolean }) {
   const [hover, setHover] = useState(false);
@@ -354,7 +346,7 @@ function AddThingCard({ hasThings }: { hasThings: boolean }) {
       style={{
         display: "flex", alignItems: "center", gap: 16,
         padding: "20px 24px", borderRadius: 20, textDecoration: "none",
-        background: hover ? ORANGE_LIGHT : CARD,
+        background: hover ? ORANGE_LIGHT : WHITE,
         border: `2px solid ${hover ? ORANGE : BORDER}`,
         boxShadow: "0 2px 16px rgba(0,0,0,0.04)",
         transition: "all 0.2s",
@@ -362,15 +354,15 @@ function AddThingCard({ hasThings }: { hasThings: boolean }) {
     >
       <div style={{
         width: 44, height: 44, borderRadius: 14, flexShrink: 0,
-        background: hover ? ORANGE : "#fbe0cc",
+        background: hover ? ORANGE : ORANGE_MID,
         display: "flex", alignItems: "center", justifyContent: "center",
-        color: hover ? "#fff" : GREY_LIGHT,
+        color: hover ? WHITE : GREY_LIGHT,
         transition: "all 0.2s",
       }}>
         <Plus size={20} strokeWidth={1.75} />
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: DARK, fontFamily: SYS, letterSpacing: "-0.2px" }}>
+        <div style={{ fontSize: SIZE_BASE, fontWeight: W_BOLD, color: DARK, fontFamily: SYS, letterSpacing: "-0.2px" }}>
           Add another thing
         </div>
         <div style={{ fontSize: 12, color: GREY_LIGHT, fontFamily: SYS, marginTop: 2 }}>
@@ -440,10 +432,10 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
           .cw-shake { animation: shake 0.4s ease; }
         `}</style>
         <div style={{ marginBottom: 28 }}>
-          <div style={{ fontSize: 28, fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.15, marginBottom: 8 }}>
+          <div style={{ fontSize: SIZE_XL, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.15, marginBottom: 8 }}>
             Let's find your things
           </div>
-          <div style={{ fontSize: 15, color: GREY, fontFamily: SYS, lineHeight: 1.65 }}>
+          <div style={{ fontSize: SIZE_BASE, color: GREY, fontFamily: SYS, lineHeight: 1.65 }}>
             Just pop in your email.
           </div>
         </div>
@@ -455,20 +447,20 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
           style={{
             width: "100%", padding: "14px 18px", borderRadius: 14,
             border: `1.5px solid ${email ? ORANGE : BORDER}`,
-            background: email ? ORANGE_LIGHT : "#f9f8f6",
-            fontSize: 16, fontWeight: 500, fontFamily: SYS, color: DARK,
+            background: email ? ORANGE_LIGHT : WHITE,
+            fontSize: 16, fontWeight: W_MEDIUM, fontFamily: SYS, color: DARK,
             outline: "none", transition: "all 0.15s", boxSizing: "border-box" as const,
             marginBottom: 10,
           }}
         />
-        {error && <div style={{ fontSize: 12, color: "#c0392b", fontFamily: SYS, marginBottom: 10 }}>{error}</div>}
+        {error && <div style={{ fontSize: 12, color: RED_ERRORTOAST, fontFamily: SYS, marginBottom: 10 }}>{error}</div>}
         <button
           onClick={handleSend} disabled={!validEmail || loading}
           style={{
             width: "100%", padding: 16, borderRadius: 13, border: "none",
-            background: validEmail ? ORANGE : "#fbe0cc",
-            color: validEmail ? "#fff" : "#e0824a",
-            fontSize: 15, fontWeight: 700, fontFamily: SYS,
+            background: validEmail ? ORANGE : ORANGE_MID,
+            color: validEmail ? WHITE : ORANGE,
+            fontSize: SIZE_BASE, fontWeight: W_BOLD, fontFamily: SYS,
             cursor: validEmail ? "pointer" : "default",
             letterSpacing: "-0.3px", transition: "all 0.2s",
           }}
@@ -484,7 +476,7 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
   return (
     <>
       <div style={{ marginBottom: 20 }}>
-        <div style={{ fontSize: 28, fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.15 }}>
+        <div style={{ fontSize: SIZE_XL, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.15 }}>
           Pop in your codeword
         </div>
       </div>
@@ -500,24 +492,24 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
           style={{
             width: "100%", padding: "16px 18px", borderRadius: 14,
             textAlign: "center" as const,
-            border: `2px solid ${error ? "#c0392b" : code ? ORANGE : BORDER}`,
-            background: error ? "#fdf0ee" : code ? ORANGE_LIGHT : "#f9f8f6",
-            fontSize: 26, fontWeight: 800, fontFamily: SYS,
-            color: error ? "#c0392b" : DARK,
+            border: `2px solid ${error ? RED_ERRORTOAST : code ? ORANGE : BORDER}`,
+            background: error ? "#fdf0ee" : code ? ORANGE_LIGHT : WHITE,
+            fontSize: 26, fontWeight: W_BOLD, fontFamily: SYS,
+            color: error ? RED_ERRORTOAST : DARK,
             outline: "none", letterSpacing: "5px",
             transition: "all 0.15s", boxSizing: "border-box" as const,
             marginBottom: 10,
           }}
         />
       </div>
-      {error && <div style={{ fontSize: 12, color: "#c0392b", fontFamily: SYS, marginBottom: 10, textAlign: "center" as const }}>{error}</div>}
+      {error && <div style={{ fontSize: 12, color: RED_ERRORTOAST, fontFamily: SYS, marginBottom: 10, textAlign: "center" as const }}>{error}</div>}
       <button
         onClick={handleVerify} disabled={!validCode || loading}
         style={{
           width: "100%", padding: 16, borderRadius: 13, border: "none",
-          background: validCode ? ORANGE : "#fbe0cc",
-          color: validCode ? "#fff" : "#e0824a",
-          fontSize: 15, fontWeight: 700, fontFamily: SYS,
+          background: validCode ? ORANGE : ORANGE_MID,
+          color: validCode ? WHITE : ORANGE,
+          fontSize: SIZE_BASE, fontWeight: W_BOLD, fontFamily: SYS,
           cursor: validCode ? "pointer" : "default",
           letterSpacing: "-0.3px", transition: "all 0.2s",
           marginBottom: 14,
@@ -525,11 +517,11 @@ function CodewordScreen({ onAuthed }: { onAuthed: (email: string) => void }) {
       >
         {loading ? "Checking…" : "Unlock"}
       </button>
-      <div style={{ textAlign: "center" as const, fontSize: 13, color: GREY_LIGHT, fontFamily: SYS }}>
+      <div style={{ textAlign: "center" as const, fontSize: SIZE_SM, color: GREY_LIGHT, fontFamily: SYS }}>
         Didn't get it?{" "}
         <span
           onClick={() => { setScreen("email"); setCode(""); setError(null); }}
-          style={{ color: ORANGE, fontWeight: 600, cursor: "pointer" }}
+          style={{ color: ORANGE, fontWeight: W_MEDIUM, cursor: "pointer" }}
         >
           Send another
         </span>
@@ -570,8 +562,8 @@ export default function ManagePage() {
 
   if (authState === "unauthed") {
     return (
-      <div style={{ minHeight: "100vh", background: BG, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
-        <div style={{ background: CARD, borderRadius: 24, padding: "48px 40px", maxWidth: 380, width: "100%", boxShadow: "0 4px 32px rgba(0,0,0,0.07)" }}>
+      <div style={{ minHeight: "100vh", background: BACKGROUND, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px 24px" }}>
+        <div style={{ background: WHITE, borderRadius: 24, padding: "48px 40px", maxWidth: 380, width: "100%", boxShadow: "0 4px 32px rgba(0,0,0,0.07)" }}>
           <CodewordScreen onAuthed={handleAuthed} />
         </div>
       </div>
@@ -584,7 +576,7 @@ export default function ManagePage() {
   const ownerSlug = profile?.slug ?? "";
 
   return (
-    <div style={{ minHeight: "100vh", background: BG, fontFamily: SYS }}>
+    <div style={{ minHeight: "100vh", background: BACKGROUND, fontFamily: SYS }}>
       <style>{`
         @keyframes fadeUp { from { opacity:0; transform:translateY(12px); } to { opacity:1; transform:translateY(0); } }
         .thing-card { animation: fadeUp 0.3s ease forwards; opacity: 0; }
@@ -595,10 +587,10 @@ export default function ManagePage() {
         {/* Header */}
         <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 40 }}>
           <div>
-            <div style={{ fontSize: 32, fontWeight: 800, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, marginBottom: 6 }}>
+            <div style={{ fontSize: 32, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.8px", lineHeight: 1.15, marginBottom: 6 }}>
               Here are all your things
             </div>
-            <div style={{ fontSize: 15, color: GREY, fontWeight: 400, lineHeight: 1.65 }}>
+            <div style={{ fontSize: SIZE_BASE, color: GREY, fontWeight: W_REGULAR, lineHeight: 1.65 }}>
               Share the link. People book. That's it.
             </div>
           </div>
@@ -608,7 +600,7 @@ export default function ManagePage() {
               display: "flex", alignItems: "center", gap: 6, flexShrink: 0, marginTop: 6,
               background: "none", border: `1.5px solid ${BORDER}`,
               borderRadius: 8, padding: "7px 12px", cursor: "pointer",
-              color: GREY_LIGHT, fontFamily: SYS, fontSize: 12, fontWeight: 600,
+              color: GREY_LIGHT, fontFamily: SYS, fontSize: 12, fontWeight: W_MEDIUM,
             }}
           >
             <LogOut size={12} strokeWidth={1.75} /> Sign out
@@ -619,7 +611,7 @@ export default function ManagePage() {
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           {dataLoading ? (
             [0, 1].map(i => (
-              <div key={i} style={{ background: CARD, borderRadius: 20, height: 120, opacity: 0.4, boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }} />
+              <div key={i} style={{ background: WHITE, borderRadius: 20, height: 120, opacity: 0.4, boxShadow: "0 2px 16px rgba(0,0,0,0.06)" }} />
             ))
           ) : (
             <>

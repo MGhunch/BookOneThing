@@ -2,7 +2,7 @@
 
 The easy way to share anything with anyone. 
 
-Set up your thing. Share the link. Done.   
+Set up your thing. Share the link. Done.  
 
 ---
 

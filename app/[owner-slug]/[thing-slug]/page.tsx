@@ -98,6 +98,7 @@ export default async function BookerPage({
 // ── Shared render component ───────────────────────────────────────────────────
 
 import { Car, Users, Coffee, Sun, Plus, Wrench, Monitor, Home } from "lucide-react";
+import { ORANGE, DARK, WHITE, W_MEDIUM } from "@/lib/constants";
 
 const ICON_MAP: Record<string, React.ComponentType<{ size: number; strokeWidth: number; color: string }>> = {
   car: Car, users: Users, coffee: Coffee, sun: Sun,
@@ -135,15 +136,15 @@ function ThingNavSlot({
       {/* Icon */}
       <div style={{
         width: 44, height: 44, borderRadius: 14,
-        background: "#1a1a1a",
+        background: DARK,
         display: "flex", alignItems: "center", justifyContent: "center",
         flexShrink: 0,
       }}>
-        <IconComp size={20} strokeWidth={1.75} color="#fff" />
+        <IconComp size={20} strokeWidth={1.75} color=WHITE />
       </div>
       {/* Name */}
       <div style={{
-        fontSize: 11, fontWeight: 600, color: "#1a1a1a",
+        fontSize: 11, fontWeight: W_MEDIUM, color: DARK,
         fontFamily: "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif",
         lineHeight: 1.3,
         width: "100%",
@@ -237,8 +238,8 @@ function CalendarPage({
               justify-content: center;
               gap: 12px;
               padding: 12px 16px 20px;
-              background: #fff;
-              border-top: 1px solid #f0ece6;
+              background: ${WHITE};
+              border-top: 1px solid ${BORDER};
               margin: 0 8px;
               border-radius: 0 0 24px 24px;
             }
@@ -259,21 +260,21 @@ function CalendarPage({
             .mob-slot-icon {
               width: 44px; height: 44px;
               border-radius: 14px;
-              background: #1a1a1a;
+              background: ${DARK};
               display: flex; align-items: center; justify-content: center;
             }
-            .mob-slot-active .mob-slot-icon { background: #e8722a; }
-            .mob-slot-add .mob-slot-icon { background: #fdf4ee; }
+            .mob-slot-active .mob-slot-icon { background: ${ORANGE}; }
+            .mob-slot-add .mob-slot-icon { background: ${ORANGE_LIGHT}; }
             .mob-slot-name {
               font-size: 9px;
               font-weight: 600;
-              color: #1a1a1a;
+              color: ${DARK};
               text-align: center;
               line-height: 1.3;
               max-width: 52px;
               font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
             }
-            .mob-slot-add .mob-slot-name { color: #e8722a; }
+            .mob-slot-add .mob-slot-name { color: ${ORANGE}; }
           `}</style>
           <div className="mob-nav">
             {things.map(t => {
@@ -286,7 +287,7 @@ function CalendarPage({
                   className={`mob-slot${isActive ? " mob-slot-active" : ""}`}
                 >
                   <div className="mob-slot-icon">
-                    <IconComp size={20} strokeWidth={1.75} color="#fff" />
+                    <IconComp size={20} strokeWidth={1.75} color=WHITE />
                   </div>
                   <div className="mob-slot-name">{t.name}</div>
                 </a>
@@ -294,7 +295,7 @@ function CalendarPage({
             })}
             <a href="/setup" className="mob-slot mob-slot-add">
               <div className="mob-slot-icon">
-                <Plus size={20} strokeWidth={1.75} color="#e8722a" />
+                <Plus size={20} strokeWidth={1.75} color=ORANGE />
               </div>
               <div className="mob-slot-name">Add more</div>
             </a>

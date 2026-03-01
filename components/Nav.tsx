@@ -2,8 +2,7 @@
 
 import { useState } from "react";
 
-const DARK   = "#1a1a1a";
-const SYS    = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+import { DARK, WHITE, SHELL, SYS, W_MEDIUM } from "@/lib/constants";
 
 const NAV_LINKS = [
   { label: "Home",               href: "/"             },
@@ -43,8 +42,8 @@ export default function Nav() {
         >
           {open ? (
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <line x1="1" y1="1" x2="13" y2="13" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
-              <line x1="13" y1="1" x2="1" y2="13" stroke="#fff" strokeWidth="2" strokeLinecap="round"/>
+              <line x1="1" y1="1" x2="13" y2="13" stroke=WHITE strokeWidth="2" strokeLinecap="round"/>
+              <line x1="13" y1="1" x2="1" y2="13" stroke=WHITE strokeWidth="2" strokeLinecap="round"/>
             </svg>
           ) : (
             <>
@@ -67,7 +66,7 @@ export default function Nav() {
       {/* Dropdown */}
       <div style={{
         position: "fixed", top: "68px", right: "28px", zIndex: 50,
-        background: "#fff", borderRadius: "16px",
+        background: WHITE, borderRadius: "16px",
         boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
         padding: "8px", minWidth: "180px",
         opacity: open ? 1 : 0,
@@ -78,11 +77,11 @@ export default function Nav() {
         {NAV_LINKS.map(({ label, href }) => (
           <a key={href} href={href} style={{
             display: "block", padding: "11px 16px", borderRadius: "10px",
-            fontSize: "14px", fontWeight: 600, color: DARK,
+            fontSize: "14px", fontWeight: W_MEDIUM, color: DARK,
             textDecoration: "none", fontFamily: SYS,
             transition: "background 0.15s",
           }}
-          onMouseEnter={e => (e.currentTarget.style.background = "#f5f4f0")}
+          onMouseEnter={e => (e.currentTarget.style.background = SHELL)}
           onMouseLeave={e => (e.currentTarget.style.background = "transparent")}
           >
             {label}

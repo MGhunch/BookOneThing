@@ -7,7 +7,7 @@ export const metadata: Metadata = {
   description: "The easy way to share anything, with anyone.",
 };
 
-const SYS = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+import { BACKGROUND, SYS } from "@/lib/constants";
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +16,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
         <style>{`
           *, *::before, *::after { box-sizing: border-box; }
-          body { margin: 0; padding: 0; background: #e8e5e0; font-family: ${SYS}; }
+          body { margin: 0; padding: 0; background: ${BACKGROUND}; font-family: ${SYS}; }
           *::-webkit-scrollbar { display: none; }
         `}</style>
       </head>

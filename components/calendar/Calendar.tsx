@@ -49,13 +49,7 @@ function bookingErrorToToast(result: Extract<BookingResult, { error: string }>):
 }
 
 // ── Constants ──────────────────────────────────────────────────────────────────
-const ORANGE        = "#e8722a";
-const ORANGE_BOOKED = "#f2c9a8";
-const ORANGE_AVAIL  = "#fdf4ee";
-const ORANGE_SOFT   = "#fbe0cc";
-const ORANGE_READY  = "#f0924a";
-const DARK   = "#1a1a1a";
-const SYS = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+import { ORANGE_DARK, ORANGE, ORANGE_BOOKED, ORANGE_MID, ORANGE_LIGHT, GREY, GREY_LIGHT, GREY_HINT, DARK, WHITE, BORDER, SYS, SIZE_XS, SIZE_SM, SIZE_BASE, W_REGULAR, W_MEDIUM, W_BOLD } from "@/lib/constants";
 
 const SLOT_H   = 36;
 const HAIRLINE = 1;
@@ -144,9 +138,9 @@ function TickRow({ label }: { label: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
       <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <Check size={9} strokeWidth={3} color="#fff" />
+        <Check size={9} strokeWidth={3} color=WHITE />
       </div>
-      <span style={{ fontSize: "14px", fontWeight: 600, color: "#1a1a1a", fontFamily: SYS }}>{label}</span>
+      <span style={{ fontSize: "14px", fontWeight: W_MEDIUM, color: DARK, fontFamily: SYS }}>{label}</span>
     </div>
   );
 }
@@ -157,8 +151,8 @@ function Toast({ message, visible }: { message: string; visible: boolean }) {
       position: "fixed", bottom: "80px", left: "50%",
       transform: `translateX(-50%) translateY(${visible ? 0 : 8}px)`,
       opacity: visible ? 1 : 0, transition: "all 0.2s ease",
-      background: "rgba(80,74,68,0.82)", color: "#fff",
-      fontSize: "13px", fontWeight: 600, fontFamily: SYS,
+      background: "rgba(80,74,68,0.82)", color: WHITE,
+      fontSize: SIZE_SM, fontWeight: W_MEDIUM, fontFamily: SYS,
       padding: "10px 20px", borderRadius: "24px",
       pointerEvents: "none", zIndex: 300, whiteSpace: "nowrap",
     }}>
@@ -366,20 +360,20 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
   };
 
   const slotBg = (s: string) => {
-    if (!inRange(s)) return ORANGE_AVAIL;
+    if (!inRange(s)) return ORANGE_LIGHT;
     return ORANGE;
   };
 
   const startLabel = (slot: string) => {
     if (slot !== start) return null;
     if (phase === S_PICKING || phase === S_SEEN)
-      return <span style={{ fontSize: "11px", fontWeight: 600, color: ORANGE, fontFamily: SYS }}>From {fmtSlot(start)}</span>;
+      return <span style={{ fontSize: "11px", fontWeight: W_MEDIUM, color: ORANGE, fontFamily: SYS }}>From {fmtSlot(start)}</span>;
     if (phase === S_READY) {
       const rangeStr = end && end !== start ? `${fmtSlot(start)} – ${fmtEndTime(end)}` : `${fmtSlot(start)} – ${fmtEndTime(start)}`;
       return (
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", fontFamily: SYS }}>
-          <span style={{ fontSize: "12px", fontWeight: 600, color: "#fff" }}>{rangeStr}</span>
-          <span style={{ fontSize: "12px", fontWeight: 600, color: ORANGE, background: "#fff", borderRadius: "20px", padding: "3px 10px", flexShrink: 0 }}>Book it</span>
+          <span style={{ fontSize: "12px", fontWeight: W_MEDIUM, color: WHITE }}>{rangeStr}</span>
+          <span style={{ fontSize: "12px", fontWeight: W_MEDIUM, color: ORANGE, background: WHITE, borderRadius: "20px", padding: "3px 10px", flexShrink: 0 }}>Book it</span>
         </div>
       );
     }
@@ -390,7 +384,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
     if (!end || slot !== end || slot === start) return null;
     const untilStr = fmtEndTime(end);
     if (phase === S_SEEN)
-      return <span style={{ fontSize: "11px", fontWeight: 500, color: "rgba(232,114,42,0.8)", fontFamily: SYS }}>Until {untilStr}</span>;
+      return <span style={{ fontSize: "11px", fontWeight: W_MEDIUM, color: "rgba(232,114,42,0.8)", fontFamily: SYS }}>Until {untilStr}</span>;
     if (phase === S_READY)
       return null;
     return null;
@@ -468,7 +462,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
       <div style={{
         height: "calc(100dvh - 72px)",
         minHeight: "520px",
-        background: "#fff",
+        background: WHITE,
         borderRadius: "24px",
         boxShadow: "0 8px 48px rgba(0,0,0,0.09)",
         display: "flex",
@@ -487,14 +481,14 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
               background: ORANGE,
               display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             }}>
-              <ThingIcon size={17} strokeWidth={1.75} color="#fff" />
+              <ThingIcon size={17} strokeWidth={1.75} color=WHITE />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: "19px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", overflowWrap: "break-word", wordBreak: "break-word" }}>
+              <div style={{ fontSize: "19px", fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.4px", overflowWrap: "break-word", wordBreak: "break-word" }}>
                 {thing.name}
               </div>
               {orgName && (
-                <div style={{ fontSize: "10px", fontWeight: 700, letterSpacing: "1px", textTransform: "uppercase", color: "#bbb", marginTop: "2px" }}>
+                <div style={{ fontSize: SIZE_XS, fontWeight: W_BOLD, letterSpacing: "1px", textTransform: "uppercase", color: GREY_LIGHT, marginTop: "2px" }}>
                   {orgName}
                 </div>
               )}
@@ -503,7 +497,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
             {/* Lock / Tick */}
             <button
               onClick={() => { if (!bookerSession) setShowGate(true); }}
-              style={{ width: "32px", height: "32px", borderRadius: "50%", background: "#fdf4ee", border: "none", cursor: bookerSession ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+              style={{ width: "32px", height: "32px", borderRadius: "50%", background: ORANGE_LIGHT, border: "none", cursor: bookerSession ? "default" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
             >
               {bookerSession ? (
                 <Check size={14} strokeWidth={2.5} color={ORANGE} />
@@ -515,19 +509,19 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
           {/* Day strip */}
           <div style={{ display: "grid", gridTemplateColumns: "16px 1fr 1fr 1fr 1fr 1fr 1fr 1fr 16px", gap: "1px", alignItems: "center", marginBottom: "12px", marginTop: "16px" }}>
-            <button onClick={() => changeWeek(-1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", display: "flex", alignItems: "center", color: weekOffset <= 0 ? "#ddd" : "#aaa" }}><ChevronLeft size={26} strokeWidth={1.75} /></button>
+            <button onClick={() => changeWeek(-1)} style={{ background: "none", border: "none", cursor: "pointer", padding: "2px", display: "flex", alignItems: "center", color: weekOffset <= 0 ? GREY_HINT : "#aaa" }}><ChevronLeft size={26} strokeWidth={1.75} /></button>
             {DAYS.map((day, i) => {
               const d = dates[i];
               const sel = i === selectedDay;
               const isToday = d.toDateString() === new Date().toDateString();
               return (
                 <button key={day} onClick={() => changeDay(i)} style={{
-                  background: sel ? ORANGE_AVAIL : "transparent",
+                  background: sel ? ORANGE_LIGHT : "transparent",
                   border: "none", borderRadius: "8px", padding: "6px 1px",
                   cursor: "pointer", display: "flex", flexDirection: "column", alignItems: "center", gap: "3px",
                 }}>
-                  <span style={{ fontSize: "8px", fontWeight: 600, letterSpacing: "0.4px", textTransform: "uppercase", color: sel ? ORANGE : "#ccc" }}>{day}</span>
-                  <span style={{ fontSize: "14px", fontWeight: isToday ? 800 : sel ? 700 : 400, color: sel ? ORANGE : isToday ? "#1a1a1a" : "#bbb" }}>{d.getDate()}</span>
+                  <span style={{ fontSize: "8px", fontWeight: W_MEDIUM, letterSpacing: "0.4px", textTransform: "uppercase", color: sel ? ORANGE : "#ccc" }}>{day}</span>
+                  <span style={{ fontSize: "14px", fontWeight: isToday ? W_BOLD : sel ? W_BOLD : W_REGULAR, color: sel ? ORANGE : isToday ? DARK : GREY_LIGHT }}>{d.getDate()}</span>
                   {isToday && !sel && <div style={{ width: "3px", height: "3px", borderRadius: "50%", background: ORANGE }} />}
                 </button>
               );
@@ -536,8 +530,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
           </div>
 
           {/* Date row */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "12px", paddingBottom: "14px", borderTop: "1px solid #f4f0eb" }}>
-            <span style={{ fontSize: "15px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.3px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", paddingTop: "12px", paddingBottom: "14px", borderTop: `1px solid ${BORDER}` }}>
+            <span style={{ fontSize: SIZE_BASE, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.3px" }}>
               {dateLabel}
             </span>
             {phase !== S_IDLE && (
@@ -559,7 +553,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
               {ALL_HOURS.map((h) => (
                 <div key={h} style={{ position: "absolute", left: 0, top: `${slotY(h * 2)}px`, width: "36px", height: `${SLOT_H}px`, display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-                  <span style={{ fontSize: "10px", color: "#ccc", fontWeight: 500 }}>{fmtHour(h)}</span>
+                  <span style={{ fontSize: SIZE_XS, color: "#ccc", fontWeight: W_MEDIUM }}>{fmtHour(h)}</span>
                 </div>
               ))}
 
@@ -591,7 +585,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                   if (group.type === "booking") return (
                     <div key={gi} onClick={() => showToast("Sorry, not available.")}
                       style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE_BOOKED, borderRadius: "8px", display: "flex", alignItems: "flex-start", padding: "8px 11px", cursor: "pointer" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 600, color: "#c45a10" }}>{group.name}</span>
+                      <span style={{ fontSize: "11px", fontWeight: W_MEDIUM, color: ORANGE_DARK }}>{group.name}</span>
                     </div>
                   );
 
@@ -604,7 +598,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                       setCancelTarget({ id: group.id!, timeStr: `${fmtSlot(s)} – ${fmtEndTime(e)}` });
                     }}
                     style={{ position: "absolute", top, left: 0, right: 0, height, background: ORANGE, borderRadius: "8px", display: "flex", alignItems: "flex-start", justifyContent: "space-between", padding: "8px 11px", cursor: "pointer" }}>
-                      <span style={{ fontSize: "11px", fontWeight: 700, color: "#fff" }}>Your booking</span>
+                      <span style={{ fontSize: "11px", fontWeight: W_BOLD, color: WHITE }}>Your booking</span>
                       <Trash2 size={13} strokeWidth={2} color="rgba(255,255,255,0.6)" />
                     </div>
                   );
@@ -702,19 +696,19 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
           >
             {!confirmed ? (
               <>
-                <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "20px" }}>
+                <div style={{ fontSize: "22px", fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.4px", marginBottom: "20px" }}>
                   Book {thing.name}
                 </div>
 
                 {/* Time + date summary */}
-                <div style={{ background: ORANGE_AVAIL, borderRadius: "14px", padding: "16px 18px", display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
+                <div style={{ background: ORANGE_LIGHT, borderRadius: "14px", padding: "16px 18px", display: "flex", flexDirection: "column", gap: "10px", marginBottom: "20px" }}>
                   <TickRow label={timeStr} />
                   <TickRow label={dateLabel} />
                 </div>
 
                 {/* Booking identity — always known by this point (gate intercepts otherwise) */}
-                <div style={{ fontSize: "13px", color: "#bbb", marginBottom: "20px", fontFamily: SYS }}>
-                  Booking as <span style={{ color: "#1a1a1a", fontWeight: 600 }}>
+                <div style={{ fontSize: SIZE_SM, color: GREY_LIGHT, marginBottom: "20px", fontFamily: SYS }}>
+                  Booking as <span style={{ color: DARK, fontWeight: W_MEDIUM }}>
                     {bookerSession?.firstName ?? bookerName}
                   </span>
                 </div>
@@ -753,10 +747,10 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                     }}
                     style={{
                       flex: 1, padding: "14px", borderRadius: "12px", border: "none",
-                      background: submitting ? "#fbe0cc" : ORANGE,
+                      background: submitting ? ORANGE_MID : ORANGE,
                       cursor: submitting ? "default" : "pointer",
-                      fontSize: "14px", fontWeight: 600,
-                      color: submitting ? "#e0824a" : "#fff",
+                      fontSize: "14px", fontWeight: W_MEDIUM,
+                      color: submitting ? ORANGE : WHITE,
                       fontFamily: SYS, transition: "all 0.15s",
                     }}>
                     {submitting ? "Booking…" : "Confirm"}
@@ -769,22 +763,22 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                   ×
                 </button>
                 <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-                  <Check size={26} strokeWidth={2.5} color="#fff" />
+                  <Check size={26} strokeWidth={2.5} color=WHITE />
                 </div>
-                <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", marginBottom: "12px", letterSpacing: "-0.4px" }}>
+                <div style={{ fontSize: "22px", fontWeight: W_BOLD, color: DARK, marginBottom: "12px", letterSpacing: "-0.4px" }}>
                   All booked, {bookerSession?.firstName ?? bookerName}
                 </div>
-                <div style={{ fontSize: "14px", color: "#bbb", lineHeight: 1.6, marginBottom: "24px" }}>
+                <div style={{ fontSize: "14px", color: GREY_LIGHT, lineHeight: 1.6, marginBottom: "24px" }}>
                   Check your email for a calendar invite.
                 </div>
 
                 {/* Reminder opt-in — YES / NO */}
-                <div style={{ borderTop: "1px solid #ede9e3", paddingTop: "20px" }}>
+                <div style={{ borderTop: `1px solid ${BORDER}`, paddingTop: "20px" }}>
 
                   {/* Default — show YES / NO */}
                   {!reminderOptIn && !reminderSaved && (
                     <>
-                      <div style={{ fontSize: "14px", fontWeight: 600, color: "#1a1a1a", textAlign: "center", marginBottom: "14px", fontFamily: SYS }}>
+                      <div style={{ fontSize: "14px", fontWeight: W_MEDIUM, color: DARK, textAlign: "center", marginBottom: "14px", fontFamily: SYS }}>
                         Want a reminder?
                       </div>
                       <div style={{ display: "flex", gap: "10px" }}>
@@ -792,8 +786,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                           onClick={reset}
                           style={{
                             flex: 1, padding: "12px", borderRadius: "12px",
-                            border: "1.5px solid #ede9e3", background: "#fff",
-                            color: "#bbb", fontFamily: SYS, fontSize: "13px", fontWeight: 600,
+                            border: `1.5px solid ${BORDER}`, background: WHITE,
+                            color: GREY_LIGHT, fontFamily: SYS, fontSize: SIZE_SM, fontWeight: W_MEDIUM,
                             cursor: "pointer",
                           }}
                         >
@@ -803,8 +797,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                           onClick={() => setReminderOptIn(true)}
                           style={{
                             flex: 1, padding: "12px", borderRadius: "12px",
-                            border: `1.5px solid ${ORANGE}`, background: ORANGE_AVAIL,
-                            color: ORANGE, fontFamily: SYS, fontSize: "13px", fontWeight: 700,
+                            border: `1.5px solid ${ORANGE}`, background: ORANGE_LIGHT,
+                            color: ORANGE, fontFamily: SYS, fontSize: SIZE_SM, fontWeight: W_BOLD,
                             cursor: "pointer",
                           }}
                         >
@@ -825,9 +819,9 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                         onChange={e => setReminderNote(e.target.value)}
                         style={{
                           width: "100%", padding: "13px 16px", borderRadius: "12px",
-                          border: "1.5px solid #ede9e3", background: ORANGE_AVAIL,
-                          fontSize: "13px", fontWeight: 400, fontFamily: SYS,
-                          color: "#1a1a1a", outline: "none", boxSizing: "border-box" as const,
+                          border: `1.5px solid ${BORDER}`, background: ORANGE_LIGHT,
+                          fontSize: SIZE_SM, fontWeight: W_REGULAR, fontFamily: SYS,
+                          color: DARK, outline: "none", boxSizing: "border-box" as const,
                         }}
                       />
                       <button
@@ -838,8 +832,8 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                         }}
                         style={{
                           width: "100%", padding: "13px", borderRadius: "12px", border: "none",
-                          background: ORANGE, color: "#fff",
-                          fontFamily: SYS, fontSize: "13px", fontWeight: 700, cursor: "pointer",
+                          background: ORANGE, color: WHITE,
+                          fontFamily: SYS, fontSize: SIZE_SM, fontWeight: W_BOLD, cursor: "pointer",
                         }}
                       >
                         Save reminder
@@ -851,20 +845,20 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                   {reminderSaved && (
                     <div style={{ textAlign: "center", display: "flex", flexDirection: "column", alignItems: "center", gap: "8px", padding: "4px 0" }}>
                       <div style={{
-                        width: "36px", height: "36px", borderRadius: "50%", background: ORANGE_AVAIL,
+                        width: "36px", height: "36px", borderRadius: "50%", background: ORANGE_LIGHT,
                         display: "flex", alignItems: "center", justifyContent: "center",
                       }}>
                         <Check size={16} strokeWidth={2.5} color={ORANGE} />
                       </div>
-                      <div style={{ fontSize: "15px", fontWeight: 700, color: "#1a1a1a", fontFamily: SYS }}>
+                      <div style={{ fontSize: SIZE_BASE, fontWeight: W_BOLD, color: DARK, fontFamily: SYS }}>
                         Reminder set
                       </div>
                       {reminderNote && (
-                        <div style={{ fontSize: "13px", color: "#888", fontFamily: SYS }}>
+                        <div style={{ fontSize: SIZE_SM, color: GREY, fontFamily: SYS }}>
                           &ldquo;{reminderNote}&rdquo;
                         </div>
                       )}
-                      <div style={{ fontSize: "12px", color: "#bbb", fontFamily: SYS }}>
+                      <div style={{ fontSize: "12px", color: GREY_LIGHT, fontFamily: SYS }}>
                         We&rsquo;ll email you the morning before.
                       </div>
                     </div>
@@ -883,10 +877,10 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
             onMouseDown={(e) => e.stopPropagation()}
             onTouchEnd={(e) => e.stopPropagation()}
           >
-            <div style={{ fontSize: "22px", fontWeight: 700, color: "#1a1a1a", letterSpacing: "-0.4px", marginBottom: "6px" }}>
+            <div style={{ fontSize: "22px", fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.4px", marginBottom: "6px" }}>
               Cancel your booking?
             </div>
-            <div style={{ fontSize: "13px", color: "#bbb", marginBottom: "24px", fontFamily: SYS }}>
+            <div style={{ fontSize: SIZE_SM, color: GREY_LIGHT, marginBottom: "24px", fontFamily: SYS }}>
               {thing.name} · {cancelTarget.timeStr} · {dateLabel}
             </div>
             <div style={{ display: "flex", gap: "10px" }}>

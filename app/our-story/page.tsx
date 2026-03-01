@@ -1,7 +1,4 @@
-const ORANGE = "#e8722a";
-const DARK   = "#1a1a1a";
-const CARD   = "#ffffff";
-const SYS    = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+import { ORANGE, DARK, WHITE, SYS, W_BOLD, W_REGULAR } from "@/lib/constants";
 
 const PARAS = [
   { text: "Small team. Twelve people. One meeting room.",                                                                                                          bold: true  },
@@ -24,8 +21,8 @@ export default function OurStoryPage() {
 
       {/* Label */}
       <div style={{
-        fontSize: "10px",
-        fontWeight: 600,
+        fontSize: SIZE_XS,
+        fontWeight: W_MEDIUM,
         letterSpacing: "1.2px",
         textTransform: "uppercase",
         color: ORANGE,
@@ -37,7 +34,7 @@ export default function OurStoryPage() {
       {/* Headline */}
       <h1 style={{
         fontSize: "32px",
-        fontWeight: 800,
+        fontWeight: W_BOLD,
         letterSpacing: "-0.8px",
         lineHeight: 1.15,
         color: DARK,
@@ -48,7 +45,7 @@ export default function OurStoryPage() {
 
       {/* Story card */}
       <div style={{
-        background: CARD,
+        background: WHITE,
         borderRadius: "20px",
         padding: "32px",
         display: "flex",
@@ -57,8 +54,8 @@ export default function OurStoryPage() {
       }}>
         {PARAS.map((para, i) => (
           <p key={i} style={{
-            fontSize: "15px",
-            fontWeight: para.bold ? 700 : 400,
+            fontSize: SIZE_BASE,
+            fontWeight: para.bold ? W_BOLD : W_REGULAR,
             lineHeight: 1.75,
             color: para.bold ? DARK : "#555",
             margin: 0,
@@ -73,9 +70,9 @@ export default function OurStoryPage() {
         <a href="/setup" style={{
           display: "inline-block",
           background: ORANGE,
-          color: "#fff",
-          fontSize: "15px",
-          fontWeight: 600,
+          color: WHITE,
+          fontSize: SIZE_BASE,
+          fontWeight: W_MEDIUM,
           padding: "14px 32px",
           borderRadius: "14px",
           textDecoration: "none",

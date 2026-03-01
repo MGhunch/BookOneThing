@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 
-const ORANGE       = "#e8722a";
-const ORANGE_LIGHT = "#fdf4ee";
-const DARK         = "#1a1a1a";
-const GREY         = "#888";
-const BORDER       = "#ede9e3";
-const CARD         = "#ffffff";
-const SYS          = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+import { ORANGE, ORANGE_LIGHT, GREY, GREY_LIGHT, DARK, WHITE, BORDER, SYS, SIZE_XS, SIZE_SM, W_MEDIUM, W_BOLD } from "@/lib/constants";
 
 type FAQ = { q: string; a: string };
 type Section = { label: string; faqs: FAQ[] };
@@ -74,7 +68,7 @@ function PlusIcon({ open }: { open: boolean }) {
       transform: open ? "rotate(45deg)" : "rotate(0deg)",
     }}>
       <svg width="10" height="10" viewBox="0 0 10 10" fill="none"
-        stroke={open ? "#fff" : ORANGE} strokeWidth="2.5" strokeLinecap="round">
+        stroke={open ? WHITE : ORANGE} strokeWidth="2.5" strokeLinecap="round">
         <line x1="5" y1="1" x2="5" y2="9" />
         <line x1="1" y1="5" x2="9" y2="5" />
       </svg>
@@ -86,7 +80,7 @@ function FAQItem({ faq }: { faq: FAQ }) {
   const [open, setOpen] = useState(false);
   return (
     <div style={{
-      background: CARD,
+      background: WHITE,
       borderRadius: "14px",
       overflow: "hidden",
       boxShadow: open ? "0 4px 20px rgba(0,0,0,0.07)" : "none",
@@ -107,7 +101,7 @@ function FAQItem({ faq }: { faq: FAQ }) {
           textAlign: "left",
           fontFamily: SYS,
           fontSize: "14px",
-          fontWeight: 600,
+          fontWeight: W_MEDIUM,
           color: open ? ORANGE : DARK,
           lineHeight: 1.4,
           transition: "color 0.15s ease",
@@ -124,7 +118,7 @@ function FAQItem({ faq }: { faq: FAQ }) {
         padding: open ? "0 20px 18px" : "0 20px",
       }}>
         <p style={{
-          fontSize: "13px",
+          fontSize: SIZE_SM,
           lineHeight: 1.7,
           color: "#555",
           borderTop: `1px solid ${BORDER}`,
@@ -147,10 +141,10 @@ export default function FAQPage() {
       padding: "120px 24px 100px",
       fontFamily: SYS,
     }}>
-      <div style={{ fontSize: "10px", fontWeight: 600, letterSpacing: "1.2px", textTransform: "uppercase", color: ORANGE, marginBottom: "16px" }}>Headscratchers</div>
+      <div style={{ fontSize: SIZE_XS, fontWeight: W_MEDIUM, letterSpacing: "1.2px", textTransform: "uppercase", color: ORANGE, marginBottom: "16px" }}>Headscratchers</div>
       <h1 style={{
         fontSize: "32px",
-        fontWeight: 800,
+        fontWeight: W_BOLD,
         letterSpacing: "-0.8px",
         color: DARK,
         marginBottom: "8px",
@@ -167,8 +161,8 @@ export default function FAQPage() {
       {SECTIONS.map((section) => (
         <div key={section.label} style={{ marginBottom: "40px" }}>
           <div style={{
-            fontSize: "10px",
-            fontWeight: 600,
+            fontSize: SIZE_XS,
+            fontWeight: W_MEDIUM,
             letterSpacing: "1.2px",
             textTransform: "uppercase",
             color: ORANGE,
@@ -187,14 +181,14 @@ export default function FAQPage() {
       <div style={{
         textAlign: "center",
         paddingTop: "24px",
-        fontSize: "13px",
-        color: "#bbb",
+        fontSize: SIZE_SM,
+        color: GREY_LIGHT,
       }}>
         Still got questions?{" "}
         <a href="mailto:hello@bookonething.com" style={{
           color: ORANGE,
           textDecoration: "none",
-          fontWeight: 600,
+          fontWeight: W_MEDIUM,
         }}>
           Say hello.
         </a>

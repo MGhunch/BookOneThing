@@ -1,7 +1,4 @@
-const ORANGE = "#e8722a";
-const DARK   = "#1a1a1a";
-const CARD   = "#ffffff";
-const SYS    = "'Poppins', -apple-system, BlinkMacSystemFont, sans-serif";
+import { ORANGE, DARK, WHITE, SYS, SIZE_XS, SIZE_BASE, W_REGULAR, W_MEDIUM, W_BOLD } from "@/lib/constants";
 
 const RULES = [
   {
@@ -29,8 +26,8 @@ export default function HouseRulesPage() {
 
       {/* Label */}
       <div style={{
-        fontSize: "10px",
-        fontWeight: 600,
+        fontSize: SIZE_XS,
+        fontWeight: W_MEDIUM,
         letterSpacing: "1.2px",
         textTransform: "uppercase",
         color: ORANGE,
@@ -42,7 +39,7 @@ export default function HouseRulesPage() {
       {/* Headline */}
       <h1 style={{
         fontSize: "32px",
-        fontWeight: 800,
+        fontWeight: W_BOLD,
         letterSpacing: "-0.8px",
         lineHeight: 1.15,
         color: DARK,
@@ -56,7 +53,7 @@ export default function HouseRulesPage() {
         {RULES.map((rule, i) => (
           <div key={i} style={{
             display: "flex",
-            background: CARD,
+            background: WHITE,
             borderRadius: "20px",
             overflow: "hidden",
           }}>
@@ -66,7 +63,7 @@ export default function HouseRulesPage() {
             <div style={{ padding: "28px 32px" }}>
               <div style={{
                 fontSize: "17px",
-                fontWeight: 700,
+                fontWeight: W_BOLD,
                 color: DARK,
                 letterSpacing: "-0.3px",
                 marginBottom: "10px",
@@ -75,7 +72,7 @@ export default function HouseRulesPage() {
               </div>
               <p style={{
                 fontSize: "14px",
-                fontWeight: 400,
+                fontWeight: W_REGULAR,
                 lineHeight: 1.75,
                 color: "#555",
                 margin: 0,
@@ -92,9 +89,9 @@ export default function HouseRulesPage() {
         <a href="/setup" style={{
           display: "inline-block",
           background: ORANGE,
-          color: "#fff",
-          fontSize: "15px",
-          fontWeight: 600,
+          color: WHITE,
+          fontSize: SIZE_BASE,
+          fontWeight: W_MEDIUM,
           padding: "14px 32px",
           borderRadius: "14px",
           textDecoration: "none",

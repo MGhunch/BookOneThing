@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { WHITE, BACKGROUND } from "@/lib/constants";
 
 interface ModalShellProps {
   children: React.ReactNode;
@@ -59,7 +60,7 @@ export default function ModalShell({ children, onBackdropClick, bottomPad = 48 }
           onTouchEnd={e => e.stopPropagation()}
           style={{
             position: "relative",
-            background: "#fff",
+            background: WHITE,
             borderRadius: "24px 24px 0 0",
             padding: `32px 28px ${bottomPad}px`,
             width: "100%",
@@ -72,7 +73,7 @@ export default function ModalShell({ children, onBackdropClick, bottomPad = 48 }
             className="modal-handle"
             style={{
               width: "36px", height: "4px", borderRadius: "2px",
-              background: "#e8e5e0", margin: "0 auto 28px",
+              background: BACKGROUND, margin: "0 auto 28px",
             }}
           />
           {children}
