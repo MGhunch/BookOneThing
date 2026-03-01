@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState } from "react";
 import {
   Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check, Clock,
 } from "lucide-react";
-import { submitSetup, activatePendingThing } from "./actions";
+import { createThing } from "./actions";
 import BookerGate from "@/components/BookerGate";
 
 // ─── TIMEZONE HELPERS ─────────────────────────────────────────────────────────
@@ -261,9 +261,6 @@ export default function SetupPage() {
   const [nameFocus, setNameFocus]   = useState(false);
   const [notesFocus, setNotesFocus] = useState(false);
 
-  // Passed from onBeforeSend → used by onDone to activate the thing
-  const pendingRef = useRef<{ email: string; ownerSlug: string; thingSlug: string } | null>(null);
-
   const trimmed   = name.trim();
   const canFlip   = !!trimmed;
 
@@ -288,27 +285,18 @@ export default function SetupPage() {
     background: CARD, cursor: "pointer", outline: "none",
   };
 
-  // Called by BookerGate after email + name collected — runs submitSetup,
-  // which writes to pending_things and fires the codeword email.
-  const handleBeforeSend = async (email: string, firstName: string) => {
-    const result = await submitSetup({
+  // Called by BookerGate after codeword verified — create everything now.
+  const handleDone = async (gateResult?: { orgName?: string }) => {
+    const result = await createThing({
       name: trimmed, icon: icon || "car",
       avail, fromH, toH, weekends, notes,
-      maxLen, ahead, concurrent, buffer,
-      timezone, email, firstName,
+      maxLen, ahead, concurrent, buffer, timezone,
+      email:     typeof window !== "undefined" ? (localStorage.getItem("bookerEmail") ?? "") : "",
+      firstName: typeof window !== "undefined" ? (localStorage.getItem("bookerName")  ?? "") : "",
+      orgName:   gateResult?.orgName ?? "",
     });
-    if ("error" in result) return { error: result.error };
-    pendingRef.current = { email: email.trim().toLowerCase(), ownerSlug: result.ownerSlug, thingSlug: result.thingSlug };
-    return { ownerSlug: result.ownerSlug, thingSlug: result.thingSlug };
-  };
-
-  // Called by BookerGate after codeword verified — activates the thing.
-  const handleDone = async () => {
-    const p = pendingRef.current;
-    if (!p) return;
-    const result = await activatePendingThing(p.email, p.ownerSlug, p.thingSlug);
     if ("error" in result) {
-      console.error("Activation failed:", result.error);
+      console.error("createThing failed:", result.error);
       return;
     }
     setCalUrl(result.url);
@@ -340,7 +328,6 @@ export default function SetupPage() {
           thingName={trimmed}
           isOwner={true}
           context="setup"
-          onBeforeSend={handleBeforeSend}
           onDone={handleDone}
           onClose={() => setShowGate(false)}
         />

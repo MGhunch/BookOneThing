@@ -54,12 +54,6 @@ export interface BookerGateProps {
   onClose?:  () => void;
   /** Called after successful auth. orgName provided when isOwner = true */
   onDone?:   (result?: { orgName?: string }) => void;
-  /**
-   * Setup flow only. Called after email + name collected, before codeword screen.
-   * Runs submitSetup (writes pending_things, sends codeword). BookerGate skips
-   * its own sendCodeword call and proceeds straight to org/codeword screen.
-   */
-  onBeforeSend?: (email: string, firstName: string) => Promise<{ ownerSlug: string; thingSlug: string } | { error: string }>;
 }
 
 type Screen   = "email" | "org" | "code";
@@ -71,7 +65,6 @@ export default function BookerGate({
   context = "booker",
   onClose,
   onDone,
-  onBeforeSend,
 }: BookerGateProps) {
   const router = useRouter();
 
@@ -164,24 +157,16 @@ export default function BookerGate({
     setLoading(true);
     setError(null);
 
-    if (onBeforeSend) {
-      // Setup flow — submitSetup writes pending_things and fires the codeword itself
-      const result = await onBeforeSend(email.trim(), firstName.trim());
-      setLoading(false);
-      if ("error" in result) { setError(result.error); return; }
-    } else {
-      const base = { email: email.trim(), firstName: firstName.trim() };
-      const result =
-        context === "booker"
-          ? await sendCodeword({ context: "booker", ...base, thingId: thingId!, thingName: thingName!, ownerSlug: ownerSlug!, thingSlug: thingSlug! })
-        : context === "setup"
-          ? await sendCodeword({ context: "setup",  ...base, ownerSlug: ownerSlug!, thingSlug: thingSlug! })
-          : await sendCodeword({ context: "manage", ...base });
+    const base = { email: email.trim(), firstName: firstName.trim() };
+    const result =
+      context === "booker"
+        ? await sendCodeword({ context: "booker", ...base, thingId: thingId!, thingName: thingName!, ownerSlug: ownerSlug!, thingSlug: thingSlug! })
+      : context === "setup"
+        ? await sendCodeword({ context: "setup",  ...base, ownerSlug: "", thingSlug: "" })
+      : await sendCodeword({ context: "manage", ...base });
 
-      setLoading(false);
-      if ("error" in result) { setError(result.error); return; }
-    }
-
+    setLoading(false);
+    if ("error" in result) { setError(result.error); return; }
     setScreen(isOwner ? "org" : "code");
   }
 

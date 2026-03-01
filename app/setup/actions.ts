@@ -2,7 +2,6 @@
 
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
-import { sendCodeword } from "@/app/codeword-actions";
 import { sendOwnerWelcome } from "@/lib/email";
 
 function adminClient() {
@@ -61,7 +60,6 @@ async function getOrCreateOwnerSlug(
   email:       string,
   emailPrefix: string
 ): Promise<string> {
-  // Reuse slug if this email already has a profile
   const { data: existing } = await supabase
     .from("profiles")
     .select("slug")
@@ -69,18 +67,6 @@ async function getOrCreateOwnerSlug(
     .single();
   if (existing?.slug) return existing.slug;
 
-  // Also check pending_things in case they are mid-setup (no profile yet)
-  const { data: pending } = await supabase
-    .from("pending_things")
-    .select("owner_slug")
-    .eq("email", email)
-    .not("owner_slug", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
-  if (pending?.owner_slug) return pending.owner_slug;
-
-  // Generate a fresh unique slug
   const base = slugify(emailPrefix);
   while (true) {
     const slug = `${base}-${randomCode()}`;
@@ -90,18 +76,17 @@ async function getOrCreateOwnerSlug(
   }
 }
 
-async function uniquePendingThingSlug(
-  supabase:   ReturnType<typeof adminClient>,
-  ownerSlug:  string,
-  base:       string
+async function uniqueThingSlug(
+  supabase:  ReturnType<typeof adminClient>,
+  ownerId:   string,
+  base:      string
 ): Promise<string> {
   let slug = base;
   let i    = 2;
   while (true) {
     const { data } = await supabase
-      .from("pending_things")
-      .select("id")
-      .eq("owner_slug", ownerSlug)
+      .from("things").select("id")
+      .eq("owner_id", ownerId)
       .eq("slug", slug)
       .single();
     if (!data) return slug;
@@ -109,12 +94,12 @@ async function uniquePendingThingSlug(
   }
 }
 
-// ─── SUBMIT SETUP ─────────────────────────────────────────────────────────────
-// Writes to pending_things and fires a codeword email.
-// The thing is NOT live yet — no auth user or profile created.
-// activatePendingThing() does that once the codeword is verified.
+// ─── CREATE THING ─────────────────────────────────────────────────────────────
+// Called after codeword is verified. Inbox is proven — create everything now.
+// No pending state. No two-step. Just: verified → live.
 
-export type SetupFormData = {
+export type CreateThingData = {
+  // Form data
   name:       string;
   icon:       string;
   avail:      string;
@@ -127,191 +112,91 @@ export type SetupFormData = {
   ahead:      string;
   concurrent: string;
   buffer:     string;
+  // Identity — from BookerGate
   email:      string;
   firstName:  string;
+  orgName:    string;
 };
 
-export type SetupResult =
-  | { ok: true; ownerSlug: string; thingSlug: string }
+export type CreateThingResult =
+  | { ok: true; url: string }
   | { error: string };
 
-export async function submitSetup(data: SetupFormData): Promise<SetupResult> {
-  const supabase   = adminClient();
+export async function createThing(data: CreateThingData): Promise<CreateThingResult> {
+  const supabase    = adminClient();
   const { start, end } = availTimes(data.avail, data.fromH, data.toH);
   const cleanEmail  = data.email.trim().toLowerCase();
   const firstName   = data.firstName.trim();
   const emailPrefix = cleanEmail.split("@")[0];
 
-  // Generate slugs upfront — reuse owner slug if they already exist
-  const ownerSlug = await getOrCreateOwnerSlug(supabase, cleanEmail, emailPrefix);
-  const thingSlug = await uniquePendingThingSlug(supabase, ownerSlug, slugify(data.name));
-
-  // Write to pending_things — not live yet, no owner identity bound
-  const { error: insertErr } = await supabase
-    .from("pending_things")
-    .insert({
-      email:           cleanEmail,
-      first_name:      firstName,
-      owner_slug:      ownerSlug,
-      name:            data.name.trim(),
-      slug:            thingSlug,
-      icon:            data.icon || "car",
-      avail_start:     start,
-      avail_end:       end,
-      avail_weekends:  data.weekends,
-      timezone:        data.timezone || "UTC",
-      max_length_mins: maxLengthMins(data.maxLen),
-      book_ahead_days: bookAheadDays(data.ahead),
-      max_concurrent:  maxConcurrent(data.concurrent),
-      buffer_mins:     bufferMins(data.buffer),
-      instructions:    data.notes.trim() || null,
-    });
-
-  if (insertErr) {
-    console.error("pending_things insert failed:", insertErr);
-    return { error: "Couldn't save your thing. Please try again." };
-  }
-
-  // Send codeword to prove inbox ownership
-  const codeResult = await sendCodeword({
-    context:   "setup",
-    email:     cleanEmail,
-    firstName,
-    ownerSlug,
-    thingSlug,
-  });
-
-  if ("error" in codeResult) {
-    // Clean up the pending row so they can try again cleanly
-    await supabase.from("pending_things")
-      .delete()
-      .eq("email", cleanEmail)
-      .eq("owner_slug", ownerSlug)
-      .eq("slug", thingSlug);
-    return { error: codeResult.error };
-  }
-
-  return { ok: true, ownerSlug, thingSlug };
-}
-
-// ─── ACTIVATE PENDING THING ───────────────────────────────────────────────────
-// Called after codeword is entered. Promotes pending_things → things.
-// Creates auth user + profile, sets owner session cookie, sends welcome email.
-
-export type ActivateResult =
-  | { ok: true; url: string }
-  | { error: string };
-
-export async function activatePendingThing(
-  email:     string,
-  ownerSlug: string,
-  thingSlug: string,
-): Promise<ActivateResult> {
-  const supabase   = adminClient();
-  const cleanEmail = email.trim().toLowerCase();
-
-  // 1. Fetch the pending thing (must not be expired)
-  const { data: pending, error: pendingErr } = await supabase
-    .from("pending_things")
-    .select("*")
-    .eq("email", cleanEmail)
-    .eq("owner_slug", ownerSlug)
-    .eq("slug", thingSlug)
-    .gt("expires_at", new Date().toISOString())
-    .single();
-
-  if (pendingErr || !pending) {
-    return { error: "Your setup link has expired. Please start over." };
-  }
-
-  // 2. Get or create auth user — inbox is proven by codeword, so confirm immediately
+  // 1. Get or create auth user
   let userId: string | null = null;
 
   const { data: created } = await supabase.auth.admin.createUser({
     email:         cleanEmail,
     email_confirm: true,
-    user_metadata: { first_name: pending.first_name },
+    user_metadata: { first_name: firstName },
   });
 
   if (created?.user) {
     userId = created.user.id;
   } else {
-    // Already exists — find via profiles then Auth directly
     const { data: existingProfile } = await supabase
-      .from("profiles")
-      .select("id")
-      .eq("email", cleanEmail)
-      .single();
+      .from("profiles").select("id").eq("email", cleanEmail).single();
 
     if (existingProfile) {
       userId = existingProfile.id;
     } else {
       const { data: { users } } = await supabase.auth.admin.listUsers();
-      const found = users.find((u) => u.email === cleanEmail);
+      const found = users.find(u => u.email === cleanEmail);
       if (found) userId = found.id;
     }
   }
 
-  if (!userId) {
-    return { error: "Couldn't create your account. Please try again." };
-  }
+  if (!userId) return { error: "Couldn't create your account. Please try again." };
 
-  // 3. Upsert profile
+  // 2. Upsert profile
+  const ownerSlug = await getOrCreateOwnerSlug(supabase, cleanEmail, emailPrefix);
+
   await supabase.from("profiles").upsert({
     id:         userId,
     email:      cleanEmail,
-    first_name: pending.first_name,
+    first_name: firstName,
     slug:       ownerSlug,
+    org_name:   data.orgName.trim() || null,
   }, { onConflict: "id" });
 
-  // 4. Ensure slug is unique in things (guard against duplicate attempts)
-  let finalThingSlug = thingSlug;
-  {
-    let i = 2;
-    while (true) {
-      const { data } = await supabase
-        .from("things").select("id")
-        .eq("owner_id", userId)
-        .eq("slug", finalThingSlug)
-        .single();
-      if (!data) break;
-      finalThingSlug = `${thingSlug}-${i++}`;
-    }
-  }
+  // 3. Insert thing — live immediately
+  const thingSlug = await uniqueThingSlug(supabase, userId, slugify(data.name));
 
-  // 5. Insert into things — now it is live
-  const { error: thingErr } = await supabase
-    .from("things")
-    .insert({
-      owner_id:        userId,
-      name:            pending.name,
-      slug:            finalThingSlug,
-      icon:            pending.icon,
-      avail_start:     pending.avail_start,
-      avail_end:       pending.avail_end,
-      avail_weekends:  pending.avail_weekends,
-      timezone:        pending.timezone,
-      max_length_mins: pending.max_length_mins,
-      book_ahead_days: pending.book_ahead_days,
-      max_concurrent:  pending.max_concurrent,
-      buffer_mins:     pending.buffer_mins,
-      instructions:    pending.instructions,
-      is_active:       true,
-    });
+  const { error: thingErr } = await supabase.from("things").insert({
+    owner_id:        userId,
+    name:            data.name.trim(),
+    slug:            thingSlug,
+    icon:            data.icon || "car",
+    avail_start:     start,
+    avail_end:       end,
+    avail_weekends:  data.weekends,
+    timezone:        data.timezone || "UTC",
+    max_length_mins: maxLengthMins(data.maxLen),
+    book_ahead_days: bookAheadDays(data.ahead),
+    max_concurrent:  maxConcurrent(data.concurrent),
+    buffer_mins:     bufferMins(data.buffer),
+    instructions:    data.notes.trim() || null,
+    is_active:       true,
+  });
 
   if (thingErr) {
     console.error("things insert failed:", thingErr);
-    return { error: "Couldn't publish your thing. Please try again." };
+    return { error: "Couldn't create your thing. Please try again." };
   }
 
-  // 6. Set owner session cookie (org-scoped, same mechanism as booker sessions)
+  // 4. Set owner session cookie
   const cookieName = `bot_session_${ownerSlug}`;
   try {
     const cookieStore = await cookies();
     cookieStore.set(cookieName, JSON.stringify({
-      email: cleanEmail,
-      firstName: pending.first_name,
-      orgSlug: ownerSlug,
+      email: cleanEmail, firstName, orgSlug: ownerSlug,
     }), {
       httpOnly: true,
       sameSite: "lax",
@@ -320,29 +205,25 @@ export async function activatePendingThing(
       path:     "/",
     });
   } catch (err) {
-    // Non-fatal — they can re-auth via the padlock
     console.error("Owner cookie set failed (non-fatal):", err);
   }
 
-  // 7. Clean up pending row
-  await supabase.from("pending_things").delete().eq("id", pending.id);
-
-  // 8. Send welcome email with the share URL
+  // 5. Send welcome email
   const siteUrl  = process.env.NEXT_PUBLIC_SITE_URL ?? "https://bookonething.com";
-  const shareUrl = `${siteUrl}/${ownerSlug}/${finalThingSlug}`;
+  const shareUrl = `${siteUrl}/${ownerSlug}/${thingSlug}`;
 
   try {
     await sendOwnerWelcome({
-      firstName:     pending.first_name,
+      firstName,
       toEmail:       cleanEmail,
-      thingName:     pending.name,
+      thingName:     data.name.trim(),
       shareUrl,
-      availStart:    pending.avail_start,
-      availEnd:      pending.avail_end,
-      availWeekends: pending.avail_weekends,
-      maxLengthMins: pending.max_length_mins,
-      bookAheadDays: pending.book_ahead_days,
-      maxConcurrent: pending.max_concurrent,
+      availStart:    start,
+      availEnd:      end,
+      availWeekends: data.weekends,
+      maxLengthMins: maxLengthMins(data.maxLen),
+      bookAheadDays: bookAheadDays(data.ahead),
+      maxConcurrent: maxConcurrent(data.concurrent),
     });
   } catch (err) {
     console.error("Owner welcome email failed (non-fatal):", err);
