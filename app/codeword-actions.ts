@@ -233,3 +233,25 @@ async function uniqueThingSlug(
     slug = `${base}-${i++}`;
   }
 }
+
+// ─── MANAGE PAGE — SERVER-SIDE SHARER OPS (Bug 3 fix) ────────────────────────
+// The manage page was reading booker_sessions with the anon client.
+// booker_sessions has no RLS policies — anon reads are blocked in production.
+// These server actions use the service-role client instead.
+
+export type Sharer = { id: string; first_name: string; email: string };
+
+export async function loadSharers(thingId: string): Promise<Sharer[]> {
+  const supabase = adminClient();
+  const { data } = await supabase
+    .from("booker_sessions")
+    .select("id, first_name, email")
+    .eq("thing_id", thingId)
+    .order("authenticated_at", { ascending: true });
+  return data ?? [];
+}
+
+export async function revokeSharer(id: string): Promise<void> {
+  const supabase = adminClient();
+  await supabase.from("booker_sessions").delete().eq("id", id);
+}

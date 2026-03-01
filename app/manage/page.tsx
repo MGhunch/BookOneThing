@@ -256,24 +256,21 @@ function ThingCard({ thing, ownerSlug }: { thing: Thing; ownerSlug: string }) {
   const availLabel = `${fmtTime(thing.avail_start)} – ${fmtTime(thing.avail_end)}${thing.avail_weekends ? ", 7 days" : ", weekdays"}`;
 
   // Load sharers on first open — per thing, so each card shows its own bookers
+  // Uses a server action (service-role) because booker_sessions has no anon RLS policy.
   const handleOpen = async () => {
     const next = !open;
     setOpen(next);
     if (next && !sharersLoaded) {
-      const supabase = getSupabase();
-      const { data } = await supabase
-        .from("booker_sessions")
-        .select("id, first_name, email")
-        .eq("thing_id", thing.id)
-        .order("authenticated_at", { ascending: true });
-      setSharers(data ?? []);
+      const { loadSharers } = await import("@/app/codeword-actions");
+      const data = await loadSharers(thing.id);
+      setSharers(data);
       setSharersLoaded(true);
     }
   };
 
   const revoke = async (id: string) => {
-    const supabase = getSupabase();
-    await supabase.from("booker_sessions").delete().eq("id", id);
+    const { revokeSharer } = await import("@/app/codeword-actions");
+    await revokeSharer(id);
     setSharers(s => s.filter(x => x.id !== id));
   };
 

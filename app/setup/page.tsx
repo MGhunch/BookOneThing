@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check, Clock,
 } from "lucide-react";
-import { submitSetup } from "./actions";
+import { submitSetup, activatePendingThing } from "./actions";
+import BookerGate from "@/components/BookerGate";
 
 // ─── TIMEZONE HELPERS ─────────────────────────────────────────────────────────
 
@@ -135,146 +136,42 @@ function OrangeBlock({ n }: { n: number }) {
 
 // ─── MODALS ──────────────────────────────────────────────────────────────────
 
-function DetailsModal({ name, onSubmit, loading, error }: {
-  name: string;
-  onSubmit: (email: string, firstName: string) => void;
-  loading: boolean;
-  error: string | null;
-}) {
-  const [email, setEmail]           = useState("");
-  const [firstName, setFirstName]   = useState("");
-  const [emailFocus, setEmailFocus] = useState(false);
-  const [nameFocus, setNameFocus]   = useState(false);
-  const [attempts, setAttempts]     = useState(0);
-
-  const canSubmit  = email.trim().includes("@") && !!firstName.trim() && !loading;
-  const hasError   = !!error;
-  const isWobbly   = hasError && attempts >= 3;
-
-  const handleClick = () => {
-    if (!canSubmit && !hasError) return;
-    if (hasError) {
-      setAttempts(a => a + 1);
-      onSubmit(email, firstName);
-      return;
-    }
-    setAttempts(a => a + 1);
-    onSubmit(email, firstName);
+// DoneModal — thing is live, show the share link
+function DoneModal({ name, calUrl }: { name: string; calUrl: string }) {
+  const [copied, setCopied] = useState(false);
+  const handleCopy = async () => {
+    try { await navigator.clipboard.writeText(calUrl); } catch {}
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   };
-
-  const buttonActive = canSubmit || hasError;
-
-  return (
-    <ModalShell>
-      {/* X — only surfaces when truly stuck */}
-      {isWobbly && (
-        <button
-          onClick={() => { window.location.href = "/"; }}
-          style={{
-            position: "absolute", top: "20px", right: "20px",
-            background: "none", border: "none", cursor: "pointer",
-            padding: "4px", lineHeight: 1,
-          }}
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="#bbb" strokeWidth="2.5" strokeLinecap="round">
-            <line x1="1" y1="1" x2="13" y2="13"/><line x1="13" y1="1" x2="1" y2="13"/>
-          </svg>
-        </button>
-      )}
-
-      <div style={{ marginBottom: "28px" }}>
-        <div style={{ fontSize: "22px", fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, marginBottom: "8px" }}>
-          One more thing
-        </div>
-        <div style={{ fontSize: "14px", color: GREY, fontFamily: SYS, lineHeight: 1.6 }}>
-          We&rsquo;re nearly done, we just don&rsquo;t know you.
-        </div>
-      </div>
-
-      <div style={{ display: "flex", flexDirection: "column", gap: "16px", marginBottom: "24px" }}>
-        <div>
-          <input
-            type="email" value={email}
-            onChange={e => setEmail(e.target.value)}
-            onFocus={() => setEmailFocus(true)}
-            onBlur={() => setEmailFocus(false)}
-            placeholder="What's your email?"
-            autoFocus
-            style={{
-              width: "100%", padding: "13px 16px", borderRadius: "12px",
-              border: `1.5px solid ${emailFocus || email ? ORANGE : BORDER}`,
-              background: email ? ORANGE_LIGHT : "#f9f8f6",
-              fontSize: "15px", fontWeight: 500, fontFamily: SYS, color: DARK,
-              outline: "none", transition: "all 0.15s", boxSizing: "border-box" as const,
-            }}
-          />
-          <div style={{ fontSize: "12px", color: GREY_LIGHT, marginTop: "5px", fontFamily: SYS }}>So we can keep you in the loop.</div>
-        </div>
-
-        <div>
-          <input
-            type="text" value={firstName}
-            onChange={e => setFirstName(e.target.value)}
-            onFocus={() => setNameFocus(true)}
-            onBlur={() => setNameFocus(false)}
-            placeholder="What's your first name?"
-            style={{
-              width: "100%", padding: "13px 16px", borderRadius: "12px",
-              border: `1.5px solid ${nameFocus || firstName ? ORANGE : BORDER}`,
-              background: firstName ? ORANGE_LIGHT : "#f9f8f6",
-              fontSize: "15px", fontWeight: 500, fontFamily: SYS, color: DARK,
-              outline: "none", transition: "all 0.15s", boxSizing: "border-box" as const,
-            }}
-          />
-          <div style={{ fontSize: "12px", color: GREY_LIGHT, marginTop: "5px", fontFamily: SYS }}>So we know who&rsquo;s who on the calendar.</div>
-        </div>
-      </div>
-
-      {hasError && (
-        <div style={{ fontSize: "13px", color: "#c0392b", marginBottom: "16px", fontFamily: SYS }}>
-          {isWobbly
-            ? "Something's gone wobbly. Hit the X and try later."
-            : error}
-        </div>
-      )}
-
-      <button
-        onClick={handleClick}
-        disabled={!buttonActive}
-        style={{
-          width: "100%", padding: "16px", borderRadius: "13px", border: "none",
-          background: buttonActive ? ORANGE : "#fbe0cc",
-          color: buttonActive ? "#fff" : "#e0824a",
-          fontSize: "15px", fontWeight: 700, fontFamily: SYS,
-          cursor: buttonActive ? "pointer" : "default",
-          letterSpacing: "-0.3px", transition: "all 0.2s",
-        }}
-      >
-        {loading ? "Setting up your thing…" : hasError ? "Try again" : "Make my thing"}
-      </button>
-    </ModalShell>
-  );
-}
-
-function SentModal({ name, onDiveIn }: { name: string; onDiveIn: () => void }) {
   return (
     <ModalShell>
       <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
         <Check size={24} strokeWidth={2.5} color="#fff" />
       </div>
-      <div style={{ fontSize: "26px", fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.2, marginBottom: "10px" }}>
-        Check your email
+      <div style={{ fontSize: "26px", fontWeight: 800, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.2, marginBottom: "8px" }}>
+        {name} is live
       </div>
-      <div style={{ fontSize: "15px", color: GREY, fontFamily: SYS, lineHeight: 1.6, marginBottom: "28px" }}>
-        We&rsquo;ve sent your link to &ldquo;{name}&rdquo;. Keep that email — it&rsquo;s how you get back to your calendar.
+      <div style={{ fontSize: "14px", color: GREY, fontFamily: SYS, lineHeight: 1.6, marginBottom: "24px" }}>
+        Share the link below. Anyone with it can book.
+      </div>
+      <div style={{ background: ORANGE_LIGHT, borderRadius: "12px", padding: "14px 16px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
+        <div style={{ flex: 1, fontSize: "13px", fontWeight: 600, color: DARK, fontFamily: SYS, wordBreak: "break-all" as const }}>{calUrl}</div>
+        <button
+          onClick={handleCopy}
+          style={{
+            background: copied ? "#1a9c5b" : ORANGE, border: "none", cursor: "pointer",
+            borderRadius: "8px", padding: "8px 12px", color: "#fff",
+            fontSize: "12px", fontWeight: 700, fontFamily: SYS, flexShrink: 0, transition: "background 0.2s",
+          }}
+        >{copied ? "Copied!" : "Copy"}</button>
       </div>
       <button
-        onClick={onDiveIn}
+        onClick={() => { window.location.href = calUrl; }}
         style={{
           width: "100%", padding: "16px", borderRadius: "13px", border: "none",
-          background: ORANGE, color: "#fff",
-          fontSize: "15px", fontWeight: 700, fontFamily: SYS,
-          cursor: "pointer", letterSpacing: "-0.3px",
+          background: DARK, color: "#fff", fontSize: "15px", fontWeight: 700,
+          fontFamily: SYS, cursor: "pointer", letterSpacing: "-0.3px",
         }}
       >
         Go to my calendar →
@@ -359,11 +256,13 @@ export default function SetupPage() {
   const [buffer, setBuffer]         = useState("0");
   const [side, setSide]             = useState<"front" | "back">("front");
   const [flipping, setFlipping]     = useState(false);
-  const [modal, setModal]           = useState<"none" | "details" | "sent" | "preview">("none");
-  const [loading, setLoading]       = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [showGate, setShowGate] = useState(false);
+  const [calUrl, setCalUrl]     = useState<string | null>(null);
   const [nameFocus, setNameFocus]   = useState(false);
   const [notesFocus, setNotesFocus] = useState(false);
+
+  // Passed from onBeforeSend → used by onDone to activate the thing
+  const pendingRef = useRef<{ email: string; ownerSlug: string; thingSlug: string } | null>(null);
 
   const trimmed   = name.trim();
   const canFlip   = !!trimmed;
@@ -389,28 +288,31 @@ export default function SetupPage() {
     background: CARD, cursor: "pointer", outline: "none",
   };
 
-  const [calUrl, setCalUrl] = useState<string | null>(null);
-  const handleSubmit = async (email: string, firstName: string) => {
-    setLoading(true);
-    setSubmitError(null);
-
+  // Called by BookerGate after email + name collected — runs submitSetup,
+  // which writes to pending_things and fires the codeword email.
+  const handleBeforeSend = async (email: string, firstName: string) => {
     const result = await submitSetup({
       name: trimmed, icon: icon || "car",
       avail, fromH, toH, weekends, notes,
       maxLen, ahead, concurrent, buffer,
-      timezone,
-      email, firstName,
+      timezone, email, firstName,
     });
+    if ("error" in result) return { error: result.error };
+    pendingRef.current = { email: email.trim().toLowerCase(), ownerSlug: result.ownerSlug, thingSlug: result.thingSlug };
+    return { ownerSlug: result.ownerSlug, thingSlug: result.thingSlug };
+  };
 
-    setLoading(false);
-
+  // Called by BookerGate after codeword verified — activates the thing.
+  const handleDone = async () => {
+    const p = pendingRef.current;
+    if (!p) return;
+    const result = await activatePendingThing(p.email, p.ownerSlug, p.thingSlug);
     if ("error" in result) {
-      setSubmitError(result.error);
+      console.error("Activation failed:", result.error);
       return;
     }
-
     setCalUrl(result.url);
-    setModal("sent");
+    setShowGate(false);
   };
 
   return (
@@ -423,8 +325,8 @@ export default function SetupPage() {
         .flip-in  { animation: flipIn  0.4s cubic-bezier(0.4,0,0.2,1) forwards; }
       `}</style>
 
-      {/* Calendar backdrop when modal is shown, or in preview mode */}
-      {modal !== "none" && (
+      {/* Calendar backdrop — visible during BookerGate and done state */}
+      {(showGate || !!calUrl) && (
         <div style={{ position: "fixed", inset: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: "90px 24px 60px" }}>
           <div style={{ width: "100%", maxWidth: "390px", height: "100%", maxHeight: "700px", background: "#fff", borderRadius: "24px", overflow: "hidden", boxShadow: "0 8px 48px rgba(0,0,0,0.09)" }}>
             <MockCalendar name={trimmed} iconKey={icon} />
@@ -432,21 +334,25 @@ export default function SetupPage() {
         </div>
       )}
 
-      {/* Modals */}
-      {modal === "details" && (
-        <DetailsModal
-          name={trimmed}
-          onSubmit={handleSubmit}
-          loading={loading}
-          error={submitError}
+      {/* BookerGate — email + name + org + codeword */}
+      {showGate && (
+        <BookerGate
+          thingName={trimmed}
+          isOwner={true}
+          context="setup"
+          onBeforeSend={handleBeforeSend}
+          onDone={handleDone}
+          onClose={() => setShowGate(false)}
         />
       )}
-      {modal === "sent" && <SentModal name={trimmed} onDiveIn={() => {
-        if (calUrl) window.location.href = calUrl;
-      }} />}
+
+      {/* Done — thing is live */}
+      {!showGate && calUrl && (
+        <DoneModal name={trimmed} calUrl={calUrl} />
+      )}
 
       {/* Form */}
-      {modal === "none" && (
+      {!showGate && !calUrl && (
         <div style={{ maxWidth: "640px", margin: "0 auto", padding: "100px 24px 140px" }}>
           <style>{`.setup-icon-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 8px; } @media (max-width: 600px) { .setup-icon-grid { grid-template-columns: repeat(4, 1fr); } .setup-card { padding: 28px 24px 28px !important; } }`}</style>
 
@@ -692,7 +598,7 @@ export default function SetupPage() {
                 </div>
 
                 <button
-                  onClick={() => setModal("details")}
+                  onClick={() => setShowGate(true)}
                   style={{
                     width: "100%", marginTop: "40px", padding: "18px",
                     borderRadius: "14px", border: "none",
@@ -701,7 +607,7 @@ export default function SetupPage() {
                     cursor: "pointer", letterSpacing: "-0.3px",
                   }}
                 >
-                  {`Set up "${trimmed}"`}
+                  Lock it in →
                 </button>
 
 
