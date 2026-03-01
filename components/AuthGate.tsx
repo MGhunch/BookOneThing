@@ -250,9 +250,9 @@ export default function AuthGate({
   // ── Shared styles ─────────────────────────────────────────────────────────
   const fieldStyle = {
     width: "100%", padding: "12px 14px", borderRadius: 11,
-    border: `1.5px solid ${BORDER}`, background: WHITE,
+    border: `2px solid ${BORDER}`, background: WHITE,
     fontSize: SIZE_SM, fontWeight: W_REGULAR, fontFamily: SYS,
-    color: GREY_LIGHT,
+    color: DARK,
     marginBottom: 10, boxSizing: "border-box" as const,
   };
 
@@ -325,17 +325,13 @@ export default function AuthGate({
             onChange={e => { setEmail(e.target.value); setError(null); }}
             onKeyDown={e => e.key === "Enter" && document.getElementById("gate-name")?.focus()}
             placeholder="What's your email?"
-            style={fieldStyle}
-          />
-          <input
-            id="gate-name"
-            className="gate-input"
+            style={{ ...fieldStyle, color: email ? DARK : GREY_LIGHT }}
             type="text" maxLength={20}
             value={firstName}
             onChange={e => { setFirstName(e.target.value.slice(0, 20)); setError(null); }}
             onKeyDown={e => e.key === "Enter" && handleSend()}
             placeholder="What's your first name?"
-            style={{ ...fieldStyle, marginBottom: 4 }}
+            style={{ ...fieldStyle, marginBottom: 4, color: firstName ? DARK : GREY_LIGHT }}
           />
 
           {error && (
