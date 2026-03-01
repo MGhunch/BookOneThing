@@ -4,7 +4,7 @@ import { useState, useRef } from "react";
 import {
   Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check, Clock,
 } from "lucide-react";
-import { submitSetup, activatePendingThing } from "./actions";
+import { createThing } from "./actions";
 import BookerGate from "@/components/BookerGate";
 
 // ─── TIMEZONE HELPERS ─────────────────────────────────────────────────────────
