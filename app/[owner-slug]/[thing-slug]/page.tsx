@@ -140,7 +140,7 @@ function ThingNavSlot({
         display: "flex", alignItems: "center", justifyContent: "center",
         flexShrink: 0,
       }}>
-        <IconComp size={20} strokeWidth={1.75} color=WHITE />
+        <IconComp size={20} strokeWidth={1.75} color={WHITE} />
       </div>
       {/* Name */}
       <div style={{
@@ -287,7 +287,7 @@ function CalendarPage({
                   className={`mob-slot${isActive ? " mob-slot-active" : ""}`}
                 >
                   <div className="mob-slot-icon">
-                    <IconComp size={20} strokeWidth={1.75} color=WHITE />
+                    <IconComp size={20} strokeWidth={1.75} color={WHITE} />
                   </div>
                   <div className="mob-slot-name">{t.name}</div>
                 </a>
@@ -295,7 +295,7 @@ function CalendarPage({
             })}
             <a href="/setup" className="mob-slot mob-slot-add">
               <div className="mob-slot-icon">
-                <Plus size={20} strokeWidth={1.75} color=ORANGE />
+                <Plus size={20} strokeWidth={1.75} color={ORANGE} />
               </div>
               <div className="mob-slot-name">Add more</div>
             </a>

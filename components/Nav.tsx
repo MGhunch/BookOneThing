@@ -42,8 +42,8 @@ export default function Nav() {
         >
           {open ? (
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <line x1="1" y1="1" x2="13" y2="13" stroke=WHITE strokeWidth="2" strokeLinecap="round"/>
-              <line x1="13" y1="1" x2="1" y2="13" stroke=WHITE strokeWidth="2" strokeLinecap="round"/>
+              <line x1="1" y1="1" x2="13" y2="13" stroke={WHITE} strokeWidth="2" strokeLinecap="round"/>
+              <line x1="13" y1="1" x2="1" y2="13" stroke={WHITE} strokeWidth="2" strokeLinecap="round"/>
             </svg>
           ) : (
             <>

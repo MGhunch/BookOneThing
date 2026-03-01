@@ -20,7 +20,7 @@ export default function CancelledPage() {
         margin: "0 auto 28px",
       }}>
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
-          stroke=GREY_LIGHT strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+          stroke={GREY_LIGHT} strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
           <polyline points="3,11 8,17 19,5"/>
         </svg>
       </div>

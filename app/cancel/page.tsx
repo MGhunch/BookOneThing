@@ -81,7 +81,7 @@ export default async function CancelConfirmPage({
         margin: "0 auto 24px",
       }}>
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
-          stroke=WHITE strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          stroke={WHITE} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="6" x2="6" y2="18"/>
           <line x1="6" y1="6" x2="18" y2="18"/>
         </svg>
@@ -109,7 +109,7 @@ export default async function CancelConfirmPage({
               width: 20, height: 20, borderRadius: "50%", background: ORANGE,
               display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             }}>
-              <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke=WHITE strokeWidth="3">
+              <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke={WHITE} strokeWidth="3">
                 <polyline points="1.5,5 4,7.5 8.5,2.5"/>
               </svg>
             </div>

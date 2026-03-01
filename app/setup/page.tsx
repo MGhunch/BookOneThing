@@ -138,7 +138,7 @@ function DoneModal({ name, calUrl }: { name: string; calUrl: string }) {
   return (
     <ModalShell>
       <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: "20px" }}>
-        <Check size={24} strokeWidth={2.5} color=WHITE />
+        <Check size={24} strokeWidth={2.5} color={WHITE} />
       </div>
       <div style={{ fontSize: "26px", fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.6px", fontFamily: SYS, lineHeight: 1.2, marginBottom: "8px" }}>
         {name} is live
@@ -192,7 +192,7 @@ function MockCalendar({ name, iconKey }: { name: string; iconKey: string | null 
       <div style={{ padding: "18px 18px 0", flexShrink: 0 }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "4px" }}>
           <div style={{ width: "34px", height: "34px", borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <IconComp size={15} strokeWidth={1.75} color=WHITE />
+            <IconComp size={15} strokeWidth={1.75} color={WHITE} />
           </div>
           <div>
             <div style={{ fontSize: "16px", fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.3px", fontFamily: SYS }}>{name}</div>
@@ -447,7 +447,7 @@ export default function SetupPage() {
                             display: "flex", alignItems: "center", justifyContent: "center",
                             flexShrink: 0, transition: "all 0.15s",
                           }}>
-                            {weekends && <Check size={10} strokeWidth={3} color=WHITE />}
+                            {weekends && <Check size={10} strokeWidth={3} color={WHITE} />}
                           </div>
                           <span style={{ fontSize: "14px", fontWeight: W_MEDIUM, color: "#555" }}>Include weekends</span>
                         </button>

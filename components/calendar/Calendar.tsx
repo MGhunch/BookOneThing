@@ -138,7 +138,7 @@ function TickRow({ label }: { label: string }) {
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
       <div style={{ width: "16px", height: "16px", borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-        <Check size={9} strokeWidth={3} color=WHITE />
+        <Check size={9} strokeWidth={3} color={WHITE} />
       </div>
       <span style={{ fontSize: "14px", fontWeight: W_MEDIUM, color: DARK, fontFamily: SYS }}>{label}</span>
     </div>
@@ -481,7 +481,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
               background: ORANGE,
               display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0,
             }}>
-              <ThingIcon size={17} strokeWidth={1.75} color=WHITE />
+              <ThingIcon size={17} strokeWidth={1.75} color={WHITE} />
             </div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ fontSize: "19px", fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.4px", overflowWrap: "break-word", wordBreak: "break-word" }}>
@@ -763,7 +763,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                   ×
                 </button>
                 <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: ORANGE, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px" }}>
-                  <Check size={26} strokeWidth={2.5} color=WHITE />
+                  <Check size={26} strokeWidth={2.5} color={WHITE} />
                 </div>
                 <div style={{ fontSize: "22px", fontWeight: W_BOLD, color: DARK, marginBottom: "12px", letterSpacing: "-0.4px" }}>
                   All booked, {bookerSession?.firstName ?? bookerName}
