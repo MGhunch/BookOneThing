@@ -179,8 +179,11 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
   const [weekOffset, setWeekOffset]   = useState(0);
   const [selectedDay, setSelectedDay] = useState(0);
 
+  const [today, setToday] = useState<Date | null>(null);
   useEffect(() => {
-    const day = new Date().getDay();
+    const now = new Date();
+    setToday(now);
+    const day = now.getDay();
     setSelectedDay(day === 0 ? 6 : day - 1);
   }, []);
   const [phase, setPhase]           = useState(S_IDLE);
@@ -210,7 +213,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
   // ── Pending / activation state ────────────────────────────────────────────
   const [showGate, setShowGate]                       = useState(false);
   const ThingIcon = ICON_MAP[thing.icon] || Car;
-  const dates     = getWeekDates(weekOffset);
+  const dates     = today ? getWeekDates(weekOffset) : Array.from({ length: 7 }, () => new Date(0));
   const selDate   = dates[selectedDay];
   const dateStr   = selDate.toLocaleDateString("en-CA");
 
@@ -513,7 +516,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
             {DAYS.map((day, i) => {
               const d = dates[i];
               const sel = i === selectedDay;
-              const isToday = d.toDateString() === new Date().toDateString();
+              const isToday = today !== null && d.toDateString() === today.toDateString();
               return (
                 <button key={day} onClick={() => changeDay(i)} style={{
                   background: sel ? ORANGE_LIGHT : "transparent",
