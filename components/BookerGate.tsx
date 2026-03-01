@@ -120,11 +120,11 @@ export default function BookerGate({
 
     function loopSeg3() {
       if (!progressMounted.current) return;
-      setFilledSegs(2); // reset seg 3 only — keep 1 + 2
+      setFilledSegs(2); // wipe seg 3 completely — keep 1 + 2
       setTimeout(() => {
         if (!progressMounted.current) return;
         fillSeg(2, () => setTimeout(loopSeg3, 2200));
-      }, 400);
+      }, 600);
     }
 
     function run() {
@@ -243,6 +243,10 @@ export default function BookerGate({
           20%,60%  { transform: translateX(-6px); }
           40%,80%  { transform: translateX(6px); }
         }
+        @keyframes screenIn {
+          from { opacity: 0; transform: scale(0.97); }
+          to   { opacity: 1; transform: scale(1); }
+        }
         @keyframes lockTick {
           0%   { transform: scale(1); }
           40%  { transform: scale(1.35); }
@@ -276,7 +280,7 @@ export default function BookerGate({
 
       {/* ══════════ SCREEN 1 — EMAIL + NAME ══════════ */}
       {screen === "email" && (
-        <>
+        <div style={{ animation: "screenIn 0.2s cubic-bezier(0.32,0.72,0,1) forwards" }}>
           <div style={{ marginBottom: 20 }}>
             <div style={{ fontSize: SIZE_LG, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
               Quick security check
@@ -330,12 +334,12 @@ export default function BookerGate({
           <div style={{ textAlign: "center", fontSize: 12, color: "#ccc", fontFamily: SYS }}>
             We won't spam you, promise.
           </div>
-        </>
+        </div>
       )}
 
       {/* ══════════ SCREEN 2 — ORG (owners only) ══════════ */}
       {screen === "org" && (
-        <>
+        <div style={{ animation: "screenIn 0.2s cubic-bezier(0.32,0.72,0,1) forwards" }}>
           <div style={{ marginBottom: 20 }}>
             <div style={{ fontSize: SIZE_LG, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
               Whose calendar is it?
@@ -381,12 +385,12 @@ export default function BookerGate({
           <div style={{ textAlign: "center", fontSize: 12, color: "#ccc", fontFamily: SYS }}>
             You can change this any time.
           </div>
-        </>
+        </div>
       )}
 
       {/* ══════════ SCREEN 3 — CODEWORD ══════════ */}
       {screen === "code" && (
-        <>
+        <div style={{ animation: "screenIn 0.2s cubic-bezier(0.32,0.72,0,1) forwards" }}>
           <div style={{ marginBottom: 18 }}>
             <div style={{ fontSize: SIZE_LG, fontWeight: W_BOLD, color: DARK, letterSpacing: "-0.4px", fontFamily: SYS, lineHeight: 1.2, marginBottom: 6 }}>
               Pop in your codeword
@@ -506,7 +510,7 @@ export default function BookerGate({
               Send another
             </span>
           </div>
-        </>
+        </div>
       )}
     </ModalShell>
   );
