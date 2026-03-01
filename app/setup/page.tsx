@@ -2,7 +2,7 @@
 
 import { useState, useRef } from "react";
 import {
-  Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Clock,
+  Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check, Clock,
 } from "lucide-react";
 import { createThing } from "./actions";
 import { sendCodeword } from "@/app/codeword-actions";
