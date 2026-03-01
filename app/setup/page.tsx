@@ -5,6 +5,7 @@ import {
   Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check, Clock,
 } from "lucide-react";
 import { createThing } from "./actions";
+import { sendCodeword } from "@/app/codeword-actions";
 import BookerGate from "@/components/BookerGate";
 
 // ─── TIMEZONE HELPERS ─────────────────────────────────────────────────────────
@@ -252,8 +253,8 @@ export default function SetupPage() {
   const [nameFocus, setNameFocus]   = useState(false);
   const [notesFocus, setNotesFocus] = useState(false);
 
-  // Passed from onBeforeSend → used by onDone to activate the thing
-  const pendingRef = useRef<{ email: string; ownerSlug: string; thingSlug: string } | null>(null);
+  // Passed from onBeforeSend → used by onDone to call createThing
+  const pendingRef = useRef<{ email: string; firstName: string } | null>(null);
 
   const trimmed   = name.trim();
   const canFlip   = !!trimmed;
@@ -279,30 +280,35 @@ export default function SetupPage() {
     background: WHITE, cursor: "pointer", outline: "none",
   };
 
-  // Called by BookerGate after email + name collected — runs submitSetup,
-  // which writes to pending_things and fires the codeword email.
+  // Called by BookerGate after email + name collected — sends the codeword email.
   const handleBeforeSend = async (email: string, firstName: string) => {
-    const result = await submitSetup({
+    pendingRef.current = { email: email.trim().toLowerCase(), firstName: firstName.trim() };
+    const result = await sendCodeword({
+      context: "setup", email: email.trim(), firstName: firstName.trim(),
+      ownerSlug: "", thingSlug: "",
+    });
+    if ("error" in result) return { error: result.error };
+    return { ownerSlug: "", thingSlug: "" };
+  };
+
+  // Called by BookerGate after codeword verified — creates the thing.
+  const handleDone = async (result?: { orgName?: string }) => {
+    const p = pendingRef.current;
+    if (!p) return;
+    const outcome = await createThing({
       name: trimmed, icon: icon || "car",
       avail, fromH, toH, weekends, notes,
       maxLen, ahead, concurrent, buffer,
-      timezone, email, firstName,
+      timezone,
+      email:     p.email,
+      firstName: p.firstName,
+      orgName:   result?.orgName || "My Organisation",
     });
-    if ("error" in result) return { error: result.error };
-    pendingRef.current = { email: email.trim().toLowerCase(), ownerSlug: result.ownerSlug, thingSlug: result.thingSlug };
-    return { ownerSlug: result.ownerSlug, thingSlug: result.thingSlug };
-  };
-
-  // Called by BookerGate after codeword verified — activates the thing.
-  const handleDone = async () => {
-    const p = pendingRef.current;
-    if (!p) return;
-    const result = await activatePendingThing(p.email, p.ownerSlug, p.thingSlug);
-    if ("error" in result) {
-      console.error("Activation failed:", result.error);
+    if ("error" in outcome) {
+      console.error("createThing failed:", outcome.error);
       return;
     }
-    setCalUrl(result.url);
+    setCalUrl(outcome.url);
     setShowGate(false);
   };
 
