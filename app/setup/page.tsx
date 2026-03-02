@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   Car, Users, Coffee, Sun, Wrench, Monitor, Home, Plus, Check, Clock,
 } from "lucide-react";
@@ -193,7 +193,8 @@ export default function SetupPage() {
   const [fromH, setFromH]           = useState(9);
   const [toH, setToH]               = useState(17);
   const [weekends, setWeekends]     = useState(false);
-  const [timezone, setTimezone]     = useState(() => detectTimezone());
+  const [timezone, setTimezone]     = useState("UTC");
+  useEffect(() => { setTimezone(detectTimezone()); }, []);
   const [tzSearch, setTzSearch]     = useState("");
   const [tzOpen, setTzOpen]         = useState(false);
   const [notes, setNotes]           = useState("");
