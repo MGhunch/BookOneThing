@@ -6,7 +6,7 @@ import { Check, Car, Users, Coffee, Sun, X, Trash2, ChevronLeft, ChevronRight, L
 import type { Thing, Booking } from "@/types";
 import { createBooking, cancelBooking, setReminderPreference } from "@/app/[owner-slug]/[thing-slug]/actions";
 import ModalShell from "@/components/ModalShell";
-import BookerGate from "@/components/BookerGate";
+import AuthGate from "@/components/AuthGate";
 
 // ── Fairness error → toast copy ────────────────────────────────────────────────
 import type { BookingResult } from "@/app/[owner-slug]/[thing-slug]/actions";
@@ -364,6 +364,11 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
   const slotBg = (s: string) => {
     if (!inRange(s)) return ORANGE_LIGHT;
+    // S_PICKING: only start slot is active — keep it light so "From X" label is readable
+    if (phase === S_PICKING) return ORANGE_LIGHT;
+    // S_SEEN: range selected but not yet confirmed — mid orange so "Until X" label is readable
+    if (phase === S_SEEN) return ORANGE_MID;
+    // S_READY: confirmed range, full orange — "Book it" label renders white on orange
     return ORANGE;
   };
 
@@ -562,10 +567,11 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
 
               <div style={{ position: "absolute", left: "40px", right: 0, top: 0 }}>
 
-                {/* ── Gap fill: solid orange underlay covering PILL_GAP between groups ── */}
+                {/* ── Gap fill: underlay covering PILL_GAP between groups — colour matches phase ── */}
                 {start && end && (() => {
                   const lo = Math.min(slotIdx(start), slotIdx(end));
                   const hi = Math.max(slotIdx(start), slotIdx(end));
+                  const fillBg = phase === S_READY ? ORANGE : ORANGE_MID;
                   return (
                     <div style={{
                       position: "absolute",
@@ -573,7 +579,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
                       left: 0,
                       right: 0,
                       height: slotY(hi) + SLOT_H - slotY(lo),
-                      background: ORANGE,
+                      background: fillBg,
                       borderRadius: "8px",
                       pointerEvents: "none",
                       zIndex: 0,
@@ -910,7 +916,7 @@ export default function Calendar({ thing, orgName, ownerSlug, thingSlug, booking
       )}
 
       {showGate && !bookerSession && (
-        <BookerGate
+        <AuthGate
           onDone={() => { setShowGate(false); setPhase(S_MODAL); }}
           thingId={thing.id}
           thingName={thing.name}
