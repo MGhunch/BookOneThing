@@ -178,15 +178,12 @@ export function buildConfirmationHTML({
             <td style="background:#ffffff;border-radius:20px;padding:36px 36px 32px;box-shadow:0 2px 16px rgba(0,0,0,0.06);">
 
               <!-- Tick -->
-              <div style="width:52px;height:52px;border-radius:50%;background:${ORANGE};display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
-                <table cellpadding="0" cellspacing="0" width="52" height="52">
-                  <tr><td align="center" valign="middle">
-                    <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#fff" stroke-width="2.5">
-                      <polyline points="3,11 8,17 19,5"/>
-                    </svg>
-                  </td></tr>
-                </table>
-              </div>
+              <table cellpadding="0" cellspacing="0" style="margin-bottom:20px;">
+                <tr><td width="52" height="52" align="center" valign="middle"
+                  style="width:52px;height:52px;min-width:52px;background:${ORANGE};border-radius:26px;font-size:26px;font-weight:700;color:#ffffff;text-align:center;line-height:52px;font-family:Arial,sans-serif;">
+                  &#10003;
+                </td></tr>
+              </table>
 
               <p style="margin:0 0 6px;font-size:26px;font-weight:800;color:${DARK};letter-spacing:-0.6px;line-height:1.2;">
                 All booked, ${bookerName}.
@@ -200,10 +197,9 @@ export function buildConfirmationHTML({
                   <td style="padding:0 0 10px;">
                     <table cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="width:20px;height:20px;background:${ORANGE};border-radius:50%;text-align:center;vertical-align:middle;">
-                          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="3">
-                            <polyline points="1.5,5 4,7.5 8.5,2.5"/>
-                          </svg>
+                        <td width="20" height="20" align="center" valign="middle"
+                          style="width:20px;height:20px;min-width:20px;background:${ORANGE};border-radius:10px;font-size:13px;font-weight:700;color:#ffffff;text-align:center;line-height:20px;font-family:Arial,sans-serif;">
+                          &#10003;
                         </td>
                         <td style="padding-left:10px;font-size:15px;font-weight:700;color:${DARK};">
                           ${thingName}
@@ -216,10 +212,9 @@ export function buildConfirmationHTML({
                   <td style="padding:0 0 10px;">
                     <table cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="width:20px;height:20px;background:${ORANGE};border-radius:50%;text-align:center;vertical-align:middle;">
-                          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="3">
-                            <polyline points="1.5,5 4,7.5 8.5,2.5"/>
-                          </svg>
+                        <td width="20" height="20" align="center" valign="middle"
+                          style="width:20px;height:20px;min-width:20px;background:${ORANGE};border-radius:10px;font-size:13px;font-weight:700;color:#ffffff;text-align:center;line-height:20px;font-family:Arial,sans-serif;">
+                          &#10003;
                         </td>
                         <td style="padding-left:10px;font-size:15px;font-weight:700;color:${DARK};">
                           ${timeRange}
@@ -232,10 +227,9 @@ export function buildConfirmationHTML({
                   <td>
                     <table cellpadding="0" cellspacing="0">
                       <tr>
-                        <td style="width:20px;height:20px;background:${ORANGE};border-radius:50%;text-align:center;vertical-align:middle;">
-                          <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="3">
-                            <polyline points="1.5,5 4,7.5 8.5,2.5"/>
-                          </svg>
+                        <td width="20" height="20" align="center" valign="middle"
+                          style="width:20px;height:20px;min-width:20px;background:${ORANGE};border-radius:10px;font-size:13px;font-weight:700;color:#ffffff;text-align:center;line-height:20px;font-family:Arial,sans-serif;">
+                          &#10003;
                         </td>
                         <td style="padding-left:10px;font-size:15px;font-weight:700;color:${DARK};">
                           ${dateStr}
@@ -709,8 +703,8 @@ export function buildReminderHTML({
                 <tr>
                   <td style="padding:0 0 10px;">
                     <table cellpadding="0" cellspacing="0"><tr>
-                      <td style="width:20px;height:20px;background:${ORANGE};border-radius:50%;text-align:center;vertical-align:middle;">
-                        <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="3"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
+                      <td width="20" height="20" align="center" valign="middle" style="width:20px;height:20px;min-width:20px;background:${ORANGE};border-radius:10px;font-size:13px;font-weight:700;color:#ffffff;text-align:center;line-height:20px;font-family:Arial,sans-serif;">
+                        &#10003;
                       </td>
                       <td style="padding-left:10px;font-size:15px;font-weight:700;color:${DARK};">${thingName}</td>
                     </tr></table>
@@ -719,8 +713,8 @@ export function buildReminderHTML({
                 <tr>
                   <td style="padding:0 0 10px;">
                     <table cellpadding="0" cellspacing="0"><tr>
-                      <td style="width:20px;height:20px;background:${ORANGE};border-radius:50%;text-align:center;vertical-align:middle;">
-                        <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="3"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
+                      <td width="20" height="20" align="center" valign="middle" style="width:20px;height:20px;min-width:20px;background:${ORANGE};border-radius:10px;font-size:13px;font-weight:700;color:#ffffff;text-align:center;line-height:20px;font-family:Arial,sans-serif;">
+                        &#10003;
                       </td>
                       <td style="padding-left:10px;font-size:15px;font-weight:700;color:${DARK};">${timeRange}</td>
                     </tr></table>
@@ -729,8 +723,8 @@ export function buildReminderHTML({
                 <tr>
                   <td>
                     <table cellpadding="0" cellspacing="0"><tr>
-                      <td style="width:20px;height:20px;background:${ORANGE};border-radius:50%;text-align:center;vertical-align:middle;">
-                        <svg width="9" height="9" viewBox="0 0 10 10" fill="none" stroke="#fff" stroke-width="3"><polyline points="1.5,5 4,7.5 8.5,2.5"/></svg>
+                      <td width="20" height="20" align="center" valign="middle" style="width:20px;height:20px;min-width:20px;background:${ORANGE};border-radius:10px;font-size:13px;font-weight:700;color:#ffffff;text-align:center;line-height:20px;font-family:Arial,sans-serif;">
+                        &#10003;
                       </td>
                       <td style="padding-left:10px;font-size:15px;font-weight:700;color:${DARK};">${dateStr}</td>
                     </tr></table>
